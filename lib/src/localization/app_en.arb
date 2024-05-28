@@ -1,0 +1,6 @@
+{
+  "appTitle": "FediMatch",
+  "@appTitle": {
+    "description": "The title of this application"
+  }
+}
