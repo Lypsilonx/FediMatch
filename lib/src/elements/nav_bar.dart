@@ -21,8 +21,20 @@ class NavBar extends StatelessWidget {
           ? 0
           : routeNames.values.toList().indexOf(routeNames[name]!),
       onTap: (int index) {
-        Navigator.pushReplacementNamed(
-            context, routeNames.values.elementAt(index).$1);
+        if (name == null) {
+          return;
+        }
+
+        if (index == routeNames.keys.toList().indexOf(name!)) {
+          return;
+        }
+
+        if (index == routeNames.keys.toList().indexOf('Home')) {
+          Navigator.popUntil(context, ModalRoute.withName('/'));
+          return;
+        }
+
+        Navigator.pushNamed(context, routeNames.values.elementAt(index).$1);
       },
       items: routeNames.keys.map((String name) {
         return BottomNavigationBarItem(
@@ -33,42 +45,3 @@ class NavBar extends StatelessWidget {
     );
   }
 }
-// ButtonBar(
-                //   alignment: MainAxisAlignment.spaceEvenly,
-                //   children: [
-                //     IconButton(
-                //       icon: const Icon(Icons.home),
-                //       onPressed: () {
-                //         Navigator.pushReplacementNamed(
-                //             context, AccountListView.routeName);
-                //       },
-                //       isSelected:
-                //           routeSettings.name == AccountListView.routeName,
-                //     ),
-                //     IconButton(
-                //       icon: const Icon(Icons.favorite),
-                //       onPressed: () {
-                //         Navigator.pushReplacementNamed(
-                //             context, MatchesListView.routeName);
-                //       },
-                //       isSelected:
-                //           routeSettings.name == MatchesListView.routeName,
-                //     ),
-                //     IconButton(
-                //       icon: const Icon(Icons.account_circle),
-                //       onPressed: () {
-                //         // TODO: implement account view
-                //       },
-                //       isSelected: routeSettings.name == false,
-                //     ),
-                //     IconButton(
-                //       icon: const Icon(Icons.settings),
-                //       onPressed: () {
-                //         Navigator.pushReplacementNamed(
-                //             context, SettingsView.routeName);
-                //       },
-                //       isSelected:
-                //           routeSettings.name == SettingsView.routeName,
-                //     ),
-                //   ],
-                // ),

@@ -1,6 +1,6 @@
 import 'package:appinio_swiper/appinio_swiper.dart';
 import 'package:fedi_match/mastodon.dart';
-import 'package:fedi_match/src/elements/action_button.dart';
+import 'package:fedi_match/src/elements/match_buttons.dart';
 import 'package:flutter/material.dart';
 
 class SwipeCard extends StatelessWidget {
@@ -32,7 +32,7 @@ class SwipeCard extends StatelessWidget {
                       child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(account.displayName,
+                            Text(account.getDisplayName(),
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(fontSize: 24)),
                             Text("@" + account.acct,
@@ -40,20 +40,7 @@ class SwipeCard extends StatelessWidget {
                           ])),
                 )
               ]),
-              Padding(
-                padding: EdgeInsets.all(20),
-                child: ButtonBar(
-                  alignment: MainAxisAlignment.spaceEvenly,
-                  children: <Widget>[
-                    ActionButton(Icon(Icons.close, color: Colors.white),
-                        Colors.red, controller.swipeLeft),
-                    ActionButton(Icon(Icons.star, color: Colors.white),
-                        Colors.blue, controller.swipeUp),
-                    ActionButton(Icon(Icons.favorite, color: Colors.white),
-                        Colors.green, controller.swipeRight),
-                  ],
-                ),
-              ),
+              MatchButtons(controller: controller),
             ],
           ),
         ),

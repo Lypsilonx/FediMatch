@@ -223,6 +223,17 @@ class Account {
 
     return HtmlWidget(noteWithEmojis);
   }
+
+  String getDisplayName() {
+    var displayNameWithoutEmojis = displayName;
+
+    for (var emoji in emojis) {
+      displayNameWithoutEmojis =
+          displayNameWithoutEmojis.replaceAll(":${emoji.shortcode}:", "");
+    }
+
+    return displayNameWithoutEmojis;
+  }
 }
 
 class Mastodon {

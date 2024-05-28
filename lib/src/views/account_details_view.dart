@@ -1,13 +1,13 @@
 import 'package:appinio_swiper/appinio_swiper.dart';
 import 'package:fedi_match/mastodon.dart';
+import 'package:fedi_match/src/elements/match_buttons.dart';
 import 'package:flutter/material.dart';
-import 'package:fedi_match/src/elements/action_button.dart';
 
 class AccountDetailsView extends StatefulWidget {
   final Account account;
-  final AppinioSwiperController controller;
+  final AppinioSwiperController? controller;
 
-  AccountDetailsView(this.account, this.controller);
+  AccountDetailsView(this.account, {this.controller = null});
 
   static const routeName = '/account';
 
@@ -85,7 +85,7 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(widget.account.displayName,
+                    Text(widget.account.getDisplayName(),
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(fontSize: 24)),
                     Text("@" + widget.account.acct,
@@ -95,29 +95,13 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
                         child: widget.account.getNote()),
                   ])),
         ),
-        Padding(
-          padding: EdgeInsets.all(20),
-          child: ButtonBar(
-            alignment: MainAxisAlignment.spaceEvenly,
-            children: <Widget>[
-              ActionButton(Icon(Icons.close, color: Colors.white), Colors.red,
-                  () {
-                Navigator.pop(context);
-                widget.controller.swipeLeft();
-              }),
-              ActionButton(Icon(Icons.star, color: Colors.white), Colors.blue,
-                  () {
-                Navigator.pop(context);
-                widget.controller.swipeUp();
-              }),
-              ActionButton(
-                  Icon(Icons.favorite, color: Colors.white), Colors.green, () {
-                Navigator.pop(context);
-                widget.controller.swipeRight();
-              }),
-            ],
-          ),
-        ),
+        widget.controller == null
+            ? Container()
+            : MatchButtons(
+                controller: widget.controller!,
+                postSwipe: () {
+                  Navigator.pop(context);
+                })
       ]),
     );
   }

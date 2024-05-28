@@ -25,7 +25,9 @@ class _AccountListViewState extends State<AccountListView> {
     List<Account> accounts = [];
     try {
       do {
-        //accounts.add(await mastodon.getAccount("kolektiva.social", "Lypsilonx"));
+        // accounts
+        //     .add(await Mastodon.getAccount("kolektiva.social", "Lypsilonx"));
+
         List<Account> new_accounts =
             await Mastodon.getDirectory(limit: 50, offset: pageKey * 5);
 

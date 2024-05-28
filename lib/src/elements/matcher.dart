@@ -7,24 +7,24 @@ class Matcher {
   static List<String> superliked = [];
 
   static void addToLiked(Account account) {
-    liked.add(account.acct);
+    liked.add(account.url);
     saveToPrefs();
   }
 
   static void addToDisliked(Account account) {
-    disliked.add(account.acct);
+    disliked.add(account.url);
     saveToPrefs();
   }
 
   static void addToSuperliked(Account account) {
-    superliked.add(account.acct);
+    superliked.add(account.url);
     saveToPrefs();
   }
 
   static void unswipe(Account account) {
-    liked.remove(account.acct);
-    disliked.remove(account.acct);
-    superliked.remove(account.acct);
+    liked.remove(account.url);
+    disliked.remove(account.url);
+    superliked.remove(account.url);
     saveToPrefs();
   }
 

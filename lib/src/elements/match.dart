@@ -1,4 +1,5 @@
 import 'package:fedi_match/mastodon.dart';
+import 'package:fedi_match/src/views/account_details_view.dart';
 import 'package:flutter/material.dart';
 
 class Match extends StatefulWidget {
@@ -17,8 +18,12 @@ class _MatchState extends State<Match> {
       leading: CircleAvatar(
         backgroundImage: NetworkImage(widget.account.avatar),
       ),
-      title: Text(widget.account.displayName),
+      title: Text(widget.account.getDisplayName()),
       subtitle: Text(widget.account.acct),
+      onTap: () {
+        Navigator.pushNamed(context, AccountDetailsView.routeName,
+            arguments: {"account": widget.account});
+      },
     );
   }
 }

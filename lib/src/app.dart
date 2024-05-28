@@ -51,8 +51,10 @@ class MyApp extends StatelessWidget {
                     MatchesListView.routeName => MatchesListView(),
                     AccountDetailsView.routeName => AccountDetailsView(
                         (routeSettings.arguments as Map)["account"] as Account,
-                        (routeSettings.arguments as Map)["controller"]
-                            as AppinioSwiperController),
+                        controller: ((routeSettings.arguments as Map)
+                                .containsKey("controller")
+                            ? (routeSettings.arguments as Map)["controller"]
+                            : null) as AppinioSwiperController?),
                     AccountListView.routeName => AccountListView(),
                     _ => AccountListView(),
                   };
