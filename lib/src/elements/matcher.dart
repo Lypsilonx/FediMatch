@@ -28,6 +28,13 @@ class Matcher {
     saveToPrefs();
   }
 
+  static void remove(String url) {
+    liked.remove(url);
+    disliked.remove(url);
+    superliked.remove(url);
+    saveToPrefs();
+  }
+
   static void clear() {
     liked.clear();
     disliked.clear();

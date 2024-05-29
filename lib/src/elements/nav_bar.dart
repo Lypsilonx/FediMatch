@@ -10,7 +10,7 @@ class NavBar extends StatelessWidget {
 
   final Map<String, (String routeName, IconData icon)> routeNames = {
     'Home': (AccountListView.routeName, Icons.home),
-    'Matches': (MatchesListView.routeName, Icons.favorite),
+    'Likes & Matches': (MatchesListView.routeName, Icons.favorite),
     'Settings': (SettingsView.routeName, Icons.settings),
   };
 
