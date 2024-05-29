@@ -20,70 +20,122 @@ class SettingsView extends StatelessWidget {
         body: Padding(
           padding: const EdgeInsets.all(16),
           child: ListView(controller: ScrollController(), children: [
-            DropdownButton<ThemeMode>(
-              value: controller.themeMode,
-              onChanged: controller.updateThemeMode,
-              items: const [
-                DropdownMenuItem(
-                  value: ThemeMode.system,
-                  child: Text('System Theme'),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Theme'),
+                DropdownButton<ThemeMode>(
+                  underline: Container(),
+                  value: controller.themeMode,
+                  onChanged: controller.updateThemeMode,
+                  items: const [
+                    DropdownMenuItem(
+                      value: ThemeMode.system,
+                      child: Text('System Theme'),
+                    ),
+                    DropdownMenuItem(
+                      value: ThemeMode.light,
+                      child: Text('Light Theme'),
+                    ),
+                    DropdownMenuItem(
+                      value: ThemeMode.dark,
+                      child: Text('Dark Theme'),
+                    )
+                  ],
                 ),
-                DropdownMenuItem(
-                  value: ThemeMode.light,
-                  child: Text('Light Theme'),
-                ),
-                DropdownMenuItem(
-                  value: ThemeMode.dark,
-                  child: Text('Dark Theme'),
-                )
               ],
             ),
-            TextFormField(
-              initialValue: controller.userInstanceName,
-              onChanged: controller.updateUserInstanceName,
-            ),
-            TextFormField(
-              initialValue: controller.userName,
-              onChanged: controller.updateUserName,
+            SizedBox(height: 20),
+            TextButton(
+              style: new ButtonStyle(
+                  backgroundColor: WidgetStateProperty.all<Color>(
+                      Theme.of(context).colorScheme.error)),
+              onPressed: () {
+                showDialog<void>(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: const Text('Delete Matcher Data'),
+                      content: SingleChildScrollView(
+                        child: ListBody(
+                          children: <Widget>[
+                            Text(
+                                'Are you sure you want to delete all Matcher data?'),
+                            Text(
+                                "You will loose ${Matcher.liked.length} liked accounts, ${Matcher.disliked.length} disliked accounts and ${Matcher.superliked.length} superliked accounts."),
+                          ],
+                        ),
+                      ),
+                      actions: <Widget>[
+                        TextButton(
+                          child: const Text('Delete'),
+                          onPressed: () {
+                            Matcher.clear();
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                        TextButton(
+                          child: const Text('Cancel'),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+              child: Text(
+                style: TextStyle(color: Theme.of(context).colorScheme.onError),
+                "Clear Matcher data",
+              ),
             ),
             TextButton(
-                onPressed: () {
-                  showDialog<void>(
-                    context: context,
-                    barrierDismissible: false, // user must tap button!
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: const Text('Delete Matcher Data'),
-                        content: SingleChildScrollView(
-                          child: ListBody(
-                            children: <Widget>[
-                              Text(
-                                  'Are you sure you want to delete all Matcher data?'),
-                              Text(
-                                  "You will loose ${Matcher.liked.length} liked accounts, ${Matcher.disliked.length} disliked accounts and ${Matcher.superliked.length} superliked accounts."),
-                            ],
-                          ),
+              style: new ButtonStyle(
+                  backgroundColor: WidgetStateProperty.all<Color>(
+                      Theme.of(context).colorScheme.error)),
+              onPressed: () {
+                showDialog<void>(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: const Text('Delete Matcher Data'),
+                      content: SingleChildScrollView(
+                        child: ListBody(
+                          children: <Widget>[
+                            Text(
+                                'Are you sure you want to log out and delete all Matcher data?'),
+                            Text(
+                                "You will loose ${Matcher.liked.length} liked accounts, ${Matcher.disliked.length} disliked accounts and ${Matcher.superliked.length} superliked accounts."),
+                          ],
                         ),
-                        actions: <Widget>[
-                          TextButton(
-                            child: const Text('Delete'),
-                            onPressed: () {
-                              Matcher.clear();
-                              Navigator.of(context).pop();
-                            },
-                          ),
-                          TextButton(
-                            child: const Text('Cancel'),
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                },
-                child: Text("Clear Matcher data")),
+                      ),
+                      actions: <Widget>[
+                        TextButton(
+                          child: const Text('Logout'),
+                          onPressed: () {
+                            Matcher.clear();
+                            Navigator.pushReplacementNamed(context, '/login');
+                          },
+                        ),
+                        TextButton(
+                          child: const Text('Cancel'),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+              child: Text(
+                style: TextStyle(color: Theme.of(context).colorScheme.onError),
+                "Logout",
+              ),
+            ),
           ]),
         ));
   }

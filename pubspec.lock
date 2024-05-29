@@ -121,6 +121,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.10"
+  diffutil_dart:
+    dependency: transitive
+    description:
+      name: diffutil_dart
+      sha256: "5e74883aedf87f3b703cb85e815bdc1ed9208b33501556e4a8a5572af9845c81"
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.0.1"
+  equatable:
+    dependency: transitive
+    description:
+      name: equatable
+      sha256: c2b87cb7756efdf69892005af546c56c0b5037f54d2a88269b4f347a505e3ca2
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.5"
   ffi:
     dependency: transitive
     description:
@@ -158,11 +174,51 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.3.2"
+  flutter_chat_types:
+    dependency: transitive
+    description:
+      name: flutter_chat_types
+      sha256: e285b588f6d19d907feb1f6d912deaf22e223656769c34093b64e1c59b094fb9
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.6.2"
+  flutter_chat_ui:
+    dependency: "direct main"
+    description:
+      name: flutter_chat_ui
+      sha256: "40fb37acc328dd179eadc3d67bf8bd2d950dc0da34464aa8d48e8707e0234c09"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.6.13"
+  flutter_link_previewer:
+    dependency: transitive
+    description:
+      name: flutter_link_previewer
+      sha256: "007069e60f42419fb59872beb7a3cc3ea21e9f1bdff5d40239f376fa62ca9f20"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.2.2"
+  flutter_linkify:
+    dependency: transitive
+    description:
+      name: flutter_linkify
+      sha256: "74669e06a8f358fee4512b4320c0b80e51cffc496607931de68d28f099254073"
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.0.0"
   flutter_localizations:
     dependency: "direct main"
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_parsed_text:
+    dependency: transitive
+    description:
+      name: flutter_parsed_text
+      sha256: "529cf5793b7acdf16ee0f97b158d0d4ba0bf06e7121ef180abe1a5b59e32c1e2"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.2.1"
   flutter_svg:
     dependency: transitive
     description:
@@ -272,6 +328,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.19.0"
+  json_annotation:
+    dependency: transitive
+    description:
+      name: json_annotation
+      sha256: "1ce844379ca14835a50d2f019a3099f419082cfdd231cd86a142af94dd5c6bb1"
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.9.0"
   just_audio:
     dependency: transitive
     description:
@@ -296,6 +360,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.4.11"
+  linkify:
+    dependency: transitive
+    description:
+      name: linkify
+      sha256: "4139ea77f4651ab9c315b577da2dd108d9aa0bd84b5d03d33323f1970c645832"
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.0.0"
   logging:
     dependency: transitive
     description:
@@ -424,6 +496,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.0.2"
+  photo_view:
+    dependency: transitive
+    description:
+      name: photo_view
+      sha256: "1fc3d970a91295fbd1364296575f854c9863f225505c28c46e0a03e48960c75e"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.15.0"
   platform:
     dependency: transitive
     description:
@@ -456,6 +536,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.27.7"
+  scroll_to_index:
+    dependency: transitive
+    description:
+      name: scroll_to_index
+      sha256: b707546e7500d9f070d63e5acf74fd437ec7eeeb68d3412ef7b0afada0b4f176
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.1"
   shared_preferences:
     dependency: "direct main"
     description:
@@ -725,6 +813,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.0"
+  visibility_detector:
+    dependency: transitive
+    description:
+      name: visibility_detector
+      sha256: dd5cc11e13494f432d15939c3aa8ae76844c42b723398643ce9addb88a5ed420
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.4.0+2"
   wakelock_plus:
     dependency: transitive
     description:

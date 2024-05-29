@@ -1,3 +1,4 @@
+import 'package:fedi_match/src/settings/settings_service.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
@@ -234,9 +235,439 @@ class Account {
 
     return displayNameWithoutEmojis;
   }
+
+  // ! This is a custom field that is not part of the Mastodon API
+  bool hasFediMatchField() {
+    return fields.any((e) => e.name == "FediMatch");
+  }
+
+  List<FediMatchTag> getFediMatchTags() {
+    if (!hasFediMatchField()) {
+      return [];
+    }
+
+    String fediMatchFieldValue =
+        fields.where((e) => e.name == "FediMatch").first.value ?? "";
+
+    return fediMatchFieldValue.split(", ").map((e) {
+      String tagType = e.split(":")[0];
+      String tagValue = e.split(":")[1];
+      return FediMatchTag(tagType, tagValue);
+    }).toList();
+  }
+}
+
+class FediMatchTag {
+  String tagType;
+  String tagValue;
+
+  FediMatchTag(this.tagType, this.tagValue);
+}
+// ! This is a custom field that is not part of the Mastodon API
+
+class StatusMention {
+  final String id;
+  final String username;
+  final String url;
+  final String acct;
+
+  StatusMention(
+      {required this.id,
+      required this.username,
+      required this.url,
+      required this.acct});
+
+  factory StatusMention.fromJson(Map<String, dynamic> json) {
+    return StatusMention(
+      id: json['id'],
+      username: json['username'],
+      url: json['url'],
+      acct: json['acct'],
+    );
+  }
+}
+
+class StatusTag {
+  final String name;
+  final String url;
+
+  StatusTag({required this.name, required this.url});
+
+  factory StatusTag.fromJson(Map<String, dynamic> json) {
+    return StatusTag(name: json['name'], url: json['url']);
+  }
+}
+
+class FilterKeyword {
+  final String id;
+  final String keyword;
+  final bool wholeWord;
+
+  FilterKeyword(
+      {required this.id, required this.keyword, required this.wholeWord});
+
+  factory FilterKeyword.fromJson(Map<String, dynamic> json) {
+    return FilterKeyword(
+        id: json['id'],
+        keyword: json['keyword'],
+        wholeWord: json['whole_word'] == "true");
+  }
+}
+
+class FilterStatus {
+  final String id;
+  final String status_id;
+
+  FilterStatus({required this.id, required this.status_id});
+
+  factory FilterStatus.fromJson(Map<String, dynamic> json) {
+    return FilterStatus(id: json['id'], status_id: json['status_id']);
+  }
+}
+
+class Filter {
+  final String id;
+  final String title;
+  final List<String> context;
+  final String? expires_at;
+  final String? filter_action;
+  final List<FilterKeyword> keywords;
+  final List<FilterStatus> statuses;
+
+  Filter({
+    required this.id,
+    required this.title,
+    required this.context,
+    required this.expires_at,
+    required this.filter_action,
+    required this.keywords,
+    required this.statuses,
+  });
+
+  factory Filter.fromJson(Map<String, dynamic> json) {
+    return Filter(
+      id: json['id'],
+      title: json['title'],
+      context:
+          (json['context'] as List<dynamic>).map((e) => e as String).toList(),
+      expires_at: json['expires_at'],
+      filter_action: json['filter_action'],
+      keywords: (json['keywords'] as List<dynamic>)
+          .map((e) => FilterKeyword.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      statuses: (json['statuses'] as List<dynamic>)
+          .map((e) => FilterStatus.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+}
+
+class FilterResult {
+  final Filter filter;
+  final List<String>? keyword_matches;
+  final List<String>? status_matches;
+
+  FilterResult({
+    required this.filter,
+    required this.keyword_matches,
+    required this.status_matches,
+  });
+
+  factory FilterResult.fromJson(Map<String, dynamic> json) {
+    return FilterResult(
+      filter: Filter.fromJson(json['filter'] as Map<String, dynamic>),
+      keyword_matches: (json['keyword_matches'] as List<dynamic>)
+          .map((e) => e as String)
+          .toList(),
+      status_matches: (json['status_matches'] as List<dynamic>)
+          .map((e) => e as String)
+          .toList(),
+    );
+  }
+}
+
+class StatusApplication {
+  final String name;
+  final String? website;
+
+  StatusApplication({required this.name, required this.website});
+
+  factory StatusApplication.fromJson(Map<String, dynamic> json) {
+    return StatusApplication(name: json['name'], website: json['website']);
+  }
+}
+
+class PollOption {
+  final String title;
+  final int? votesCount;
+
+  PollOption({required this.title, required this.votesCount});
+
+  factory PollOption.fromJson(Map<String, dynamic> json) {
+    return PollOption(title: json['title'], votesCount: json['votes_count']);
+  }
+}
+
+class Poll {
+  final String id;
+  final String? expiresAt;
+  final bool expired;
+  final bool multiple;
+  final int votesCount;
+  final int? votersCount;
+  final List<PollOption> options;
+  final List<CustomEmoji> emojis;
+  final bool? voted;
+  final List<int>? ownVotes;
+
+  Poll({
+    required this.id,
+    required this.expiresAt,
+    required this.expired,
+    required this.multiple,
+    required this.votesCount,
+    required this.votersCount,
+    required this.options,
+    required this.emojis,
+    this.voted,
+    this.ownVotes,
+  });
+
+  factory Poll.fromJson(Map<String, dynamic> json) {
+    return Poll(
+      id: json['id'],
+      expiresAt: json['expires_at'],
+      expired: json['expired'] == "true",
+      multiple: json['multiple'] == "true",
+      votesCount: json['votes_count'],
+      votersCount: json['voters_count'],
+      options: (json['options'] as List<dynamic>)
+          .map((e) => PollOption.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      emojis: (json['emojis'] as List<dynamic>)
+          .map((e) => CustomEmoji.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      voted: json.containsKey('voted') ? json['voted'] == "true" : null,
+      ownVotes: json.containsKey('own_votes')
+          ? (json['own_votes'] as List<dynamic>).map((e) => e as int).toList()
+          : null,
+    );
+  }
+}
+
+class PreviewCard {
+  final String url;
+  final String title;
+  final String description;
+  final String type;
+  final String authorName;
+  final String authorUrl;
+  final String providerName;
+  final String providerUrl;
+  final String html;
+  final int width;
+  final int height;
+  final String? image;
+  final String? embedUrl;
+  final String? blurhash;
+
+  PreviewCard({
+    required this.url,
+    required this.title,
+    required this.description,
+    required this.image,
+    required this.type,
+    required this.authorName,
+    required this.authorUrl,
+    required this.providerName,
+    required this.providerUrl,
+    required this.html,
+    required this.width,
+    required this.height,
+    required this.embedUrl,
+    required this.blurhash,
+  });
+
+  factory PreviewCard.fromJson(Map<String, dynamic> json) {
+    return PreviewCard(
+      url: json['url'],
+      title: json['title'],
+      description: json['description'],
+      image: json['image'],
+      type: json['type'],
+      authorName: json['author_name'],
+      authorUrl: json['author_url'],
+      providerName: json['provider_name'],
+      providerUrl: json['provider_url'],
+      html: json['html'],
+      width: json['width'],
+      height: json['height'],
+      embedUrl: json['embed_url'],
+      blurhash: json['blurhash'],
+    );
+  }
+}
+
+class Status {
+  final String id;
+  final String uri;
+  final String created_at;
+  final Account account;
+  final String content;
+  final String visibility;
+  final bool sensitive;
+  final String spoilerText;
+  final StatusApplication? application;
+  final List<StatusMention> mentions;
+  final List<StatusTag> tags;
+  final List<CustomEmoji> emojis;
+  final int reblogsCount;
+  final int favouritesCount;
+  final int repliesCount;
+  final String? url;
+  final String? inReplyToId;
+  final String? inReplyToAccountId;
+  final Status? reblog;
+  final Poll? poll;
+  final PreviewCard? card;
+  final String? language;
+  final String? text;
+  final String? editedAt;
+  final bool? favourited;
+  final bool? reblogged;
+  final bool? muted;
+  final bool? bookmarked;
+  final bool? pinned;
+  final List<FilterResult>? filtered;
+
+  Status({
+    required this.id,
+    required this.uri,
+    required this.created_at,
+    required this.account,
+    required this.content,
+    required this.visibility,
+    required this.sensitive,
+    required this.spoilerText,
+    required this.application,
+    required this.mentions,
+    required this.tags,
+    required this.emojis,
+    required this.reblogsCount,
+    required this.favouritesCount,
+    required this.repliesCount,
+    required this.url,
+    required this.inReplyToId,
+    required this.inReplyToAccountId,
+    required this.reblog,
+    required this.poll,
+    required this.card,
+    required this.language,
+    required this.text,
+    required this.editedAt,
+    this.favourited,
+    this.reblogged,
+    this.muted,
+    this.bookmarked,
+    this.pinned,
+    this.filtered,
+  });
+
+  factory Status.fromJson(Map<String, dynamic> json) {
+    return Status(
+      id: json['id'],
+      uri: json['uri'],
+      created_at: json['created_at'],
+      account: Account.fromJson(json['account']),
+      content: json['content'],
+      visibility: json['visibility'],
+      sensitive: json['sensitive'] == "true",
+      spoilerText: json['spoiler_text'],
+      application: json['application'] != null
+          ? StatusApplication.fromJson(json['application'])
+          : null,
+      mentions: (json['mentions'] as List<dynamic>)
+          .map((e) => StatusMention.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      tags: (json['tags'] as List<dynamic>)
+          .map((e) => StatusTag.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      emojis: (json['emojis'] as List<dynamic>)
+          .map((e) => CustomEmoji.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      reblogsCount: json['reblogs_count'],
+      favouritesCount: json['favourites_count'],
+      repliesCount: json['replies_count'],
+      url: json['url'],
+      inReplyToId: json['in_reply_to_id'],
+      inReplyToAccountId: json['in_reply_to_account_id'],
+      reblog: json['reblog'] != null
+          ? Status.fromJson(json['reblog'] as Map<String, dynamic>)
+          : null,
+      poll: json['poll'] != null
+          ? Poll.fromJson(json['poll'] as Map<String, dynamic>)
+          : null,
+      card: json['card'] != null
+          ? PreviewCard.fromJson(json['card'] as Map<String, dynamic>)
+          : null,
+      language: json['language'],
+      text: json['text'],
+      editedAt: json['edited_at'],
+      favourited:
+          json.containsKey('favourited') ? json['favourited'] == "true" : null,
+      reblogged:
+          json.containsKey('reblogged') ? json['reblogged'] == "true" : null,
+      muted: json.containsKey('muted') ? json['muted'] == "true" : null,
+      bookmarked:
+          json.containsKey('bookmarked') ? json['bookmarked'] == "true" : null,
+      pinned: json.containsKey('pinned') ? json['pinned'] == "true" : null,
+      filtered: json.containsKey('filtered')
+          ? (json['filtered'] as List<dynamic>)
+              .map((e) => FilterResult.fromJson(e as Map<String, dynamic>))
+              .toList()
+          : null,
+    );
+  }
+
+  HtmlWidget getContent() {
+    var contentWithEmojis = content;
+
+    for (var emoji in emojis) {
+      contentWithEmojis = contentWithEmojis.replaceAll(":${emoji.shortcode}:",
+          "<img src='${emoji.staticUrl}' alt=':${emoji.shortcode}:' title=':${emoji.shortcode}:' width='20' style='vertical-align:middle;'>");
+    }
+
+    return HtmlWidget(contentWithEmojis);
+  }
 }
 
 class Mastodon {
+  static Account? self = null;
+  static Future<Account> get futureSelf async {
+    if (self == null) {
+      await getSelf();
+    }
+    return self!;
+  }
+
+  static (String instance, String username) instanceUsernameFromUrl(
+      String url) {
+    String username = url.split("/").last;
+    username = username.replaceFirst("@", "");
+    String instance = url.replaceFirst("https://", "");
+    instance = instance.split("/").first;
+
+    return (instance, username);
+  }
+
+  static Future<void> getSelf() async {
+    SettingsService _settingsService = await SettingsService.getInstance();
+    self = await getAccount(await _settingsService.userInstanceName(),
+        await _settingsService.userName());
+
+    return;
+  }
+
   static Future<Account> getAccount(
       String userInstanceName, String userName) async {
     var response = await getFromInstance(
@@ -251,10 +682,26 @@ class Mastodon {
         "Failed to load user @$userName@$userInstanceName (${response.body})");
   }
 
+  static Future<List<Status>> getAccountStatuses(
+      String userInstanceName, String userId) async {
+    var response = await getFromInstance(
+        userInstanceName, "/api/v1/accounts/$userId/statuses");
+
+    if (response.statusCode == 200) {
+      return (jsonDecode(response.body) as List<dynamic>).map((e) {
+        return Status.fromJson(e);
+      }).toList();
+    }
+
+    throw Exception("Failed to load home timeline (${response.body})");
+  }
+
   static Future<List<Account>> getDirectory(
       {int limit = 10, int offset = 0}) async {
+    var instanceUsername = instanceUsernameFromUrl((await futureSelf).url);
+    String instance = instanceUsername.$1;
     var response = await getFromInstance(
-        "mastodon.social", "api/v1/directory?limit=$limit&offset=$offset");
+        instance, "api/v1/directory?limit=$limit&offset=$offset");
 
     if (response.statusCode == 200) {
       return (jsonDecode(response.body) as List<dynamic>)

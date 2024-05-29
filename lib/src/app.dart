@@ -1,6 +1,9 @@
 import 'package:appinio_swiper/appinio_swiper.dart';
 import 'package:fedi_match/mastodon.dart';
+import 'package:fedi_match/src/views/account_chat_view.dart';
 import 'package:fedi_match/src/views/matches_list_view.dart';
+import 'package:fedi_match/src/views/login_view.dart';
+import 'package:fedi_match/src/views/settings_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -8,7 +11,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'views/account_details_view.dart';
 import 'views/account_list_view.dart';
 import 'settings/settings_controller.dart';
-import 'views/settings_view.dart';
 
 /// The Widget that configures your application.
 class MyApp extends StatelessWidget {
@@ -46,6 +48,8 @@ class MyApp extends StatelessWidget {
                 settings: routeSettings,
                 builder: (BuildContext context) {
                   return switch (routeSettings.name) {
+                    LoginView.routeName =>
+                      LoginView(controller: settingsController),
                     SettingsView.routeName =>
                       SettingsView(controller: settingsController),
                     MatchesListView.routeName => MatchesListView(),
@@ -55,6 +59,8 @@ class MyApp extends StatelessWidget {
                                 .containsKey("controller")
                             ? (routeSettings.arguments as Map)["controller"]
                             : null) as AppinioSwiperController?),
+                    AccountChatView.routeName => AccountChatView(
+                        (routeSettings.arguments as Map)["account"] as Account),
                     AccountListView.routeName => AccountListView(),
                     _ => AccountListView(),
                   };

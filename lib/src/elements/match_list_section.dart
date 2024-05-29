@@ -1,5 +1,5 @@
 import 'package:fedi_match/mastodon.dart';
-import 'package:fedi_match/src/elements/match.dart';
+import 'package:fedi_match/src/elements/account_view.dart';
 import 'package:fedi_match/src/elements/matcher.dart';
 import 'package:flutter/material.dart';
 
@@ -9,9 +9,14 @@ class MatchListSection extends StatefulWidget {
   final Color? color;
   final IconData? icon;
   final String? emptyMessage;
+  final bool initiallyExpanded;
 
   const MatchListSection(this.title, this.urls,
-      {super.key, this.color, this.icon, this.emptyMessage});
+      {super.key,
+      this.color,
+      this.icon,
+      this.emptyMessage,
+      this.initiallyExpanded = false});
 
   @override
   State<MatchListSection> createState() => _MatchListSectionState();
@@ -20,10 +25,9 @@ class MatchListSection extends StatefulWidget {
 class _MatchListSectionState extends State<MatchListSection> {
   Widget renderAsMatch(
       String url, int index, Function(DismissDirection) onDismissed) {
-    String username = url.split("/").last;
-    username = username.replaceFirst("@", "");
-    String instance = url.replaceFirst("https://", "");
-    instance = instance.split("/").first;
+    var instanceUsername = Mastodon.instanceUsernameFromUrl(url);
+    var instance = instanceUsername.$1;
+    var username = instanceUsername.$2;
     Future<Account> account = Mastodon.getAccount(instance, username);
     return Dismissible(
         direction: DismissDirection.endToStart,
@@ -51,7 +55,10 @@ class _MatchListSectionState extends State<MatchListSection> {
             }
 
             if (snapshot.hasData) {
-              return Match(snapshot.data!);
+              return Padding(
+                padding: const EdgeInsets.only(left: 40),
+                child: AccountView(snapshot.data!, goto: "chat", edgeInset: 0),
+              );
             } else {
               return ListTile(
                 leading: CircularProgressIndicator(),
@@ -65,7 +72,7 @@ class _MatchListSectionState extends State<MatchListSection> {
   @override
   Widget build(BuildContext context) {
     return ExpansionTile(
-      initiallyExpanded: true,
+      initiallyExpanded: widget.initiallyExpanded,
       leading: widget.icon == null
           ? null
           : Icon(widget.icon, color: widget.color ?? Colors.black),

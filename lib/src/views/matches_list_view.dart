@@ -11,6 +11,14 @@ class MatchesListView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     List<Widget> children = [];
+    children.add(MatchListSection(
+      "Matches",
+      Matcher.matches,
+      color: Colors.orange,
+      icon: Icons.hotel_class,
+      emptyMessage: "no matches yet (WIP)",
+      initiallyExpanded: true,
+    ));
     children.add(MatchListSection("Superliked", Matcher.superliked,
         color: Colors.blue,
         icon: Icons.star,

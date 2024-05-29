@@ -6,6 +6,10 @@ class Matcher {
   static List<String> disliked = [];
   static List<String> superliked = [];
 
+  static List<String> get matches {
+    return []; // TODO implement matching
+  }
+
   static void addToLiked(Account account) {
     liked.add(account.url);
     saveToPrefs();
