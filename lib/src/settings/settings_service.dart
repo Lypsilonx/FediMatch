@@ -35,7 +35,7 @@ class SettingsService {
         _preferences!.getStringList(matchedDataKeySuperliked) ?? []);
   }
 
-  Future<void> updatematchedData(MatchedData matchedData) async {
+  Future<void> updateMatchedData(MatchedData matchedData) async {
     _preferences!.setStringList(matchedDataKeyLiked, matchedData.liked);
     _preferences!.setStringList(matchedDataKeyDisliked, matchedData.disliked);
     _preferences!
@@ -73,17 +73,17 @@ class SettingsService {
     _preferences!.setString(userInstanceNameKey, userInstanceName);
   }
 
-  static const String userNameKey = "${_settingsPrefix}UserName";
-  static const String userNameDefault = "user";
-  Future<String> userName() async {
-    if (_preferences!.containsKey(userNameKey)) {
-      return _preferences!.getString(userNameKey)!;
+  static const String accessTokenKey = "${_settingsPrefix}AccessToken";
+  static const String accessTokenDefault = "";
+  Future<String> accessToken() async {
+    if (_preferences!.containsKey(accessTokenKey)) {
+      return _preferences!.getString(accessTokenKey)!;
     }
 
-    return userNameDefault;
+    return accessTokenDefault;
   }
 
-  Future<void> updateUserName(String userName) async {
-    _preferences!.setString(userNameKey, userName);
+  Future<void> updateAccessToken(String accessToken) async {
+    _preferences!.setString(accessTokenKey, accessToken);
   }
 }

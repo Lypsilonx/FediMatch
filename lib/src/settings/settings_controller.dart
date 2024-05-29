@@ -13,13 +13,17 @@ class SettingsController with ChangeNotifier {
   late String _userInstanceName;
   String get userInstanceName => _userInstanceName;
 
-  late String _userName;
-  String get userName => _userName;
+  late String _accessToken;
+  String get accessToken => _accessToken;
+
+  late MatchedData _matchedData;
+  MatchedData get matchedData => _matchedData;
 
   Future<void> loadSettings() async {
     _themeMode = await _settingsService.themeMode();
     _userInstanceName = await _settingsService.userInstanceName();
-    _userName = await _settingsService.userName();
+    _accessToken = await _settingsService.accessToken();
+    _matchedData = await _settingsService.matchedData();
 
     notifyListeners();
   }
@@ -44,13 +48,23 @@ class SettingsController with ChangeNotifier {
     await _settingsService.updateUserInstanceName(newuserInstanceName);
   }
 
-  Future<void> updateUserName(String? newUserName) async {
-    if (newUserName == null) return;
-    if (newUserName == _userName) return;
+  Future<void> updateAccessToken(String? newAccessToken) async {
+    if (newAccessToken == null) return;
+    if (newAccessToken == _accessToken) return;
 
-    _userName = newUserName;
+    _accessToken = newAccessToken;
 
     notifyListeners();
-    await _settingsService.updateUserName(newUserName);
+    await _settingsService.updateAccessToken(newAccessToken);
+  }
+
+  Future<void> updateMatchedData(MatchedData? newMatchedData) async {
+    if (newMatchedData == null) return;
+    if (newMatchedData == _matchedData) return;
+
+    _matchedData = newMatchedData;
+
+    notifyListeners();
+    await _settingsService.updateMatchedData(newMatchedData);
   }
 }

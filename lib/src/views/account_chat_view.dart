@@ -15,7 +15,7 @@ class AccountChatView extends StatefulWidget {
 
   AccountChatView(this.account)
       : _recipient = types.User(id: account.url),
-        _sender = types.User(id: Mastodon.self!.url);
+        _sender = types.User(id: Mastodon.instance.self.url);
 
   static const routeName = '/chat';
 

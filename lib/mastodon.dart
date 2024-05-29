@@ -1,7 +1,8 @@
-import 'package:fedi_match/src/settings/settings_service.dart';
-import 'package:http/http.dart' as http;
+import 'package:fedi_match/src/settings/settings_controller.dart';
 import 'dart:convert';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
+import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
 
 class CustomEmoji {
   final String? shortcode;
@@ -77,7 +78,7 @@ class AccountSource {
   final List<Field> fields;
   final String privacy;
   final bool sensitive;
-  final String language;
+  final String? language;
   final int followRequestsCount;
 
   AccountSource({
@@ -130,8 +131,8 @@ class Account {
   final int followersCount;
   final int followingCount;
 
-  final List<AccountSource>? source;
-  final List<Role>? role;
+  final AccountSource? source;
+  final Role? role;
 
   final bool? muteExpiresAt;
 
@@ -199,14 +200,10 @@ class Account {
       followersCount: json['followers_count'],
       followingCount: json['following_count'],
       source: json.containsKey('source')
-          ? (json['source'] as List<dynamic>)
-              .map((e) => AccountSource.fromJson(e as Map<String, dynamic>))
-              .toList()
+          ? AccountSource.fromJson(json['source'] as Map<String, dynamic>)
           : null,
       role: json.containsKey('role')
-          ? (json['role'] as List<dynamic>)
-              .map((e) => Role.fromJson(e as Map<String, dynamic>))
-              .toList()
+          ? Role.fromJson(json['role'] as Map<String, dynamic>)
           : null,
       muteExpiresAt: json.containsKey('mute_expires_at')
           ? json['mute_expires_at'] == "true"
@@ -642,12 +639,83 @@ class Status {
 }
 
 class Mastodon {
-  static Account? self = null;
-  static Future<Account> get futureSelf async {
-    if (self == null) {
-      await getSelf();
+  static Mastodon? _instance;
+  static Mastodon get instance => _instance!;
+  Account self;
+
+  Mastodon(Account self) : self = self {}
+
+  static const String clientId = "Pt7egzytHvspDn8eMvsztanzi-8arpBQukIaGxdvVfE";
+  static const String clientSecret =
+      "WU87XZI-gMiM8zqKkl1B6bx6-omqVGD6qP-I73HoDQY";
+
+  static Future<String> OpenExternalLogin(String instanceName) async {
+    if (instanceName.isEmpty) {
+      return "Please check your instance name, username and password.";
     }
-    return self!;
+
+    final Uri url = Uri.parse(
+        'https://$instanceName/oauth/authorize?client_id=$clientId&scope=read+write+push&redirect_uri=urn:ietf:wg:oauth:2.0:oob&response_type=code');
+    launchUrl(url);
+    return "OK";
+  }
+
+  static Future<String> Login(SettingsController controller, String authCode,
+      String instanceName) async {
+    var result = await http.post(
+      Uri.parse('https://$instanceName/oauth/token'),
+      headers: <String, String>{
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: <String, String>{
+        'client_id': clientId,
+        'client_secret': clientSecret,
+        'redirect_uri': 'urn:ietf:wg:oauth:2.0:oob',
+        'grant_type': 'authorization_code',
+        'code': authCode,
+        'scope': 'read write push',
+      },
+    );
+
+    if (result.statusCode != 200) {
+      return "Failed to get authorization code. (${result.body})";
+    }
+
+    String accessToken = jsonDecode(result.body)['access_token'];
+
+    controller.updateUserInstanceName(instanceName);
+    controller.updateAccessToken(accessToken);
+
+    return await Resume(instanceName, accessToken);
+  }
+
+  static Future<String> Resume(String instanceName, String accessToken) async {
+    var result = await http.get(
+      Uri.parse('https://$instanceName/api/v1/accounts/verify_credentials'),
+      headers: <String, String>{
+        'Authorization': 'Bearer $accessToken',
+      },
+    );
+
+    if (result.statusCode != 200) {
+      return "Failed to get user information. (${result.body})";
+    }
+
+    Account account =
+        Account.fromJson(jsonDecode(result.body) as Map<String, dynamic>);
+
+    print("Logged in as ${account.username}");
+
+    _instance = Mastodon(account);
+    return "OK";
+  }
+
+  static Future<void> Logout(SettingsController controller) async {
+    controller.updateUserInstanceName("");
+    controller.updateAccessToken("");
+
+    _instance = null;
+    return;
   }
 
   static (String instance, String username) instanceUsernameFromUrl(
@@ -660,18 +728,10 @@ class Mastodon {
     return (instance, username);
   }
 
-  static Future<void> getSelf() async {
-    SettingsService _settingsService = await SettingsService.getInstance();
-    self = await getAccount(await _settingsService.userInstanceName(),
-        await _settingsService.userName());
-
-    return;
-  }
-
   static Future<Account> getAccount(
       String userInstanceName, String userName) async {
     var response = await getFromInstance(
-        userInstanceName, "api/v1/accounts/lookup?acct=$userName");
+        userInstanceName, "accounts/lookup?acct=$userName");
 
     if (response.statusCode == 200) {
       return Account.fromJson(
@@ -684,8 +744,8 @@ class Mastodon {
 
   static Future<List<Status>> getAccountStatuses(
       String userInstanceName, String userId) async {
-    var response = await getFromInstance(
-        userInstanceName, "/api/v1/accounts/$userId/statuses");
+    var response =
+        await getFromInstance(userInstanceName, "/accounts/$userId/statuses");
 
     if (response.statusCode == 200) {
       return (jsonDecode(response.body) as List<dynamic>).map((e) {
@@ -698,10 +758,10 @@ class Mastodon {
 
   static Future<List<Account>> getDirectory(
       {int limit = 10, int offset = 0}) async {
-    var instanceUsername = instanceUsernameFromUrl((await futureSelf).url);
+    var instanceUsername = instanceUsernameFromUrl(Mastodon.instance.self.url);
     String instance = instanceUsername.$1;
     var response = await getFromInstance(
-        instance, "api/v1/directory?limit=$limit&offset=$offset");
+        instance, "directory?limit=$limit&offset=$offset");
 
     if (response.statusCode == 200) {
       return (jsonDecode(response.body) as List<dynamic>)
@@ -714,6 +774,6 @@ class Mastodon {
 
   static Future<http.Response> getFromInstance(
       String instance, String path) async {
-    return http.get(Uri.parse('https://$instance/$path'));
+    return http.get(Uri.parse('https://$instance/api/v1/$path'));
   }
 }

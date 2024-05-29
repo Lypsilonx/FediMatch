@@ -1,5 +1,8 @@
+import 'package:fedi_match/mastodon.dart';
+import 'package:fedi_match/src/elements/account_view.dart';
 import 'package:fedi_match/src/elements/matcher.dart';
 import 'package:fedi_match/src/elements/nav_bar.dart';
+import 'package:fedi_match/src/views/login_view.dart';
 import 'package:flutter/material.dart';
 import '../settings/settings_controller.dart';
 
@@ -18,8 +21,10 @@ class SettingsView extends StatelessWidget {
           title: const Text('Settings'),
         ),
         body: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
           child: ListView(controller: ScrollController(), children: [
+            AccountView(Mastodon.instance.self, edgeInset: 0),
+            SizedBox(height: 20),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -115,9 +120,13 @@ class SettingsView extends StatelessWidget {
                       actions: <Widget>[
                         TextButton(
                           child: const Text('Logout'),
-                          onPressed: () {
+                          onPressed: () async {
                             Matcher.clear();
-                            Navigator.pushReplacementNamed(context, '/login');
+                            Navigator.popUntil(
+                                context, ModalRoute.withName('/'));
+                            await Mastodon.Logout(controller);
+                            Navigator.pushReplacementNamed(
+                                context, LoginView.routeName);
                           },
                         ),
                         TextButton(

@@ -1,7 +1,10 @@
 import 'package:fedi_match/mastodon.dart';
+import 'package:fedi_match/src/settings/settings_controller.dart';
 import 'package:fedi_match/src/settings/settings_service.dart';
 
 class Matcher {
+  static late SettingsController controller;
+
   static List<String> liked = [];
   static List<String> disliked = [];
   static List<String> superliked = [];
@@ -46,14 +49,12 @@ class Matcher {
     saveToPrefs();
   }
 
-  static void saveToPrefs() async {
-    SettingsService settingsService = await SettingsService.getInstance();
-    settingsService.updatematchedData(MatchedData(liked, disliked, superliked));
+  static void saveToPrefs() {
+    controller.updateMatchedData(MatchedData(liked, disliked, superliked));
   }
 
-  static void loadFromPrefs() async {
-    SettingsService settingsService = await SettingsService.getInstance();
-    MatchedData matchedData = await settingsService.matchedData();
+  static void loadFromPrefs() {
+    MatchedData matchedData = controller.matchedData;
     liked = matchedData.liked;
     disliked = matchedData.disliked;
     superliked = matchedData.superliked;

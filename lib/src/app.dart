@@ -1,5 +1,6 @@
 import 'package:appinio_swiper/appinio_swiper.dart';
 import 'package:fedi_match/mastodon.dart';
+import 'package:fedi_match/src/elements/matcher.dart';
 import 'package:fedi_match/src/views/account_chat_view.dart';
 import 'package:fedi_match/src/views/matches_list_view.dart';
 import 'package:fedi_match/src/views/login_view.dart';
@@ -13,8 +14,8 @@ import 'views/account_list_view.dart';
 import 'settings/settings_controller.dart';
 
 /// The Widget that configures your application.
-class MyApp extends StatelessWidget {
-  const MyApp({
+class FediMatch extends StatelessWidget {
+  const FediMatch({
     super.key,
     required this.settingsController,
   });
@@ -27,6 +28,7 @@ class MyApp extends StatelessWidget {
       listenable: settingsController,
       builder: (BuildContext context, Widget? child) {
         return MaterialApp(
+          initialRoute: LoginView.routeName,
           debugShowCheckedModeBanner: false,
           restorationScopeId: 'app',
           localizationsDelegates: const [
