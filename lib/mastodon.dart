@@ -757,13 +757,27 @@ class Mastodon {
       return "Instance name is empty";
     }
 
-    var client = await registerClient(instanceName);
-    clientId = client.$1;
-    clientSecret = client.$2;
+    //check if https://<instanceName> is a valid URL (https://mastodon.social)
+    if (!RegExp(r'^[a-zA-Z0-9.]+\.[a-zA-Z]+$').hasMatch(instanceName)) {
+      return "Invalid instance name format";
+    }
 
-    final Uri url = Uri.parse(
-        'https://$instanceName/oauth/authorize?client_id=$clientId&scope=read+write+push&redirect_uri=urn:ietf:wg:oauth:2.0:oob&response_type=code');
-    launchUrl(url);
+    try {
+      var client = await registerClient(instanceName);
+      clientId = client.$1;
+      clientSecret = client.$2;
+    } catch (e) {
+      return "Failed to register client ($e)";
+    }
+
+    try {
+      final Uri url = Uri.parse(
+          'https://$instanceName/oauth/authorize?client_id=$clientId&scope=read+write+push&redirect_uri=urn:ietf:wg:oauth:2.0:oob&response_type=code');
+      launchUrl(url);
+    } catch (e) {
+      return "Failed to open external login ($e)";
+    }
+
     return "OK";
   }
 

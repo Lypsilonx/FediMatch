@@ -66,31 +66,23 @@ class _LoginViewState extends State<LoginView> {
                   onPressed: () async {
                     String result =
                         await Mastodon.OpenExternalLogin(instanceName);
+                    print(result);
                     if (result == "OK") {
                       setState(() {
                         textFieldController.clear();
                         LoginView.loginStep = 1;
                       });
                     } else {
-                      showDialog<void>(
-                        context: context,
-                        barrierDismissible: false,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: const Text('Login Failed'),
-                            content: Text(
-                                result.replaceAll(RegExp(r'\n<link.*?>'), '')),
-                            actions: <Widget>[
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                                child: const Text('OK'),
-                              ),
-                            ],
-                          );
-                        },
-                      );
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(
+                          result,
+                          style: new TextStyle(
+                            color: Theme.of(context).colorScheme.onError,
+                          ),
+                        ),
+                        showCloseIcon: true,
+                        backgroundColor: Theme.of(context).colorScheme.error,
+                      ));
                     }
                   },
                   child: Text(
@@ -117,42 +109,56 @@ class _LoginViewState extends State<LoginView> {
                   },
                 ),
                 SizedBox(height: 60),
-                TextButton(
-                  style: new ButtonStyle(
-                      backgroundColor: WidgetStateProperty.all<Color>(
-                          Theme.of(context).colorScheme.primary)),
-                  onPressed: () async {
-                    String result = await Mastodon.Login(
-                        SettingsController.instance, authCode, instanceName);
-                    if (result == "OK") {
-                      Navigator.pushReplacementNamed(context, "/");
-                    } else {
-                      showDialog<void>(
-                        context: context,
-                        barrierDismissible: false,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: const Text('Login Failed'),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    TextButton(
+                      style: new ButtonStyle(
+                          backgroundColor: WidgetStateProperty.all<Color>(
+                              Theme.of(context).colorScheme.error)),
+                      onPressed: () {
+                        setState(() {
+                          LoginView.loginStep = 0;
+                        });
+                      },
+                      child: Text(
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.onError),
+                        "Back",
+                      ),
+                    ),
+                    TextButton(
+                      style: new ButtonStyle(
+                          backgroundColor: WidgetStateProperty.all<Color>(
+                              Theme.of(context).colorScheme.primary)),
+                      onPressed: () async {
+                        String result = await Mastodon.Login(
+                            SettingsController.instance,
+                            authCode,
+                            instanceName);
+                        if (result == "OK") {
+                          Navigator.pushReplacementNamed(context, "/");
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                             content: Text(
-                                result.replaceAll(RegExp(r'\n<link.*?>'), '')),
-                            actions: <Widget>[
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                                child: const Text('OK'),
+                              result,
+                              style: new TextStyle(
+                                color: Theme.of(context).colorScheme.onError,
                               ),
-                            ],
-                          );
-                        },
-                      );
-                    }
-                  },
-                  child: Text(
-                    style: TextStyle(
-                        color: Theme.of(context).colorScheme.onPrimary),
-                    "Login",
-                  ),
+                            ),
+                            showCloseIcon: true,
+                            backgroundColor:
+                                Theme.of(context).colorScheme.error,
+                          ));
+                        }
+                      },
+                      child: Text(
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.onPrimary),
+                        "Login",
+                      ),
+                    ),
+                  ],
                 ),
               ],
             _ => [],
