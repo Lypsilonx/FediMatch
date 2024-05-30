@@ -43,10 +43,14 @@ class StatusView extends StatelessWidget {
                 status.getContent(
                     style: onlyContent
                         ? TextStyle(
-                            color: Theme.of(context).colorScheme.onPrimary)
+                            color: Theme.of(context).colorScheme.onPrimary,
+                            fontSize: 16)
                         : null,
                     removeFirstLink: onlyContent),
-                SizedBox(height: 20),
+                SizedBox(
+                    height: status.mediaAttachments.length > 0
+                        ? 20
+                        : 0), // onlyContent ? 0 : 20
                 status.mediaAttachments.length > 0
                     ? status.mediaAttachments.map((e) {
                         switch (e.type) {

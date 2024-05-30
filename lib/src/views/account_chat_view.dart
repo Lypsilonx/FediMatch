@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
 import 'package:fedi_match/mastodon.dart';
 import 'package:fedi_match/src/elements/account_view.dart';
+import 'package:fedi_match/src/elements/matcher.dart';
 import 'package:fedi_match/src/elements/status_view.dart';
 import 'package:flutter/material.dart';
 
@@ -46,6 +48,7 @@ class _AccountChatViewState extends State<AccountChatView> {
   ScrollController scrollController = ScrollController();
   late Account actualAccount = widget.account;
   final List<types.Message> _messages = [];
+  List<types.Message> _messagesCache = [];
   bool messagesLoaded = false;
 
   @override
@@ -55,63 +58,86 @@ class _AccountChatViewState extends State<AccountChatView> {
     var instanceUsername = Mastodon.instanceUsernameFromUrl(widget.account.url);
     var instance = instanceUsername.$1;
     var username = instanceUsername.$2;
-    Mastodon.getAccount(instance, username).then((value) {
-      setState(() async {
+    Mastodon.getAccount(instance, username).then((value) async {
+      setState(() {
         actualAccount = value;
 
-        await Mastodon.getAccountStatuses(instance, actualAccount.id,
-                excludeReblogs: true, limit: 40)
-            .then((statuses) {
-          statuses
-              //.where((status) => status.visibility == "private")
-              .where((status) => status.mentions
-                  .any((mention) => mention.url == Mastodon.instance.self.url))
-              .forEach((status) {
-            var message = types.CustomMessage(
-              author: widget._recipient,
-              createdAt:
-                  DateTime.parse(status.createdAt).millisecondsSinceEpoch,
-              id: status.id,
-              metadata: {"type": "status", "status": status},
-            );
-
-            _addMessage(message);
-          });
-        });
-
-        var selfInstanceUsername =
-            Mastodon.instanceUsernameFromUrl(Mastodon.instance.self.url);
-        String selfInstance = selfInstanceUsername.$1;
-
-        await Mastodon.getAccountStatuses(
-                selfInstance, Mastodon.instance.self.id,
-                excludeReblogs: true, limit: 40)
-            .then((statuses) {
-          statuses
-              //.where((status) => status.visibility == "private")
-              .where((status) => status.mentions
-                  .any((mention) => mention.url == actualAccount.url))
-              .forEach((status) {
-            var message = types.CustomMessage(
-              author: widget._sender,
-              createdAt:
-                  DateTime.parse(status.createdAt).millisecondsSinceEpoch,
-              id: status.id,
-              metadata: {"type": "status", "status": status},
-            );
-
-            _addMessage(message);
-          });
-        });
-
-        // sort messages by date
-        _messages.sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
-
-        messagesLoaded = true;
+        updateChat();
       });
     });
 
+    //call updateChat every 5 seconds
+    Timer.periodic(Duration(seconds: 20), (timer) {
+      updateChat();
+    });
+
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {});
+  }
+
+  Future<void> updateChat() async {
+    setState(() {
+      _messagesCache.clear();
+      _messagesCache.addAll(_messages);
+      messagesLoaded = false;
+      _messages.clear();
+    });
+
+    var instanceUsername = Mastodon.instanceUsernameFromUrl(actualAccount.url);
+    var instance = instanceUsername.$1;
+    await Mastodon.getAccountStatuses(instance, actualAccount.id,
+            excludeReblogs: true,
+            limit: 40,
+            accessToken: Matcher.controller.accessToken)
+        .then((statuses) {
+      statuses
+          .where((status) => status.visibility == "direct")
+          .where((status) => status.mentions
+              .any((mention) => mention.url == Mastodon.instance.self.url))
+          .forEach((status) {
+        var message = types.CustomMessage(
+          author: widget._recipient,
+          createdAt: DateTime.parse(status.createdAt).millisecondsSinceEpoch,
+          id: status.id,
+          metadata: {"type": "status", "status": status},
+        );
+
+        _messages.add(message);
+      });
+    });
+
+    if (actualAccount.url != Mastodon.instance.self.url) {
+      var selfInstanceUsername =
+          Mastodon.instanceUsernameFromUrl(Mastodon.instance.self.url);
+      String selfInstance = selfInstanceUsername.$1;
+
+      await Mastodon.getAccountStatuses(selfInstance, Mastodon.instance.self.id,
+              excludeReblogs: true,
+              limit: 40,
+              accessToken: Matcher.controller.accessToken)
+          .then((statuses) {
+        statuses
+            .where((status) => status.visibility == "direct")
+            .where((status) => status.mentions
+                .any((mention) => mention.url == actualAccount.url))
+            .forEach((status) {
+          var message = types.CustomMessage(
+            author: widget._sender,
+            createdAt: DateTime.parse(status.createdAt).millisecondsSinceEpoch,
+            id: status.id,
+            metadata: {"type": "status", "status": status},
+          );
+
+          _messages.add(message);
+        });
+      });
+    }
+
+    // sort messages by date
+    _messages.sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
+
+    setState(() {
+      messagesLoaded = true;
+    });
   }
 
   @override
@@ -119,35 +145,74 @@ class _AccountChatViewState extends State<AccountChatView> {
     return Scaffold(
       appBar: AppBar(
         title: AccountView(widget.account),
+        actions: [
+          Container(
+            width: 55,
+            child: IconButton(
+              icon: Icon(Icons.refresh),
+              onPressed: updateChat,
+            ),
+          ),
+        ],
       ),
-      body: Chat(
-        emptyState: messagesLoaded
-            ? Center(child: Text("No messages"))
-            : Center(child: CircularProgressIndicator()),
-        messages: messagesLoaded ? _messages : [],
-        onSendPressed: _handleSendPressed,
-        user: widget._sender,
-        theme: FediMatchChatTheme.fromTheme(Theme.of(context)),
-        customMessageBuilder: (message, {required int messageWidth}) {
-          switch (message.metadata!["type"]) {
-            case "status":
-              return Padding(
-                child:
-                    StatusView(message.metadata!["status"], onlyContent: true),
-                padding: EdgeInsets.all(10),
-              );
-            default:
-              return Text("Unknown message type");
-          }
-        },
+      body: Stack(
+        children: [
+          Chat(
+            emptyState: messagesLoaded
+                ? Center(child: Text("No messages"))
+                : Center(child: CircularProgressIndicator()),
+            messages: messagesLoaded ? _messages : _messagesCache,
+            onSendPressed: _handleSendPressed,
+            user: widget._sender,
+            theme: FediMatchChatTheme.fromTheme(Theme.of(context)),
+            customMessageBuilder: (message, {required int messageWidth}) {
+              switch (message.metadata!["type"]) {
+                case "status":
+                  return Padding(
+                    child: StatusView(message.metadata!["status"],
+                        onlyContent: true),
+                    padding: EdgeInsets.all(10),
+                  );
+                default:
+                  return Text("Unknown message type");
+              }
+            },
+          ),
+          Container(
+            height: 2,
+            width: 430,
+            child: messagesLoaded
+                ? null
+                : Center(child: LinearProgressIndicator()),
+          ),
+        ],
       ),
     );
   }
 
-  void _addMessage(types.Message message) {
-    setState(() {
-      _messages.insert(0, message);
-    });
+  void _addMessage(types.Message message) async {
+    switch (message.type) {
+      case types.MessageType.text:
+        var instanceUsername =
+            Mastodon.instanceUsernameFromUrl(Mastodon.instance.self.url);
+        var instance = instanceUsername.$1;
+        var recipientInstanceUsername =
+            Mastodon.instanceUsernameFromUrl(message.author.id);
+        var recipientInstance = recipientInstanceUsername.$1;
+        var recipientUsername = recipientInstanceUsername.$2;
+
+        var recipientMention = "@$recipientUsername@$recipientInstance ";
+
+        await Mastodon.sendStatus(
+            instance,
+            recipientMention + (message as types.TextMessage).text,
+            Matcher.controller.accessToken,
+            visibility: "direct");
+        break;
+      default:
+        break;
+    }
+    updateChat();
   }
 
   void _handleSendPressed(types.PartialText message) {

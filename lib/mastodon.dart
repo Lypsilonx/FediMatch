@@ -679,14 +679,10 @@ class Status {
       return '#${color.value.toRadixString(16).substring(2)}';
     }
 
-    print(contentWithEmojis);
-
     if (removeFirstLink) {
-      print("Removing first link");
       var firstLink = RegExp(r'^<p><span class="h-card" (.*)</span>')
           .firstMatch(contentWithEmojis);
       if (firstLink != null) {
-        print(firstLink.group(0)!);
         contentWithEmojis =
             contentWithEmojis.replaceFirst(firstLink.group(0)!, "<p>");
       }
@@ -834,6 +830,28 @@ class Mastodon {
     }
 
     throw Exception("Failed to load home timeline (${response.body})");
+  }
+
+  static Future<String> sendStatus(
+      String userInstanceName, String text, String accessToken,
+      {String visibility = "public"}) async {
+    var response = await http.post(
+      Uri.parse('https://$userInstanceName/api/v1/statuses'),
+      headers: <String, String>{
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: <String, String>{
+        'status': text,
+        'visibility': visibility,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return "OK";
+    }
+
+    return "Failed to send status (${response.body})";
   }
 
   static Future<List<Account>> getDirectory(
