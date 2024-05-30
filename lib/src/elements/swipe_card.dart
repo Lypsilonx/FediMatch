@@ -30,7 +30,8 @@ class SwipeCard extends StatelessWidget {
                   width: 400,
                   child: Padding(
                       padding: EdgeInsets.all(20),
-                      child: AccountView(account, edgeInset: 0)),
+                      child:
+                          AccountView(account, showIcon: false, edgeInset: 0)),
                 )
               ]),
               MatchButtons(controller: controller),

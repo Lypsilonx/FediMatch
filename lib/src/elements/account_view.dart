@@ -5,10 +5,12 @@ import 'package:flutter/material.dart';
 
 class AccountView extends StatefulWidget {
   final Account account;
+  final bool showIcon;
   final String goto;
   final double edgeInset;
 
-  AccountView(this.account, {this.goto = "info", this.edgeInset = 20});
+  AccountView(this.account,
+      {this.showIcon = true, this.goto = "info", this.edgeInset = 20});
 
   @override
   State<AccountView> createState() => _AccountViewState();
@@ -19,9 +21,11 @@ class _AccountViewState extends State<AccountView> {
   Widget build(BuildContext context) {
     return ListTile(
         contentPadding: EdgeInsets.all(widget.edgeInset),
-        leading: CircleAvatar(
-          backgroundImage: NetworkImage(widget.account.avatar),
-        ),
+        leading: widget.showIcon
+            ? CircleAvatar(
+                backgroundImage: NetworkImage(widget.account.avatar),
+              )
+            : null,
         title: Text(
           widget.account.getDisplayName(),
           overflow: TextOverflow.ellipsis,

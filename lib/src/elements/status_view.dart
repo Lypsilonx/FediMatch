@@ -1,6 +1,7 @@
 import 'package:fedi_match/mastodon.dart';
 import 'package:fedi_match/src/elements/account_view.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_blurhash/flutter_blurhash.dart';
 
 class StatusView extends StatelessWidget {
   final Status status;
@@ -33,11 +34,20 @@ class StatusView extends StatelessWidget {
               Column(children: [
                 status.getContent(),
                 SizedBox(height: 20),
-                status.mediaAttchments.length > 0
-                    ? status.mediaAttchments.map((e) {
+                status.mediaAttachments.length > 0
+                    ? status.mediaAttachments.map((e) {
                         switch (e.type) {
                           case "image":
-                            return Image.network(e.url);
+                            return Image.network(
+                              e.url,
+                              loadingBuilder:
+                                  (context, child, loadingProgress) =>
+                                      loadingProgress == null
+                                          ? child
+                                          : BlurHash(
+                                              hash: e.blurhash,
+                                              imageFit: BoxFit.cover),
+                            );
                           case "video":
                             return Container();
                           case "gifv":

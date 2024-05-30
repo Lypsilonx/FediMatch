@@ -505,7 +505,7 @@ class PreviewCard {
   }
 }
 
-class MediaAttchment {
+class MediaAttachment {
   final String id;
   final String type;
   final String url;
@@ -515,7 +515,7 @@ class MediaAttchment {
   final String? description;
   final String blurhash;
 
-  MediaAttchment({
+  MediaAttachment({
     required this.id,
     required this.type,
     required this.url,
@@ -526,16 +526,16 @@ class MediaAttchment {
     required this.blurhash,
   });
 
-  factory MediaAttchment.fromJson(Map<String, dynamic> json) {
-    return MediaAttchment(
+  factory MediaAttachment.fromJson(Map<String, dynamic> json) {
+    return MediaAttachment(
       id: json['id'],
       type: json['type'],
       url: json['url'],
       previewUrl: json['preview_url'],
       remoteUrl: json['remote_url'],
-      meta: json['meta'],
+      meta: json['meta'] ?? {},
       description: json['description'],
-      blurhash: json['blurhash'],
+      blurhash: json['blurhash'] ?? "",
     );
   }
 }
@@ -549,7 +549,7 @@ class Status {
   final String visibility;
   final bool sensitive;
   final String spoilerText;
-  final List<MediaAttchment> mediaAttchments;
+  final List<MediaAttachment> mediaAttachments;
   final StatusApplication? application;
   final List<StatusMention> mentions;
   final List<StatusTag> tags;
@@ -582,7 +582,7 @@ class Status {
     required this.visibility,
     required this.sensitive,
     required this.spoilerText,
-    required this.mediaAttchments,
+    required this.mediaAttachments,
     required this.application,
     required this.mentions,
     required this.tags,
@@ -617,8 +617,8 @@ class Status {
       visibility: json['visibility'],
       sensitive: json['sensitive'] == "true",
       spoilerText: json['spoiler_text'],
-      mediaAttchments: (json['media_attachments'] as List<dynamic>)
-          .map((e) => MediaAttchment.fromJson(e as Map<String, dynamic>))
+      mediaAttachments: (json['media_attachments'] as List<dynamic>)
+          .map((e) => MediaAttachment.fromJson(e as Map<String, dynamic>))
           .toList(),
       application: json['application'] != null
           ? StatusApplication.fromJson(json['application'])
@@ -730,12 +730,9 @@ class Mastodon {
   }
 
   static Future<String> Resume(String instanceName, String accessToken) async {
-    var result = await http.get(
-      Uri.parse('https://$instanceName/api/v1/accounts/verify_credentials'),
-      headers: <String, String>{
-        'Authorization': 'Bearer $accessToken',
-      },
-    );
+    var result = await getFromInstance(
+        instanceName, "accounts/verify_credentials",
+        accessToken: accessToken);
 
     if (result.statusCode != 200) {
       return "Failed to get user information. (${result.body})";
@@ -788,9 +785,9 @@ class Mastodon {
         await getFromInstance(userInstanceName, "/accounts/$userId/statuses");
 
     if (response.statusCode == 200) {
-      return (jsonDecode(response.body) as List<dynamic>).map((e) {
-        return Status.fromJson(e);
-      }).toList();
+      return (jsonDecode(response.body) as List<dynamic>)
+          .map((e) => Status.fromJson(e as Map<String, dynamic>))
+          .toList();
     }
 
     throw Exception("Failed to load home timeline (${response.body})");
@@ -812,8 +809,15 @@ class Mastodon {
     throw Exception("Failed to load directory (${response.body})");
   }
 
-  static Future<http.Response> getFromInstance(
-      String instance, String path) async {
-    return http.get(Uri.parse('https://$instance/api/v1/$path'));
+  static Future<http.Response> getFromInstance(String instance, String path,
+      {String? accessToken}) async {
+    return http.get(
+      Uri.parse('https://$instance/api/v1/$path'),
+      headers: accessToken != null
+          ? <String, String>{
+              'Authorization': 'Bearer $accessToken',
+            }
+          : {},
+    );
   }
 }

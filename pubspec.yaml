@@ -13,6 +13,7 @@ dependencies:
   appinio_swiper: ^2.1.1
   flutter:
     sdk: flutter
+  flutter_blurhash: ^0.8.2
   flutter_chat_ui: ^1.6.13
   flutter_localizations:
     sdk: flutter

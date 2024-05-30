@@ -27,11 +27,18 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
   ScrollController scrollController = ScrollController();
   List<Image> images = [];
   late Account actualAccount = widget.account;
+  late List<Status> accountStatuses = [];
 
   @override
   void initState() {
     super.initState();
-    images = [];
+    images = [
+      Image(
+          image: NetworkImage(widget.account.avatar),
+          fit: BoxFit.cover,
+          width: 430,
+          height: 430),
+    ];
     var instanceUsername = Mastodon.instanceUsernameFromUrl(widget.account.url);
     var instance = instanceUsername.$1;
     var username = instanceUsername.$2;
@@ -39,19 +46,25 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
       setState(() {
         actualAccount = value;
 
-        // TODO: Load images from account
-        images = [
-          Image(
-              image: NetworkImage(actualAccount.avatar),
-              fit: BoxFit.cover,
-              width: 430,
-              height: 430),
-          Image(
-              image: NetworkImage(actualAccount.avatar),
-              fit: BoxFit.cover,
-              width: 430,
-              height: 430),
-        ];
+        Mastodon.getAccountStatuses(instance, actualAccount.id).then((value) {
+          setState(() {
+            accountStatuses = value;
+            List<Image> new_images = value
+                .where((element) =>
+                    element.mediaAttachments.length > 0 &&
+                    element.mediaAttachments[0].type == "image")
+                .map((e) => Image(
+                    image: NetworkImage(e.mediaAttachments[0].url),
+                    fit: BoxFit.contain,
+                    width: 430,
+                    height: 430))
+                .toList();
+
+            if (new_images.length > 0) {
+              images = new_images;
+            }
+          });
+        });
       });
     });
 
@@ -101,14 +114,16 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
                       child: Padding(
                           padding: EdgeInsets.all(20),
                           child: Container(
+                              constraints: BoxConstraints(maxWidth: 60),
                               height: 30,
-                              width: 40,
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(15),
                                 color: Colors.white.withOpacity(0.5),
                               ),
                               child: Text(
+                                  textAlign: TextAlign.center,
+                                  maxLines: 1,
                                   scrollController.hasClients
                                       ? "${(scrollController.offset / 430).round() + 1}/${images.length}"
                                       : "",
@@ -133,24 +148,11 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
                 Padding(
                   padding: EdgeInsets.only(top: 20),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      FutureBuilder<List<Status>>(
-                        future: Mastodon.getAccountStatuses(
-                            instance, actualAccount.id),
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData) {
-                            return Column(
-                                children: snapshot.data!
-                                    .map((e) => StatusView(e))
-                                    .toList());
-                          } else {
-                            return CircularProgressIndicator();
-                          }
-                        },
-                      ),
-                    ],
-                  ),
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: accountStatuses.length > 0 ||
+                              actualAccount.statusesCount == 0
+                          ? accountStatuses.map((e) => StatusView(e)).toList()
+                          : [CircularProgressIndicator()]),
                 ),
               ],
             ),
