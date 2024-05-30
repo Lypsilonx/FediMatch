@@ -730,11 +730,9 @@ class Mastodon {
 
   static Future<(String clientId, String clientSecret)> registerClient(
       String instanceName) async {
-    var result = await http.post(
-      Uri.parse('https://$instanceName/api/v1/apps'),
-      headers: <String, String>{
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
+    var result = await postToInstance(
+      instanceName,
+      "apps",
       body: <String, String>{
         'client_name': 'FediMatch',
         'redirect_uris': 'urn:ietf:wg:oauth:2.0:oob',
@@ -810,8 +808,6 @@ class Mastodon {
     Account account =
         Account.fromJson(jsonDecode(result.body) as Map<String, dynamic>);
 
-    print("Logged in as ${account.username}");
-
     _instance = Mastodon(account);
     return "OK";
   }
@@ -885,12 +881,10 @@ class Mastodon {
   static Future<String> sendStatus(
       String userInstanceName, String text, String accessToken,
       {String visibility = "public"}) async {
-    var response = await http.post(
-      Uri.parse('https://$userInstanceName/api/v1/statuses'),
-      headers: <String, String>{
-        'Authorization': 'Bearer $accessToken',
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
+    var response = await postToInstance(
+      userInstanceName,
+      "statuses",
+      accessToken: accessToken,
       body: <String, String>{
         'status': text,
         'visibility': visibility,
@@ -932,6 +926,22 @@ class Mastodon {
     );
   }
 
+  static Future<http.Response> postToInstance(String instance, String path,
+      {String? accessToken, Map<String, String>? body}) async {
+    return http.post(
+      Uri.parse('https://$instance/api/v1/$path'),
+      headers: accessToken != null
+          ? <String, String>{
+              'Authorization': 'Bearer $accessToken',
+              'Content-Type': 'application/x-www-form-urlencoded',
+            }
+          : <String, String>{
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+      body: body,
+    );
+  }
+
   // ! This is a custom field that is not part of the Mastodon API
   static Future<String> optInToFediMatch(
       String userInstanceName, String accessToken) async {
@@ -942,9 +952,10 @@ class Mastodon {
     var fields = Mastodon.instance.self.fields;
     fields.add(Field(name: "FediMatch", value: "", verifiedAt: false));
 
-    var response = await http.post(
+    var response = await http.patch(
       Uri.parse(
-          "https://$userInstanceName/api/v1/accounts/update_credentials?${Field.getHashFrom(fields)}"),
+          "https://$userInstanceName/api/v1/accounts/update_credentials?" +
+              Field.getHashFrom(fields)),
       headers: <String, String>{
         'Authorization': 'Bearer $accessToken',
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -954,6 +965,8 @@ class Mastodon {
     if (response.statusCode == 200) {
       return "OK";
     }
+
+    print("Failed to opt in to FediMatch (${response.body})");
 
     return "Failed to opt in to FediMatch (${response.body})";
   }
@@ -967,9 +980,10 @@ class Mastodon {
     var fields = Mastodon.instance.self.fields;
     fields.removeWhere((element) => element.name == "FediMatch");
 
-    var response = await http.post(
+    var response = await http.patch(
       Uri.parse(
-          'https://$userInstanceName/api/v1/accounts/update_credentials?${Field.getHashFrom(fields)}'),
+          'https://$userInstanceName/api/v1/accounts/update_credentials?' +
+              Field.getHashFrom(fields)),
       headers: <String, String>{
         'Authorization': 'Bearer $accessToken',
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -979,6 +993,8 @@ class Mastodon {
     if (response.statusCode == 200) {
       return "OK";
     }
+
+    print("Failed to opt out of FediMatch (${response.body})");
 
     return "Failed to opt out of FediMatch (${response.body})";
   }
