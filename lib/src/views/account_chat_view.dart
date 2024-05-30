@@ -197,7 +197,7 @@ class _AccountChatViewState extends State<AccountChatView> {
             Mastodon.instanceUsernameFromUrl(Mastodon.instance.self.url);
         var instance = instanceUsername.$1;
         var recipientInstanceUsername =
-            Mastodon.instanceUsernameFromUrl(message.author.id);
+            Mastodon.instanceUsernameFromUrl(actualAccount.url);
         var recipientInstance = recipientInstanceUsername.$1;
         var recipientUsername = recipientInstanceUsername.$2;
 
