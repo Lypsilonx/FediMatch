@@ -26,8 +26,10 @@ class _AccountListViewState extends State<AccountListView> {
     List<Account> accounts = [];
     try {
       do {
-        // accounts
+        // List<Account> new_accounts = [];
+        // new_accounts
         //     .add(await Mastodon.getAccount("kolektiva.social", "Lypsilonx"));
+        // new_accounts.add(await Mastodon.getAccount("todon.eu", "LilaHexe"));
 
         List<Account> new_accounts =
             await Mastodon.getDirectory(limit: 50, offset: pageKey * 5);
@@ -35,6 +37,26 @@ class _AccountListViewState extends State<AccountListView> {
         // filter accounts
         accounts.addAll(new_accounts.where((element) {
           bool filtered = false;
+
+          // filter out self
+          if (element.url == Mastodon.instance.self.url) {
+            filtered = true;
+          }
+
+          // filter out disliked, liked and superliked accounts
+          if (Matcher.disliked
+                  .any((dislikedAccount) => dislikedAccount == element.url) ||
+              Matcher.liked
+                  .any((likedAccount) => likedAccount == element.url) ||
+              Matcher.superliked.any(
+                  (superlikedAccount) => superlikedAccount == element.url)) {
+            filtered = true;
+          }
+
+          if (!Matcher.controller.showNonOptInAccounts &&
+              !element.hasFediMatchField()) {
+            filtered = true;
+          }
 
           return !filtered;
         }).toList());

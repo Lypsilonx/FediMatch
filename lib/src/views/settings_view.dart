@@ -25,8 +25,11 @@ class SettingsView extends StatelessWidget {
           child: ListView(controller: ScrollController(), children: [
             AccountView(Mastodon.instance.self, edgeInset: 0),
             SizedBox(height: 20),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+
+            // Theme
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const Text('Theme'),
                 DropdownButton<ThemeMode>(
@@ -51,6 +54,22 @@ class SettingsView extends StatelessWidget {
               ],
             ),
             SizedBox(height: 20),
+
+            // Show non-opt-in accounts
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Text('Show non-opt-in accounts'),
+                Switch(
+                  value: controller.showNonOptInAccounts,
+                  onChanged: controller.updateShowNonOptInAccounts,
+                ),
+              ],
+            ),
+            SizedBox(height: 20),
+
+            // Clear Matcher data
             TextButton(
               style: new ButtonStyle(
                   backgroundColor: WidgetStateProperty.all<Color>(
@@ -96,6 +115,8 @@ class SettingsView extends StatelessWidget {
                 "Clear Matcher data",
               ),
             ),
+
+            // Logout
             TextButton(
               style: new ButtonStyle(
                   backgroundColor: WidgetStateProperty.all<Color>(

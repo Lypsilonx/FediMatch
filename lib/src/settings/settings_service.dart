@@ -24,6 +24,7 @@ class SettingsService {
 
   static const String _settingsPrefix = "FediMatch";
 
+  // Matched Data
   static const String matchedDataKey = "${_settingsPrefix}MatchedData";
   static const String matchedDataKeyLiked = "${matchedDataKey}Liked";
   static const String matchedDataKeyDisliked = "${matchedDataKey}Disliked";
@@ -42,6 +43,38 @@ class SettingsService {
         .setStringList(matchedDataKeySuperliked, matchedData.superliked);
   }
 
+  // User Instance Name
+  static const String userInstanceNameKey =
+      "${_settingsPrefix}UserInstanceName";
+  static const String userInstanceNameDefault = "mastodon.social";
+  Future<String> userInstanceName() async {
+    if (_preferences!.containsKey(userInstanceNameKey)) {
+      return _preferences!.getString(userInstanceNameKey)!;
+    }
+
+    return userInstanceNameDefault;
+  }
+
+  Future<void> updateUserInstanceName(String userInstanceName) async {
+    _preferences!.setString(userInstanceNameKey, userInstanceName);
+  }
+
+  // Access Token
+  static const String accessTokenKey = "${_settingsPrefix}AccessToken";
+  static const String accessTokenDefault = "";
+  Future<String> accessToken() async {
+    if (_preferences!.containsKey(accessTokenKey)) {
+      return _preferences!.getString(accessTokenKey)!;
+    }
+
+    return accessTokenDefault;
+  }
+
+  Future<void> updateAccessToken(String accessToken) async {
+    _preferences!.setString(accessTokenKey, accessToken);
+  }
+
+  // Theme Mode
   static const String themeModeKey = "${_settingsPrefix}Theme";
   static const ThemeMode themeModeDefault = ThemeMode.system;
   Future<ThemeMode> themeMode() async {
@@ -58,32 +91,19 @@ class SettingsService {
     _preferences!.setString(themeModeKey, themeMode.name);
   }
 
-  static const String userInstanceNameKey =
-      "${_settingsPrefix}UserInstanceName";
-  static const String userInstanceNameDefault = "mastodon.social";
-  Future<String> userInstanceName() async {
-    if (_preferences!.containsKey(userInstanceNameKey)) {
-      return _preferences!.getString(userInstanceNameKey)!;
+  // Show Non-Opt-In Accounts
+  static const String showNonOptInAccountsKey =
+      "${_settingsPrefix}ShowNonOptInAccounts";
+  static const bool showNonOptInAccountsDefault = true;
+  Future<bool> showNonOptInAccounts() async {
+    if (_preferences!.containsKey(showNonOptInAccountsKey)) {
+      return _preferences!.getBool(showNonOptInAccountsKey)!;
     }
 
-    return userInstanceNameDefault;
+    return showNonOptInAccountsDefault;
   }
 
-  Future<void> updateUserInstanceName(String userInstanceName) async {
-    _preferences!.setString(userInstanceNameKey, userInstanceName);
-  }
-
-  static const String accessTokenKey = "${_settingsPrefix}AccessToken";
-  static const String accessTokenDefault = "";
-  Future<String> accessToken() async {
-    if (_preferences!.containsKey(accessTokenKey)) {
-      return _preferences!.getString(accessTokenKey)!;
-    }
-
-    return accessTokenDefault;
-  }
-
-  Future<void> updateAccessToken(String accessToken) async {
-    _preferences!.setString(accessTokenKey, accessToken);
+  Future<void> updateShowNonOptInAccounts(bool showNonOptInAccounts) async {
+    _preferences!.setBool(showNonOptInAccountsKey, showNonOptInAccounts);
   }
 }

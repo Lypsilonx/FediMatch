@@ -50,6 +50,24 @@ class _AccountViewState extends State<AccountView> {
           "@" + widget.account.username + "@" + instance,
           overflow: TextOverflow.ellipsis,
         ),
+        trailing: !widget.account.hasFediMatchField()
+            ? Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.warning,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                  Text(
+                    "Did not\nOpt-in",
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                      fontSize: 8,
+                    ),
+                  ),
+                ],
+              )
+            : null,
         onTap: () {
           switch (widget.goto) {
             case "info":
@@ -57,6 +75,18 @@ class _AccountViewState extends State<AccountView> {
                   arguments: {"account": widget.account});
               break;
             case "chat":
+              if (!widget.account.hasFediMatchField()) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text("This user did not opt-in to FediMatch"),
+                    action: SnackBarAction(
+                      label: "Open Chat Anyway",
+                      onPressed: () {
+                        Navigator.pushNamed(context, AccountChatView.routeName,
+                            arguments: {"account": widget.account});
+                      },
+                    )));
+                return;
+              }
               Navigator.pushNamed(context, AccountChatView.routeName,
                   arguments: {"account": widget.account});
               break;

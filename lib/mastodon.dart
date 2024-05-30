@@ -1,4 +1,5 @@
 import 'package:fedi_match/src/settings/settings_controller.dart';
+import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:http/http.dart' as http;
@@ -543,7 +544,7 @@ class MediaAttachment {
 class Status {
   final String id;
   final String uri;
-  final String created_at;
+  final String createdAt;
   final Account account;
   final String content;
   final String visibility;
@@ -576,7 +577,7 @@ class Status {
   Status({
     required this.id,
     required this.uri,
-    required this.created_at,
+    required this.createdAt,
     required this.account,
     required this.content,
     required this.visibility,
@@ -611,7 +612,7 @@ class Status {
     return Status(
       id: json['id'],
       uri: json['uri'],
-      created_at: json['created_at'],
+      createdAt: json['created_at'],
       account: Account.fromJson(json['account']),
       content: json['content'],
       visibility: json['visibility'],
@@ -666,7 +667,7 @@ class Status {
     );
   }
 
-  HtmlWidget getContent() {
+  HtmlWidget getContent({TextStyle? style, bool removeFirstLink = false}) {
     var contentWithEmojis = content;
 
     for (var emoji in emojis) {
@@ -674,7 +675,37 @@ class Status {
           "<img src='${emoji.staticUrl}' alt=':${emoji.shortcode}:' title=':${emoji.shortcode}:' width='20' style='vertical-align:middle;'>");
     }
 
-    return HtmlWidget(contentWithEmojis);
+    colorToHex(Color color) {
+      return '#${color.value.toRadixString(16).substring(2)}';
+    }
+
+    print(contentWithEmojis);
+
+    if (removeFirstLink) {
+      print("Removing first link");
+      var firstLink = RegExp(r'^<p><span class="h-card" (.*)</span>')
+          .firstMatch(contentWithEmojis);
+      if (firstLink != null) {
+        print(firstLink.group(0)!);
+        contentWithEmojis =
+            contentWithEmojis.replaceFirst(firstLink.group(0)!, "<p>");
+      }
+    }
+
+    return HtmlWidget(
+      contentWithEmojis,
+      textStyle: style,
+      customStylesBuilder: (element) {
+        if (element.localName == "a") {
+          return {
+            'color': colorToHex(style?.color ?? Colors.blue),
+            'text-decoration': 'none'
+          };
+        }
+
+        return null;
+      },
+    );
   }
 }
 
@@ -780,9 +811,21 @@ class Mastodon {
   }
 
   static Future<List<Status>> getAccountStatuses(
-      String userInstanceName, String userId) async {
-    var response =
-        await getFromInstance(userInstanceName, "/accounts/$userId/statuses");
+    String userInstanceName,
+    String userId, {
+    int limit = 20,
+    bool excludeReblogs = false,
+    bool excludeReplies = false,
+    String? accessToken,
+  }) async {
+    var response = await getFromInstance(
+      userInstanceName,
+      "/accounts/$userId/statuses" +
+          "?limit=$limit" +
+          (excludeReblogs ? "?exclude_reblogs=true" : "") +
+          (excludeReplies ? "?exclude_replies=true" : ""),
+      accessToken: accessToken,
+    );
 
     if (response.statusCode == 200) {
       return (jsonDecode(response.body) as List<dynamic>)

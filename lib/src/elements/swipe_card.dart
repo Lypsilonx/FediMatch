@@ -17,7 +17,6 @@ class SwipeCard extends StatelessWidget {
         child: Card(
           clipBehavior: Clip.hardEdge,
           color: Theme.of(context).colorScheme.surfaceContainer,
-          shadowColor: Colors.black,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[

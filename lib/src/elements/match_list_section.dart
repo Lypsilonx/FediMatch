@@ -56,7 +56,7 @@ class _MatchListSectionState extends State<MatchListSection> {
 
             if (snapshot.hasData) {
               return Padding(
-                padding: const EdgeInsets.only(left: 40),
+                padding: const EdgeInsets.only(left: 20, right: 40),
                 child: AccountView(snapshot.data!, goto: "chat", edgeInset: 0),
               );
             } else {
