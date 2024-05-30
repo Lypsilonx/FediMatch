@@ -1,5 +1,6 @@
 import 'package:appinio_swiper/appinio_swiper.dart';
 import 'package:fedi_match/mastodon.dart';
+import 'package:fedi_match/src/elements/account_view.dart';
 import 'package:fedi_match/src/elements/match_buttons.dart';
 import 'package:flutter/material.dart';
 
@@ -29,15 +30,7 @@ class SwipeCard extends StatelessWidget {
                   width: 400,
                   child: Padding(
                       padding: EdgeInsets.all(20),
-                      child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(account.getDisplayName(),
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(fontSize: 24)),
-                            Text("@" + account.acct,
-                                overflow: TextOverflow.ellipsis),
-                          ])),
+                      child: AccountView(account, edgeInset: 0)),
                 )
               ]),
               MatchButtons(controller: controller),

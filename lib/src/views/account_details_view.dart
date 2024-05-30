@@ -26,23 +26,34 @@ class AccountDetailsView extends StatefulWidget {
 class _AccountDetailsViewState extends State<AccountDetailsView> {
   ScrollController scrollController = ScrollController();
   List<Image> images = [];
+  late Account actualAccount = widget.account;
 
   @override
   void initState() {
     super.initState();
-    // TODO: Load images from account
-    images = [
-      Image(
-          image: NetworkImage(widget.account.avatar),
-          fit: BoxFit.cover,
-          width: 430,
-          height: 430),
-      Image(
-          image: NetworkImage(widget.account.avatar),
-          fit: BoxFit.cover,
-          width: 430,
-          height: 430),
-    ];
+    images = [];
+    var instanceUsername = Mastodon.instanceUsernameFromUrl(widget.account.url);
+    var instance = instanceUsername.$1;
+    var username = instanceUsername.$2;
+    Mastodon.getAccount(instance, username).then((value) {
+      setState(() {
+        actualAccount = value;
+
+        // TODO: Load images from account
+        images = [
+          Image(
+              image: NetworkImage(actualAccount.avatar),
+              fit: BoxFit.cover,
+              width: 430,
+              height: 430),
+          Image(
+              image: NetworkImage(actualAccount.avatar),
+              fit: BoxFit.cover,
+              width: 430,
+              height: 430),
+        ];
+      });
+    });
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       setState(() {});
@@ -68,7 +79,7 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
 
   @override
   Widget build(BuildContext context) {
-    var instanceUsername = Mastodon.instanceUsernameFromUrl(widget.account.url);
+    var instanceUsername = Mastodon.instanceUsernameFromUrl(actualAccount.url);
     var instance = instanceUsername.$1;
     //var username = instanceUsername.$2;
     return Scaffold(
@@ -107,41 +118,43 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
         Container(
           width: 430,
           child: Padding(
-              padding: EdgeInsets.all(20),
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    AccountView(widget.account, goto: "none", edgeInset: 0),
-                    Padding(
-                      padding: EdgeInsets.only(bottom: 20),
-                      child: widget.account.getNote(),
-                    ),
-                    Flex(
-                        direction: Axis.horizontal,
-                        children: renderFediMatchTags(widget.account)),
-                    Padding(
-                        padding: EdgeInsets.only(top: 20),
-                        child: Column(children: [
-                          FutureBuilder<List<Status>>(
-                              future: Mastodon.getAccountStatuses(
-                                  instance, widget.account.id),
-                              builder: (context, snapshot) {
-                                if (snapshot.hasError) {
-                                  Text(
-                                      "${instance} ${widget.account.id} ${snapshot.error}");
-                                }
-
-                                if (snapshot.hasData) {
-                                  return Column(
-                                      children: snapshot.data!
-                                          .map((e) => StatusView(e))
-                                          .toList());
-                                } else {
-                                  return CircularProgressIndicator();
-                                }
-                              }),
-                        ])),
-                  ])),
+            padding: EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AccountView(actualAccount, goto: "none", edgeInset: 0),
+                Padding(
+                  padding: EdgeInsets.only(bottom: 20),
+                  child: actualAccount.getNote(),
+                ),
+                Flex(
+                    direction: Axis.horizontal,
+                    children: renderFediMatchTags(actualAccount)),
+                Padding(
+                  padding: EdgeInsets.only(top: 20),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      FutureBuilder<List<Status>>(
+                        future: Mastodon.getAccountStatuses(
+                            instance, actualAccount.id),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            return Column(
+                                children: snapshot.data!
+                                    .map((e) => StatusView(e))
+                                    .toList());
+                          } else {
+                            return CircularProgressIndicator();
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
         widget.controller == null
             ? Container()

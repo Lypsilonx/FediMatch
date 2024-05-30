@@ -32,54 +32,25 @@ class StatusView extends StatelessWidget {
               ),
               Column(children: [
                 status.getContent(),
-                status.card != null ? StatusCard(status.card!) : Container(),
+                SizedBox(height: 20),
+                status.mediaAttchments.length > 0
+                    ? status.mediaAttchments.map((e) {
+                        switch (e.type) {
+                          case "image":
+                            return Image.network(e.url);
+                          case "video":
+                            return Container();
+                          case "gifv":
+                            return Container();
+                          case "unknown":
+                            return Container();
+                          default:
+                            return Container();
+                        }
+                      }).toList()[0]
+                    : Container(),
               ]),
             ]),
           );
-  }
-}
-
-class StatusCard extends StatelessWidget {
-  final PreviewCard card;
-
-  const StatusCard(this.card);
-
-  @override
-  Widget build(BuildContext context) {
-    print(card.authorName);
-    return Container(
-      height: 200,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary,
-        borderRadius: BorderRadius.circular(5),
-      ),
-      margin: EdgeInsets.only(top: 10),
-      child: Column(children: [
-        Padding(
-          padding: EdgeInsets.only(left: 15, right: 10, top: 10),
-          child: Text(
-            card.title,
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        Padding(
-          padding: EdgeInsets.only(left: 15, right: 10, top: 10),
-          child: Text(card.description),
-        ),
-        card.image == null
-            ? Container()
-            : Padding(
-                padding: EdgeInsets.only(left: 15, right: 10, top: 10),
-                child: Image.network(card.image!),
-              ),
-        Padding(
-          padding: EdgeInsets.only(left: 15, right: 10, top: 10),
-          child: Text(card.url),
-        )
-      ]),
-    );
   }
 }

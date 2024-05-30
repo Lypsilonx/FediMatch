@@ -505,6 +505,41 @@ class PreviewCard {
   }
 }
 
+class MediaAttchment {
+  final String id;
+  final String type;
+  final String url;
+  final String previewUrl;
+  final String? remoteUrl;
+  final Map<String, dynamic> meta;
+  final String? description;
+  final String blurhash;
+
+  MediaAttchment({
+    required this.id,
+    required this.type,
+    required this.url,
+    required this.previewUrl,
+    required this.remoteUrl,
+    required this.meta,
+    required this.description,
+    required this.blurhash,
+  });
+
+  factory MediaAttchment.fromJson(Map<String, dynamic> json) {
+    return MediaAttchment(
+      id: json['id'],
+      type: json['type'],
+      url: json['url'],
+      previewUrl: json['preview_url'],
+      remoteUrl: json['remote_url'],
+      meta: json['meta'],
+      description: json['description'],
+      blurhash: json['blurhash'],
+    );
+  }
+}
+
 class Status {
   final String id;
   final String uri;
@@ -514,6 +549,7 @@ class Status {
   final String visibility;
   final bool sensitive;
   final String spoilerText;
+  final List<MediaAttchment> mediaAttchments;
   final StatusApplication? application;
   final List<StatusMention> mentions;
   final List<StatusTag> tags;
@@ -546,6 +582,7 @@ class Status {
     required this.visibility,
     required this.sensitive,
     required this.spoilerText,
+    required this.mediaAttchments,
     required this.application,
     required this.mentions,
     required this.tags,
@@ -580,6 +617,9 @@ class Status {
       visibility: json['visibility'],
       sensitive: json['sensitive'] == "true",
       spoilerText: json['spoiler_text'],
+      mediaAttchments: (json['media_attachments'] as List<dynamic>)
+          .map((e) => MediaAttchment.fromJson(e as Map<String, dynamic>))
+          .toList(),
       application: json['application'] != null
           ? StatusApplication.fromJson(json['application'])
           : null,

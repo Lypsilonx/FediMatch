@@ -22,13 +22,19 @@ class _AccountViewState extends State<AccountView> {
         leading: CircleAvatar(
           backgroundImage: NetworkImage(widget.account.avatar),
         ),
-        title: Text(widget.account.getDisplayName()),
-        subtitle: Text(widget.account.acct),
+        title: Text(
+          widget.account.getDisplayName(),
+          overflow: TextOverflow.ellipsis,
+        ),
+        subtitle: Text(
+          widget.account.acct,
+          overflow: TextOverflow.ellipsis,
+        ),
         onTap: () {
           switch (widget.goto) {
             case "info":
               Navigator.pushNamed(context, AccountDetailsView.routeName,
-                  arguments: {"account": widget.account, "controller": null});
+                  arguments: {"account": widget.account});
               break;
             case "chat":
               Navigator.pushNamed(context, AccountChatView.routeName,
