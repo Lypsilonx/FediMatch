@@ -1,3 +1,4 @@
+import 'package:fedi_match/src/elements/fedi_match_logo.dart';
 import 'package:fedi_match/src/elements/matcher.dart';
 import 'package:fedi_match/src/elements/nav_bar.dart';
 import 'package:fedi_match/src/elements/swipe_card.dart';
@@ -63,16 +64,17 @@ class _AccountListViewState extends State<AccountListView> {
     return Scaffold(
       bottomNavigationBar: NavBar("Home"),
       appBar: AppBar(
-        title: const Text('FediMatch'),
+        leading: controller.cardIndex != 0
+            ? IconButton(
+                icon: const Icon(Icons.undo),
+                onPressed: () {
+                  controller.unswipe();
+                },
+              )
+            : Container(),
+        title: FediMatchLogo(),
         actions: [
-          controller.cardIndex != 0
-              ? IconButton(
-                  icon: const Icon(Icons.undo),
-                  onPressed: () {
-                    controller.unswipe();
-                  },
-                )
-              : Container(),
+          Container(width: 50),
         ],
       ),
       body: AppinioSwiper(

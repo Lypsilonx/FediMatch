@@ -2,6 +2,7 @@ import 'package:appinio_swiper/appinio_swiper.dart';
 import 'package:fedi_match/mastodon.dart';
 import 'package:fedi_match/src/elements/account_view.dart';
 import 'package:fedi_match/src/elements/match_buttons.dart';
+import 'package:fedi_match/src/views/account_details_view.dart';
 import 'package:flutter/material.dart';
 
 class SwipeCard extends StatelessWidget {
@@ -29,10 +30,20 @@ class SwipeCard extends StatelessWidget {
                 Container(
                   width: 400,
                   child: Padding(
-                      padding: EdgeInsets.all(20),
-                      child:
-                          AccountView(account, showIcon: false, edgeInset: 0)),
-                )
+                    padding: EdgeInsets.only(
+                        left: 20, right: 20, bottom: 20, top: 10),
+                    child: Column(
+                      children: [
+                        AccountView(account, showIcon: false, edgeInset: 0),
+                        SizedBox(height: 5),
+                        Flex(
+                            direction: Axis.horizontal,
+                            children: AccountDetailsView.renderFediMatchTags(
+                                context, account)),
+                      ],
+                    ),
+                  ),
+                ),
               ]),
               MatchButtons(controller: controller),
             ],

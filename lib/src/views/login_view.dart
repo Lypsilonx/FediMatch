@@ -1,4 +1,5 @@
 import 'package:fedi_match/mastodon.dart';
+import 'package:fedi_match/src/elements/fedi_match_logo.dart';
 import 'package:flutter/material.dart';
 import '../settings/settings_controller.dart';
 
@@ -19,6 +20,8 @@ class _LoginViewState extends State<LoginView> {
   String instanceName = "";
   String authCode = "";
 
+  final textFieldController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     if (widget.controller.userInstanceName != "" &&
@@ -32,7 +35,7 @@ class _LoginViewState extends State<LoginView> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Login'),
+        title: FediMatchLogo(),
         automaticallyImplyLeading: false,
       ),
       body: Padding(
@@ -41,18 +44,23 @@ class _LoginViewState extends State<LoginView> {
           mainAxisAlignment: MainAxisAlignment.start,
           children: switch (LoginView.loginStep) {
             0 => [
+                SizedBox(height: 40),
+                const Text('Login', style: TextStyle(fontSize: 24)),
+                SizedBox(height: 40),
                 TextFormField(
+                  controller: textFieldController,
                   autocorrect: false,
-                  initialValue: "",
                   decoration: const InputDecoration(
                     labelText: 'Instance Name',
                     helperText: 'e.g. mastodon.social',
                   ),
                   onChanged: (String value) {
-                    instanceName = value;
+                    setState(() {
+                      instanceName = value;
+                    });
                   },
                 ),
-                SizedBox(height: 40),
+                SizedBox(height: 60),
                 TextButton(
                   style: new ButtonStyle(
                       backgroundColor: WidgetStateProperty.all<Color>(
@@ -62,6 +70,7 @@ class _LoginViewState extends State<LoginView> {
                         await Mastodon.OpenExternalLogin(instanceName);
                     if (result == "OK") {
                       setState(() {
+                        textFieldController.clear();
                         LoginView.loginStep = 1;
                       });
                     } else {
@@ -89,22 +98,27 @@ class _LoginViewState extends State<LoginView> {
                   child: Text(
                     style: TextStyle(
                         color: Theme.of(context).colorScheme.onPrimary),
-                    "Open External Browser",
+                    "Login with ${instanceName == "" ? "your Instance" : instanceName}",
                   ),
                 ),
               ],
             1 => [
+                SizedBox(height: 40),
+                const Text('Login', style: TextStyle(fontSize: 24)),
+                SizedBox(height: 40),
                 TextFormField(
+                  controller: textFieldController,
                   autocorrect: false,
-                  initialValue: "",
                   decoration: const InputDecoration(
                     labelText: 'Paste Code Here',
                   ),
                   onChanged: (String value) {
-                    authCode = value;
+                    setState(() {
+                      authCode = value;
+                    });
                   },
                 ),
-                SizedBox(height: 40),
+                SizedBox(height: 60),
                 TextButton(
                   style: new ButtonStyle(
                       backgroundColor: WidgetStateProperty.all<Color>(

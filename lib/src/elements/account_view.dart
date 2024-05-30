@@ -19,6 +19,8 @@ class AccountView extends StatefulWidget {
 class _AccountViewState extends State<AccountView> {
   @override
   Widget build(BuildContext context) {
+    var instanceUsername = Mastodon.instanceUsernameFromUrl(widget.account.url);
+    var instance = instanceUsername.$1;
     return ListTile(
         contentPadding: EdgeInsets.all(widget.edgeInset),
         leading: widget.showIcon
@@ -26,12 +28,26 @@ class _AccountViewState extends State<AccountView> {
                 backgroundImage: NetworkImage(widget.account.avatar),
               )
             : null,
-        title: Text(
-          widget.account.getDisplayName(),
-          overflow: TextOverflow.ellipsis,
-        ),
+        title: widget.showIcon
+            ? Text(
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                widget.account.getDisplayName(),
+                overflow: TextOverflow.ellipsis,
+              )
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+                    widget.account.getDisplayName(),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SizedBox(height: 5),
+                ],
+              ),
         subtitle: Text(
-          widget.account.acct,
+          style: TextStyle(fontSize: 14),
+          "@" + widget.account.username + "@" + instance,
           overflow: TextOverflow.ellipsis,
         ),
         onTap: () {

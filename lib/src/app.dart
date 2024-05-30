@@ -1,6 +1,5 @@
 import 'package:appinio_swiper/appinio_swiper.dart';
 import 'package:fedi_match/mastodon.dart';
-import 'package:fedi_match/src/elements/matcher.dart';
 import 'package:fedi_match/src/views/account_chat_view.dart';
 import 'package:fedi_match/src/views/matches_list_view.dart';
 import 'package:fedi_match/src/views/login_view.dart';

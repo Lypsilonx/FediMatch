@@ -19,6 +19,21 @@ class AccountDetailsView extends StatefulWidget {
     };
   }
 
+  static List<Widget> renderFediMatchTags(
+      BuildContext context, Account account) {
+    return account.getFediMatchTags().map((e) {
+      return Container(
+          padding: EdgeInsets.only(left: 10, right: 10, top: 5, bottom: 5),
+          margin: EdgeInsets.only(top: 5, right: 5),
+          decoration: BoxDecoration(
+            color: AccountDetailsView.tagColors(Theme.of(context))[e.tagType]!
+                .withAlpha(100),
+            borderRadius: BorderRadius.circular(5),
+          ),
+          child: Text(e.tagValue));
+    }).toList();
+  }
+
   @override
   State<AccountDetailsView> createState() => _AccountDetailsViewState();
 }
@@ -76,25 +91,8 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
     });
   }
 
-  List<Widget> renderFediMatchTags(Account account) {
-    return account.getFediMatchTags().map((e) {
-      return Container(
-          padding: EdgeInsets.only(left: 10, right: 10, top: 5, bottom: 5),
-          margin: EdgeInsets.only(top: 5, right: 5),
-          decoration: BoxDecoration(
-            color: AccountDetailsView.tagColors(Theme.of(context))[e.tagType]!
-                .withAlpha(100),
-            borderRadius: BorderRadius.circular(5),
-          ),
-          child: Text(e.tagValue));
-    }).toList();
-  }
-
   @override
   Widget build(BuildContext context) {
-    var instanceUsername = Mastodon.instanceUsernameFromUrl(actualAccount.url);
-    var instance = instanceUsername.$1;
-    //var username = instanceUsername.$2;
     return Scaffold(
       appBar: AppBar(),
       body: ListView(controller: ScrollController(), children: [
@@ -144,7 +142,8 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
                 ),
                 Flex(
                     direction: Axis.horizontal,
-                    children: renderFediMatchTags(actualAccount)),
+                    children: AccountDetailsView.renderFediMatchTags(
+                        context, actualAccount)),
                 Padding(
                   padding: EdgeInsets.only(top: 20),
                   child: Column(
