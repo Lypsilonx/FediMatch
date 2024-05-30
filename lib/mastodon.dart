@@ -793,10 +793,10 @@ class Mastodon {
     controller.updateUserInstanceName(instanceName);
     controller.updateAccessToken(accessToken);
 
-    return await Resume(instanceName, accessToken);
+    return await Update(instanceName, accessToken);
   }
 
-  static Future<String> Resume(String instanceName, String accessToken) async {
+  static Future<String> Update(String instanceName, String accessToken) async {
     var result = await getFromInstance(
         instanceName, "accounts/verify_credentials",
         accessToken: accessToken);
@@ -810,14 +810,6 @@ class Mastodon {
 
     _instance = Mastodon(account);
     return "OK";
-  }
-
-  static Future<String> Update(SettingsController controller) async {
-    if (controller.userInstanceName.isEmpty) {
-      return "Instance name is empty";
-    }
-
-    return await Resume(controller.userInstanceName, controller.accessToken);
   }
 
   static Future<void> Logout(SettingsController controller) async {
@@ -966,8 +958,6 @@ class Mastodon {
       return "OK";
     }
 
-    print("Failed to opt in to FediMatch (${response.body})");
-
     return "Failed to opt in to FediMatch (${response.body})";
   }
 
@@ -993,8 +983,6 @@ class Mastodon {
     if (response.statusCode == 200) {
       return "OK";
     }
-
-    print("Failed to opt out of FediMatch (${response.body})");
 
     return "Failed to opt out of FediMatch (${response.body})";
   }

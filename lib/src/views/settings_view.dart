@@ -7,17 +7,20 @@ import 'package:flutter/material.dart';
 import '../settings/settings_controller.dart';
 
 class SettingsView extends StatefulWidget {
-  const SettingsView({super.key, required this.controller});
+  const SettingsView({super.key});
 
   static const routeName = '/settings';
-
-  final SettingsController controller;
 
   @override
   State<SettingsView> createState() => _SettingsViewState();
 }
 
 class _SettingsViewState extends State<SettingsView> {
+  void Update() => setState(() {
+        Mastodon.Update(SettingsController.instance.userInstanceName,
+            SettingsController.instance.accessToken);
+      });
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -39,8 +42,8 @@ class _SettingsViewState extends State<SettingsView> {
                 const Text('Theme'),
                 DropdownButton<ThemeMode>(
                   underline: Container(),
-                  value: widget.controller.themeMode,
-                  onChanged: widget.controller.updateThemeMode,
+                  value: SettingsController.instance.themeMode,
+                  onChanged: SettingsController.instance.updateThemeMode,
                   items: const [
                     DropdownMenuItem(
                       value: ThemeMode.system,
@@ -67,8 +70,12 @@ class _SettingsViewState extends State<SettingsView> {
               children: [
                 const Text('Show non-opt-in accounts'),
                 Switch(
-                  value: widget.controller.showNonOptInAccounts,
-                  onChanged: widget.controller.updateShowNonOptInAccounts,
+                  value: SettingsController.instance.showNonOptInAccounts,
+                  onChanged: (bool value) {
+                    SettingsController.instance
+                        .updateShowNonOptInAccounts(value);
+                    Update();
+                  },
                 ),
               ],
             ),
@@ -82,11 +89,9 @@ class _SettingsViewState extends State<SettingsView> {
                             Theme.of(context).colorScheme.secondary)),
                     onPressed: () async {
                       await Mastodon.optOutOfFediMatch(
-                          widget.controller.userInstanceName,
-                          widget.controller.accessToken);
-                      setState(() {
-                        Mastodon.Update(widget.controller);
-                      });
+                          SettingsController.instance.userInstanceName,
+                          SettingsController.instance.accessToken);
+                      Update();
                     },
                     child: Text(
                       style: TextStyle(
@@ -100,11 +105,9 @@ class _SettingsViewState extends State<SettingsView> {
                             Theme.of(context).colorScheme.secondary)),
                     onPressed: () async {
                       await Mastodon.optInToFediMatch(
-                          widget.controller.userInstanceName,
-                          widget.controller.accessToken);
-                      setState(() {
-                        Mastodon.Update(widget.controller);
-                      });
+                          SettingsController.instance.userInstanceName,
+                          SettingsController.instance.accessToken);
+                      Update();
                     },
                     child: Text(
                       style: TextStyle(
@@ -141,6 +144,7 @@ class _SettingsViewState extends State<SettingsView> {
                           onPressed: () {
                             Matcher.clear();
                             Navigator.of(context).pop();
+                            Update();
                           },
                         ),
                         TextButton(
@@ -189,7 +193,7 @@ class _SettingsViewState extends State<SettingsView> {
                             Matcher.clear();
                             Navigator.popUntil(
                                 context, ModalRoute.withName('/'));
-                            await Mastodon.Logout(widget.controller);
+                            await Mastodon.Logout(SettingsController.instance);
                             Navigator.pushReplacementNamed(
                                 context, LoginView.routeName);
                           },

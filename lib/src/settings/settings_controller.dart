@@ -7,12 +7,16 @@ class SettingsController with ChangeNotifier {
 
   final SettingsService _settingsService;
 
+  static late SettingsController _instance;
+  static SettingsController get instance => _instance;
+
   Future<void> loadSettings() async {
     _themeMode = await _settingsService.themeMode();
     _userInstanceName = await _settingsService.userInstanceName();
     _accessToken = await _settingsService.accessToken();
     _matchedData = await _settingsService.matchedData();
     _showNonOptInAccounts = await _settingsService.showNonOptInAccounts();
+    _instance = this;
 
     notifyListeners();
   }

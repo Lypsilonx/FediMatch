@@ -2,6 +2,7 @@ import 'package:fedi_match/src/elements/fedi_match_logo.dart';
 import 'package:fedi_match/src/elements/matcher.dart';
 import 'package:fedi_match/src/elements/nav_bar.dart';
 import 'package:fedi_match/src/elements/swipe_card.dart';
+import 'package:fedi_match/src/settings/settings_controller.dart';
 import 'package:flutter/material.dart';
 
 import 'package:fedi_match/mastodon.dart';
@@ -21,6 +22,7 @@ class _AccountListViewState extends State<AccountListView> {
   final _list = <Account>[];
   int _currentPage = 0;
   AppinioSwiperController controller = AppinioSwiperController();
+  String loadingMessage = "";
 
   Future<void> _fetchData(int pageKey) async {
     List<Account> accounts = [];
@@ -30,9 +32,9 @@ class _AccountListViewState extends State<AccountListView> {
         // new_accounts
         //     .add(await Mastodon.getAccount("kolektiva.social", "Lypsilonx"));
         // new_accounts.add(await Mastodon.getAccount("todon.eu", "LilaHexe"));
-
-        List<Account> new_accounts =
-            await Mastodon.getDirectory(limit: 50, offset: pageKey * 5);
+        int pageSize = 50;
+        List<Account> new_accounts = await Mastodon.getDirectory(
+            limit: pageSize, offset: pageKey * pageSize);
 
         // filter accounts
         accounts.addAll(new_accounts.where((element) {
@@ -53,7 +55,7 @@ class _AccountListViewState extends State<AccountListView> {
             filtered = true;
           }
 
-          if (!Matcher.controller.showNonOptInAccounts &&
+          if (!SettingsController.instance.showNonOptInAccounts &&
               !element.hasFediMatchField()) {
             filtered = true;
           }
@@ -61,7 +63,10 @@ class _AccountListViewState extends State<AccountListView> {
           return !filtered;
         }).toList());
 
-        print("Seacedhing for accounts... $pageKey (${accounts.length})");
+        setState(() {
+          loadingMessage =
+              "Seacedhing for accounts... (${accounts.length}/${pageKey * pageSize})";
+        });
 
         pageKey++;
         _currentPage = pageKey;
@@ -135,7 +140,13 @@ class _AccountListViewState extends State<AccountListView> {
         cardBuilder: (BuildContext context, int index) {
           if (_list.length == 0) {
             return Center(
-              child: CircularProgressIndicator(),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(),
+                  Text(loadingMessage),
+                ],
+              ),
             );
           }
 

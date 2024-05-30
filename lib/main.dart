@@ -1,4 +1,3 @@
-import 'package:fedi_match/src/elements/matcher.dart';
 import 'package:flutter/material.dart';
 
 import 'src/app.dart';
@@ -10,6 +9,5 @@ void main() async {
   final settingsService = await SettingsService.getInstance();
   final settingsController = SettingsController(settingsService);
   await settingsController.loadSettings();
-  Matcher.controller = settingsController;
-  runApp(FediMatch(settingsController: settingsController));
+  runApp(FediMatch());
 }

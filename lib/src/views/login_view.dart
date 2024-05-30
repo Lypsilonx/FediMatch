@@ -4,13 +4,11 @@ import 'package:flutter/material.dart';
 import '../settings/settings_controller.dart';
 
 class LoginView extends StatefulWidget {
-  const LoginView({super.key, required this.controller});
+  const LoginView({super.key});
 
   static const routeName = 'login';
 
   static int loginStep = 0;
-
-  final SettingsController controller;
 
   @override
   State<LoginView> createState() => _LoginViewState();
@@ -24,10 +22,10 @@ class _LoginViewState extends State<LoginView> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.controller.userInstanceName != "" &&
-        widget.controller.accessToken != "") {
-      Mastodon.Resume(
-              widget.controller.userInstanceName, widget.controller.accessToken)
+    if (SettingsController.instance.userInstanceName != "" &&
+        SettingsController.instance.accessToken != "") {
+      Mastodon.Update(SettingsController.instance.userInstanceName,
+              SettingsController.instance.accessToken)
           .whenComplete(() {
         Navigator.pushReplacementNamed(context, "/");
       });
@@ -125,7 +123,7 @@ class _LoginViewState extends State<LoginView> {
                           Theme.of(context).colorScheme.primary)),
                   onPressed: () async {
                     String result = await Mastodon.Login(
-                        widget.controller, authCode, instanceName);
+                        SettingsController.instance, authCode, instanceName);
                     if (result == "OK") {
                       Navigator.pushReplacementNamed(context, "/");
                     } else {

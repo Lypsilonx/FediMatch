@@ -1,5 +1,6 @@
 import 'package:appinio_swiper/appinio_swiper.dart';
 import 'package:fedi_match/mastodon.dart';
+import 'package:fedi_match/src/settings/settings_controller.dart';
 import 'package:fedi_match/src/views/account_chat_view.dart';
 import 'package:fedi_match/src/views/matches_list_view.dart';
 import 'package:fedi_match/src/views/login_view.dart';
@@ -10,21 +11,15 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'views/account_details_view.dart';
 import 'views/account_list_view.dart';
-import 'settings/settings_controller.dart';
 
 /// The Widget that configures your application.
 class FediMatch extends StatelessWidget {
-  const FediMatch({
-    super.key,
-    required this.settingsController,
-  });
-
-  final SettingsController settingsController;
+  const FediMatch({super.key});
 
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: settingsController,
+      listenable: SettingsController.instance,
       builder: (BuildContext context, Widget? child) {
         return MaterialApp(
           initialRoute: LoginView.routeName,
@@ -43,16 +38,14 @@ class FediMatch extends StatelessWidget {
               AppLocalizations.of(context)!.appTitle,
           theme: ThemeData(),
           darkTheme: ThemeData.dark(),
-          themeMode: settingsController.themeMode,
+          themeMode: SettingsController.instance.themeMode,
           onGenerateRoute: (RouteSettings routeSettings) {
             return MaterialPageRoute<void>(
                 settings: routeSettings,
                 builder: (BuildContext context) {
                   return switch (routeSettings.name) {
-                    LoginView.routeName =>
-                      LoginView(controller: settingsController),
-                    SettingsView.routeName =>
-                      SettingsView(controller: settingsController),
+                    LoginView.routeName => LoginView(),
+                    SettingsView.routeName => SettingsView(),
                     MatchesListView.routeName => MatchesListView(),
                     AccountDetailsView.routeName => AccountDetailsView(
                         (routeSettings.arguments as Map)["account"] as Account,

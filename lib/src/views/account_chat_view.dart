@@ -4,8 +4,8 @@ import 'dart:math';
 
 import 'package:fedi_match/mastodon.dart';
 import 'package:fedi_match/src/elements/account_view.dart';
-import 'package:fedi_match/src/elements/matcher.dart';
 import 'package:fedi_match/src/elements/status_view.dart';
+import 'package:fedi_match/src/settings/settings_controller.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
@@ -87,7 +87,7 @@ class _AccountChatViewState extends State<AccountChatView> {
     await Mastodon.getAccountStatuses(instance, actualAccount.id,
             excludeReblogs: true,
             limit: 40,
-            accessToken: Matcher.controller.accessToken)
+            accessToken: SettingsController.instance.accessToken)
         .then((statuses) {
       statuses
           .where((status) => status.visibility == "direct")
@@ -113,7 +113,7 @@ class _AccountChatViewState extends State<AccountChatView> {
       await Mastodon.getAccountStatuses(selfInstance, Mastodon.instance.self.id,
               excludeReblogs: true,
               limit: 40,
-              accessToken: Matcher.controller.accessToken)
+              accessToken: SettingsController.instance.accessToken)
           .then((statuses) {
         statuses
             .where((status) => status.visibility == "direct")
@@ -206,7 +206,7 @@ class _AccountChatViewState extends State<AccountChatView> {
         await Mastodon.sendStatus(
             instance,
             recipientMention + (message as types.TextMessage).text,
-            Matcher.controller.accessToken,
+            SettingsController.instance.accessToken,
             visibility: "direct");
         break;
       default:

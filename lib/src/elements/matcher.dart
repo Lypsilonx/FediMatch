@@ -3,8 +3,6 @@ import 'package:fedi_match/src/settings/settings_controller.dart';
 import 'package:fedi_match/src/settings/settings_service.dart';
 
 class Matcher {
-  static late SettingsController controller;
-
   static List<String> liked = [];
   static List<String> disliked = [];
   static List<String> superliked = [];
@@ -50,11 +48,12 @@ class Matcher {
   }
 
   static void saveToPrefs() {
-    controller.updateMatchedData(MatchedData(liked, disliked, superliked));
+    SettingsController.instance
+        .updateMatchedData(MatchedData(liked, disliked, superliked));
   }
 
   static void loadFromPrefs() {
-    MatchedData matchedData = controller.matchedData;
+    MatchedData matchedData = SettingsController.instance.matchedData;
     liked = matchedData.liked;
     disliked = matchedData.disliked;
     superliked = matchedData.superliked;
