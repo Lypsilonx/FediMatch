@@ -816,6 +816,14 @@ class Mastodon {
     return "OK";
   }
 
+  static Future<String> Update(SettingsController controller) async {
+    if (controller.userInstanceName.isEmpty) {
+      return "Instance name is empty";
+    }
+
+    return await Resume(controller.userInstanceName, controller.accessToken);
+  }
+
   static Future<void> Logout(SettingsController controller) async {
     controller.updateUserInstanceName("");
     controller.updateAccessToken("");

@@ -18,8 +18,6 @@ class SettingsView extends StatefulWidget {
 }
 
 class _SettingsViewState extends State<SettingsView> {
-  bool optedIn = Mastodon.instance.self.hasFediMatchField();
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -77,7 +75,7 @@ class _SettingsViewState extends State<SettingsView> {
             SizedBox(height: 20),
 
             // Opt-in
-            optedIn
+            Mastodon.instance.self.hasFediMatchField()
                 ? TextButton(
                     style: new ButtonStyle(
                         backgroundColor: WidgetStateProperty.all<Color>(
@@ -87,7 +85,7 @@ class _SettingsViewState extends State<SettingsView> {
                           widget.controller.userInstanceName,
                           widget.controller.accessToken);
                       setState(() {
-                        optedIn = false;
+                        Mastodon.Update(widget.controller);
                       });
                     },
                     child: Text(
@@ -105,7 +103,7 @@ class _SettingsViewState extends State<SettingsView> {
                           widget.controller.userInstanceName,
                           widget.controller.accessToken);
                       setState(() {
-                        optedIn = true;
+                        Mastodon.Update(widget.controller);
                       });
                     },
                     child: Text(
