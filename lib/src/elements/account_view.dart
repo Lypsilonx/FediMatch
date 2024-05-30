@@ -31,7 +31,9 @@ class _AccountViewState extends State<AccountView> {
         title: widget.showIcon
             ? Text(
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                widget.account.getDisplayName(),
+                widget.account.getDisplayName() == ""
+                    ? widget.account.username
+                    : widget.account.getDisplayName(),
                 overflow: TextOverflow.ellipsis,
               )
             : Column(

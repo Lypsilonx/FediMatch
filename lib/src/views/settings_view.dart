@@ -6,12 +6,19 @@ import 'package:fedi_match/src/views/login_view.dart';
 import 'package:flutter/material.dart';
 import '../settings/settings_controller.dart';
 
-class SettingsView extends StatelessWidget {
+class SettingsView extends StatefulWidget {
   const SettingsView({super.key, required this.controller});
 
   static const routeName = '/settings';
 
   final SettingsController controller;
+
+  @override
+  State<SettingsView> createState() => _SettingsViewState();
+}
+
+class _SettingsViewState extends State<SettingsView> {
+  bool optedIn = Mastodon.instance.self.hasFediMatchField();
 
   @override
   Widget build(BuildContext context) {
@@ -34,8 +41,8 @@ class SettingsView extends StatelessWidget {
                 const Text('Theme'),
                 DropdownButton<ThemeMode>(
                   underline: Container(),
-                  value: controller.themeMode,
-                  onChanged: controller.updateThemeMode,
+                  value: widget.controller.themeMode,
+                  onChanged: widget.controller.updateThemeMode,
                   items: const [
                     DropdownMenuItem(
                       value: ThemeMode.system,
@@ -62,12 +69,51 @@ class SettingsView extends StatelessWidget {
               children: [
                 const Text('Show non-opt-in accounts'),
                 Switch(
-                  value: controller.showNonOptInAccounts,
-                  onChanged: controller.updateShowNonOptInAccounts,
+                  value: widget.controller.showNonOptInAccounts,
+                  onChanged: widget.controller.updateShowNonOptInAccounts,
                 ),
               ],
             ),
             SizedBox(height: 20),
+
+            // Opt-in
+            optedIn
+                ? TextButton(
+                    style: new ButtonStyle(
+                        backgroundColor: WidgetStateProperty.all<Color>(
+                            Theme.of(context).colorScheme.secondary)),
+                    onPressed: () async {
+                      await Mastodon.optOutOfFediMatch(
+                          widget.controller.userInstanceName,
+                          widget.controller.accessToken);
+                      setState(() {
+                        optedIn = false;
+                      });
+                    },
+                    child: Text(
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSecondary),
+                      "Opt-out",
+                    ),
+                  )
+                : TextButton(
+                    style: new ButtonStyle(
+                        backgroundColor: WidgetStateProperty.all<Color>(
+                            Theme.of(context).colorScheme.secondary)),
+                    onPressed: () async {
+                      await Mastodon.optInToFediMatch(
+                          widget.controller.userInstanceName,
+                          widget.controller.accessToken);
+                      setState(() {
+                        optedIn = true;
+                      });
+                    },
+                    child: Text(
+                      style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSecondary),
+                      "Opt-in",
+                    ),
+                  ),
 
             // Clear Matcher data
             TextButton(
@@ -145,7 +191,7 @@ class SettingsView extends StatelessWidget {
                             Matcher.clear();
                             Navigator.popUntil(
                                 context, ModalRoute.withName('/'));
-                            await Mastodon.Logout(controller);
+                            await Mastodon.Logout(widget.controller);
                             Navigator.pushReplacementNamed(
                                 context, LoginView.routeName);
                           },

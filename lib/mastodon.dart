@@ -46,6 +46,19 @@ class Field {
       verifiedAt: json['verified_at'] == "true",
     );
   }
+
+  static String getHashFrom(List<Field> fields) {
+    var hash = "";
+
+    for (var i = 0; i < fields.length; i++) {
+      hash += "&fields_attributes[$i][name]=${fields[i].name}";
+      hash += "&fields_attributes[$i][value]=${fields[i].value}";
+    }
+
+    hash = hash.substring(1);
+
+    return hash;
+  }
 }
 
 class Role {
@@ -712,14 +725,43 @@ class Mastodon {
 
   Mastodon(Account self) : self = self {}
 
-  static const String clientId = "Pt7egzytHvspDn8eMvsztanzi-8arpBQukIaGxdvVfE";
-  static const String clientSecret =
-      "WU87XZI-gMiM8zqKkl1B6bx6-omqVGD6qP-I73HoDQY";
+  static String clientId = "";
+  static String clientSecret = "";
+
+  static Future<(String clientId, String clientSecret)> registerClient(
+      String instanceName) async {
+    var result = await http.post(
+      Uri.parse('https://$instanceName/api/v1/apps'),
+      headers: <String, String>{
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: <String, String>{
+        'client_name': 'FediMatch',
+        'redirect_uris': 'urn:ietf:wg:oauth:2.0:oob',
+        'scopes': 'read write push',
+      },
+    );
+
+    if (result.statusCode != 200) {
+      throw Exception("Failed to register client (${result.body})");
+    }
+
+    var json = jsonDecode(result.body);
+
+    clientId = json['client_id'];
+    clientSecret = json['client_secret'];
+
+    return (clientId, clientSecret);
+  }
 
   static Future<String> OpenExternalLogin(String instanceName) async {
     if (instanceName.isEmpty) {
-      return "Please check your instance name, username and password.";
+      return "Instance name is empty";
     }
+
+    var client = await registerClient(instanceName);
+    clientId = client.$1;
+    clientSecret = client.$2;
 
     final Uri url = Uri.parse(
         'https://$instanceName/oauth/authorize?client_id=$clientId&scope=read+write+push&redirect_uri=urn:ietf:wg:oauth:2.0:oob&response_type=code');
@@ -880,5 +922,56 @@ class Mastodon {
             }
           : {},
     );
+  }
+
+  // ! This is a custom field that is not part of the Mastodon API
+  static Future<String> optInToFediMatch(
+      String userInstanceName, String accessToken) async {
+    if (Mastodon.instance.self.hasFediMatchField()) {
+      return "Already opted in to FediMatch";
+    }
+
+    var fields = Mastodon.instance.self.fields;
+    fields.add(Field(name: "FediMatch", value: "", verifiedAt: false));
+
+    var response = await http.post(
+      Uri.parse(
+          "https://$userInstanceName/api/v1/accounts/update_credentials?${Field.getHashFrom(fields)}"),
+      headers: <String, String>{
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return "OK";
+    }
+
+    return "Failed to opt in to FediMatch (${response.body})";
+  }
+
+  static Future<String> optOutOfFediMatch(
+      String userInstanceName, String accessToken) async {
+    if (!Mastodon.instance.self.hasFediMatchField()) {
+      return "Already opted out of FediMatch";
+    }
+
+    var fields = Mastodon.instance.self.fields;
+    fields.removeWhere((element) => element.name == "FediMatch");
+
+    var response = await http.post(
+      Uri.parse(
+          'https://$userInstanceName/api/v1/accounts/update_credentials?${Field.getHashFrom(fields)}'),
+      headers: <String, String>{
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return "OK";
+    }
+
+    return "Failed to opt out of FediMatch (${response.body})";
   }
 }
