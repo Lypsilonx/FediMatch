@@ -52,55 +52,64 @@ class _MatchesListViewState extends State<MatchesListView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        bottomNavigationBar: NavBar("Likes & Matches"),
-        appBar: AppBar(
-          title: const Text('Likes & Matches'),
-        ),
-        body: Padding(
-          padding: const EdgeInsets.all(20),
-          child: ListView(controller: ScrollController(), children: [
-            Flex(
-              direction: Axis.horizontal,
+      bottomNavigationBar: NavBar("Likes & Matches"),
+      appBar: AppBar(
+        title: const Text('Likes & Matches'),
+      ),
+      body: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          return Padding(
+            padding: const EdgeInsets.all(20),
+            child: ListView(
+              controller: ScrollController(),
               children: [
-                Container(
-                  width: 300,
-                  child: TextFormField(
-                    controller: searchController,
-                    autocorrect: false,
-                    decoration: const InputDecoration(
-                      labelText: 'Search',
-                      helperText: 'search for a user',
+                Flex(
+                  direction: Axis.horizontal,
+                  children: [
+                    Container(
+                      width: constraints.maxWidth - 100,
+                      child: TextFormField(
+                        controller: searchController,
+                        autocorrect: false,
+                        decoration: const InputDecoration(
+                          labelText: 'Search',
+                          helperText: 'search for a user',
+                        ),
+                        onFieldSubmitted: (String value) async {
+                          search(value);
+                        },
+                      ),
                     ),
-                    onFieldSubmitted: (String value) async {
-                      search(value);
-                    },
-                  ),
+                    IconButton(
+                      icon: const Icon(Icons.search),
+                      onPressed: () async {
+                        search(searchController.text);
+                      },
+                    ),
+                  ],
                 ),
-                IconButton(
-                  icon: const Icon(Icons.search),
-                  onPressed: () async {
-                    search(searchController.text);
-                  },
+                SizedBox(height: 20),
+                MatchListSection(
+                  "Matches",
+                  Matcher.matches,
+                  color: Colors.orange,
+                  icon: Icons.hotel_class,
+                  emptyMessage: "no matches yet (WIP)",
+                  initiallyExpanded: true,
                 ),
+                MatchListSection("Superliked", Matcher.superliked,
+                    color: Colors.blue,
+                    icon: Icons.star,
+                    emptyMessage: "no superlikes yet"),
+                MatchListSection("Liked", Matcher.liked,
+                    color: Colors.green,
+                    icon: Icons.favorite,
+                    emptyMessage: "no likes yet"),
               ],
             ),
-            MatchListSection(
-              "Matches",
-              Matcher.matches,
-              color: Colors.orange,
-              icon: Icons.hotel_class,
-              emptyMessage: "no matches yet (WIP)",
-              initiallyExpanded: true,
-            ),
-            MatchListSection("Superliked", Matcher.superliked,
-                color: Colors.blue,
-                icon: Icons.star,
-                emptyMessage: "no superlikes yet"),
-            MatchListSection("Liked", Matcher.liked,
-                color: Colors.green,
-                icon: Icons.favorite,
-                emptyMessage: "no likes yet"),
-          ]),
-        ));
+          );
+        },
+      ),
+    );
   }
 }

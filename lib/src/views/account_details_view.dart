@@ -41,19 +41,15 @@ class AccountDetailsView extends StatefulWidget {
 
 class _AccountDetailsViewState extends State<AccountDetailsView> {
   ScrollController scrollController = ScrollController();
-  List<Image> images = [];
+  List<String> imageUrls = [];
   late Account actualAccount = widget.account;
   late List<Status> accountStatuses = [];
 
   @override
   void initState() {
     super.initState();
-    images = [
-      Image(
-          image: NetworkImage(widget.account.avatar),
-          fit: BoxFit.cover,
-          width: 430,
-          height: 430),
+    imageUrls = [
+      widget.account.avatar,
     ];
     var instanceUsername = Mastodon.instanceUsernameFromUrl(widget.account.url);
     var instance = instanceUsername.$1;
@@ -65,19 +61,15 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
         Mastodon.getAccountStatuses(instance, actualAccount.id).then((value) {
           setState(() {
             accountStatuses = value;
-            List<Image> new_images = value
+            List<String> new_images = value
                 .where((element) =>
                     element.mediaAttachments.length > 0 &&
                     element.mediaAttachments[0].type == "image")
-                .map((e) => Image(
-                    image: NetworkImage(e.mediaAttachments[0].url),
-                    fit: BoxFit.contain,
-                    width: 430,
-                    height: 430))
+                .map((e) => e.mediaAttachments[0].url)
                 .toList();
 
             if (new_images.length > 0) {
-              images = new_images;
+              imageUrls = new_images;
             }
           });
         });
@@ -94,78 +86,129 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(),
-      body: ListView(controller: ScrollController(), children: [
-        Container(
-          width: 430,
-          height: 430,
-          child: images.length == 1
-              ? images[0]
-              : Stack(children: [
-                  ListView(
-                      physics: PageScrollPhysics(),
-                      scrollDirection: Axis.horizontal,
-                      controller: scrollController,
-                      children: images),
-                  Align(
-                      alignment: Alignment.bottomRight,
-                      child: Padding(
-                          padding: EdgeInsets.all(20),
-                          child: Container(
-                              constraints: BoxConstraints(maxWidth: 60),
-                              height: 30,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(15),
-                                color: Colors.white.withOpacity(0.5),
-                              ),
-                              child: Text(
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        return Scaffold(
+          appBar: AppBar(),
+          body: ListView(
+            controller: ScrollController(),
+            children: [
+              Container(
+                width: constraints.maxWidth,
+                height: constraints.maxWidth,
+                child: imageUrls.length == 1
+                    ? Image(
+                        image: NetworkImage(
+                          imageUrls[0],
+                        ),
+                        fit: BoxFit.cover,
+                        width: constraints.maxWidth,
+                        height: constraints.maxWidth,
+                      )
+                    : Stack(
+                        children: [
+                          ListView(
+                            physics: PageScrollPhysics(),
+                            scrollDirection: Axis.horizontal,
+                            controller: scrollController,
+                            children: imageUrls
+                                .map(
+                                  (e) => Image(
+                                    image: NetworkImage(e),
+                                    fit: BoxFit.cover,
+                                    width: constraints.maxWidth,
+                                    height: constraints.maxWidth,
+                                  ),
+                                )
+                                .toList(),
+                          ),
+                          Align(
+                            alignment: Alignment.bottomRight,
+                            child: Padding(
+                              padding: EdgeInsets.all(20),
+                              child: Container(
+                                constraints: BoxConstraints(
+                                  maxWidth: 60,
+                                ),
+                                height: 30,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(15),
+                                  color: Colors.white.withOpacity(0.5),
+                                ),
+                                child: Text(
                                   textAlign: TextAlign.center,
                                   maxLines: 1,
                                   scrollController.hasClients
-                                      ? "${(scrollController.offset / 430).round() + 1}/${images.length}"
+                                      ? "${(scrollController.offset / constraints.maxWidth).round() + 1}/${imageUrls.length}"
                                       : "",
-                                  style: TextStyle(color: Colors.black))))),
-                ]),
-        ),
-        Container(
-          width: 430,
-          child: Padding(
-            padding: EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AccountView(actualAccount, goto: "none", edgeInset: 0),
-                Padding(
-                  padding: EdgeInsets.only(bottom: 20),
-                  child: actualAccount.getNote(),
-                ),
-                Flex(
-                    direction: Axis.horizontal,
-                    children: AccountDetailsView.renderFediMatchTags(
-                        context, actualAccount)),
-                Padding(
-                  padding: EdgeInsets.only(top: 20),
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
+              Container(
+                width: constraints.maxWidth,
+                child: Padding(
+                  padding: EdgeInsets.all(20),
                   child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: accountStatuses.length > 0 ||
-                              actualAccount.statusesCount == 0
-                          ? accountStatuses.map((e) => StatusView(e)).toList()
-                          : [CircularProgressIndicator()]),
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      AccountView(
+                        actualAccount,
+                        goto: "none",
+                        edgeInset: 0,
+                      ),
+                      Padding(
+                        padding: EdgeInsets.only(
+                          bottom: 20,
+                        ),
+                        child: actualAccount.getNote(),
+                      ),
+                      Flex(
+                        direction: Axis.horizontal,
+                        children: AccountDetailsView.renderFediMatchTags(
+                          context,
+                          actualAccount,
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.only(top: 20),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: accountStatuses.length > 0 ||
+                                  actualAccount.statusesCount == 0
+                              ? accountStatuses
+                                  .map((e) => StatusView(e))
+                                  .toList()
+                              : [
+                                  CircularProgressIndicator(),
+                                ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ],
-            ),
+              ),
+              widget.controller == null
+                  ? Container()
+                  : MatchButtons(
+                      controller: widget.controller!,
+                      postSwipe: () {
+                        Navigator.pop(
+                          context,
+                        );
+                      },
+                    ),
+            ],
           ),
-        ),
-        widget.controller == null
-            ? Container()
-            : MatchButtons(
-                controller: widget.controller!,
-                postSwipe: () {
-                  Navigator.pop(context);
-                })
-      ]),
+        );
+      },
     );
   }
 }

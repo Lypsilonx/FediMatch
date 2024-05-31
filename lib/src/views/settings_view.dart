@@ -24,13 +24,15 @@ class _SettingsViewState extends State<SettingsView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        bottomNavigationBar: NavBar("Settings"),
-        appBar: AppBar(
-          title: const Text('Settings'),
-        ),
-        body: Padding(
-          padding: const EdgeInsets.all(20),
-          child: ListView(controller: ScrollController(), children: [
+      bottomNavigationBar: NavBar("Settings"),
+      appBar: AppBar(
+        title: const Text('Settings'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: ListView(
+          controller: ScrollController(),
+          children: [
             AccountView(Mastodon.instance.self, edgeInset: 0),
             SizedBox(height: 20),
 
@@ -214,7 +216,9 @@ class _SettingsViewState extends State<SettingsView> {
                 "Logout",
               ),
             ),
-          ]),
-        ));
+          ],
+        ),
+      ),
+    );
   }
 }

@@ -13,44 +13,47 @@ class SwipeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-        child: Card(
-          clipBehavior: Clip.hardEdge,
-          color: Theme.of(context).colorScheme.surfaceContainer,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Column(children: [
-                Image(
-                    image: NetworkImage(account.avatar),
-                    fit: BoxFit.cover,
-                    width: 400,
-                    height: 400),
-                Container(
-                  width: 400,
-                  child: Padding(
-                    padding: EdgeInsets.only(
-                        left: 20, right: 20, bottom: 20, top: 10),
-                    child: Column(
-                      children: [
-                        AccountView(account, showIcon: false, edgeInset: 0),
-                        SizedBox(height: 5),
-                        Flex(
-                            direction: Axis.horizontal,
-                            children: AccountDetailsView.renderFediMatchTags(
-                                context, account)),
-                      ],
+    return LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+      return GestureDetector(
+          child: Card(
+            clipBehavior: Clip.hardEdge,
+            color: Theme.of(context).colorScheme.surfaceContainer,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Column(children: [
+                  Image(
+                      image: NetworkImage(account.avatar),
+                      fit: BoxFit.cover,
+                      width: constraints.maxWidth,
+                      height: constraints.maxWidth),
+                  Container(
+                    width: constraints.maxWidth,
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                          left: 20, right: 20, bottom: 20, top: 10),
+                      child: Column(
+                        children: [
+                          AccountView(account, showIcon: false, edgeInset: 0),
+                          SizedBox(height: 5),
+                          Flex(
+                              direction: Axis.horizontal,
+                              children: AccountDetailsView.renderFediMatchTags(
+                                  context, account)),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ]),
-              MatchButtons(controller: controller),
-            ],
+                ]),
+                MatchButtons(controller: controller),
+              ],
+            ),
           ),
-        ),
-        onTap: () {
-          Navigator.pushNamed(context, '/account',
-              arguments: {"account": account, "controller": controller});
-        });
+          onTap: () {
+            Navigator.pushNamed(context, '/account',
+                arguments: {"account": account, "controller": controller});
+          });
+    });
   }
 }
