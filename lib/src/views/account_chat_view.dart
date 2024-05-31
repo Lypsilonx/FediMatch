@@ -110,18 +110,28 @@ class _AccountChatViewState extends State<AccountChatView> {
           Mastodon.instanceUsernameFromUrl(Mastodon.instance.self.url);
       String selfInstance = selfInstanceUsername.$1;
 
-      await Mastodon.getAccountStatuses(selfInstance, Mastodon.instance.self.id,
-              excludeReblogs: true,
-              limit: 40,
-              accessToken: SettingsController.instance.accessToken)
-          .then((statuses) {
-        statuses
-            .where((status) => status.visibility == "direct")
-            .where((status) => status.mentions
-                .any((mention) => mention.url == actualAccount.url))
-            .forEach((status) {
+      var conversations = await Mastodon.getConversations(
+        selfInstance,
+        SettingsController.instance.accessToken,
+        limit: 40,
+      );
+
+      conversations = conversations
+          .where((conversation) =>
+              conversation.accounts
+                  .any((account) => account.url == actualAccount.url) &&
+              conversation.lastStatus != null)
+          .toList();
+
+      for (var conversation in conversations) {
+        var context = await Mastodon.getContext(conversation.lastStatus!.id,
+            selfInstance, SettingsController.instance.accessToken);
+        List<Status> statuses = [];
+        statuses.add(conversation.lastStatus!);
+        statuses.addAll(context.ancestors);
+        statuses.forEach((status) {
           var message = types.CustomMessage(
-            author: widget._sender,
+            author: types.User(id: status.account.url),
             createdAt: DateTime.parse(status.createdAt).millisecondsSinceEpoch,
             id: status.id,
             metadata: {"type": "status", "status": status},
@@ -129,7 +139,8 @@ class _AccountChatViewState extends State<AccountChatView> {
 
           _messages.add(message);
         });
-      });
+      }
+      ;
     }
 
     // sort messages by date

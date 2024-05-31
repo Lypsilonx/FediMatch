@@ -6,22 +6,35 @@ class Matcher {
   static List<String> liked = [];
   static List<String> disliked = [];
   static List<String> superliked = [];
+  static List<String> any() => liked + disliked + superliked + matches;
 
   static List<String> get matches {
     return []; // TODO implement matching
   }
 
   static void addToLiked(Account account) {
+    if (any().contains(account.url)) {
+      return;
+    }
+
     liked.add(account.url);
     saveToPrefs();
   }
 
   static void addToDisliked(Account account) {
+    if (any().contains(account.url)) {
+      return;
+    }
+
     disliked.add(account.url);
     saveToPrefs();
   }
 
   static void addToSuperliked(Account account) {
+    if (any().contains(account.url)) {
+      return;
+    }
+
     superliked.add(account.url);
     saveToPrefs();
   }

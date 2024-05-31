@@ -15,7 +15,8 @@ class AccountDetailsView extends StatefulWidget {
 
   static Map<String, Color> tagColors(ThemeData theme) {
     return {
-      "interest": theme.colorScheme.primary,
+      "none": theme.colorScheme.shadow,
+      "interest": Colors.blue,
     };
   }
 

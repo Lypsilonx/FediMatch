@@ -261,6 +261,10 @@ class Account {
         fields.where((e) => e.name == "FediMatch").first.value ?? "";
 
     return fediMatchFieldValue.split(", ").map((e) {
+      if (!e.contains(":")) {
+        return FediMatchTag("none", e);
+      }
+
       String tagType = e.split(":")[0];
       String tagValue = e.split(":")[1];
       return FediMatchTag(tagType, tagValue);
@@ -718,6 +722,165 @@ class Status {
   }
 }
 
+class Conversation {
+  late String id;
+  late bool unread;
+  late List<Account> accounts;
+  late Status? lastStatus;
+
+  Conversation({
+    required this.id,
+    required this.unread,
+    required this.accounts,
+    this.lastStatus,
+  });
+
+  factory Conversation.fromJson(Map<String, dynamic> json) {
+    return Conversation(
+      id: json['id'],
+      unread: json['unread'] == "true",
+      accounts: (json['accounts'] as List<dynamic>)
+          .map((e) => Account.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      lastStatus: json.containsKey('last_status')
+          ? Status.fromJson(json['last_status'] as Map<String, dynamic>)
+          : null,
+    );
+  }
+}
+
+class Report {
+  late String id;
+  late bool actionTaken;
+  late String? actionTakenAt;
+  late String category;
+  late String comment;
+  late bool forwarded;
+  late String createdAt;
+  late List<String>? statusIds;
+  late List<String>? ruleIds;
+  late Account targetAccount;
+
+  Report({
+    required this.id,
+    required this.actionTaken,
+    required this.actionTakenAt,
+    required this.category,
+    required this.comment,
+    required this.forwarded,
+    required this.createdAt,
+    required this.statusIds,
+    required this.ruleIds,
+    required this.targetAccount,
+  });
+
+  factory Report.fromJson(Map<String, dynamic> json) {
+    return Report(
+      id: json['id'],
+      actionTaken: json['action_taken'] == "true",
+      actionTakenAt: json['action_taken_at'],
+      category: json['category'],
+      comment: json['comment'],
+      forwarded: json['forwarded'] == "true",
+      createdAt: json['created_at'],
+      statusIds: (json['status_ids'] as List<dynamic>)
+          .map((e) => e as String)
+          .toList(),
+      ruleIds:
+          (json['rule_ids'] as List<dynamic>).map((e) => e as String).toList(),
+      targetAccount: Account.fromJson(json['target_account']),
+    );
+  }
+}
+
+class RelationshipSeveranceEvent {
+  late String id;
+  late String type;
+  late bool purged;
+  late String targetName;
+  late int? relationshipCount;
+  late String createdAt;
+
+  RelationshipSeveranceEvent({
+    required this.id,
+    required this.type,
+    required this.purged,
+    required this.targetName,
+    this.relationshipCount,
+    required this.createdAt,
+  });
+
+  factory RelationshipSeveranceEvent.fromJson(Map<String, dynamic> json) {
+    return RelationshipSeveranceEvent(
+      id: json['id'],
+      type: json['type'],
+      purged: json['purged'] == "true",
+      targetName: json['target_name'],
+      relationshipCount: json.containsKey('relationship_count')
+          ? json['relationship_count']
+          : null,
+      createdAt: json['created_at'],
+    );
+  }
+}
+
+class Notification {
+  late String id;
+  late String type;
+  late String createdAt;
+  late Account account;
+  late Status? status;
+  late Report? report;
+  late RelationshipSeveranceEvent? relationshipSeveranceEvent;
+
+  Notification({
+    required this.id,
+    required this.type,
+    required this.createdAt,
+    required this.account,
+    this.status,
+    this.report,
+    this.relationshipSeveranceEvent,
+  });
+
+  factory Notification.fromJson(Map<String, dynamic> json) {
+    return Notification(
+      id: json['id'],
+      type: json['type'],
+      createdAt: json['created_at'],
+      account: Account.fromJson(json['account']),
+      status: json.containsKey('status')
+          ? Status.fromJson(json['status'] as Map<String, dynamic>)
+          : null,
+      report: json.containsKey('report')
+          ? Report.fromJson(json['report'] as Map<String, dynamic>)
+          : null,
+      relationshipSeveranceEvent: json.containsKey('RelationshipSeveranceEvent')
+          ? RelationshipSeveranceEvent.fromJson(
+              json['RelationshipSeveranceEvent'] as Map<String, dynamic>)
+          : null,
+    );
+  }
+}
+
+class Context {
+  late List<Status> ancestors;
+  late List<Status> descendants;
+
+  Context({required this.ancestors, required this.descendants});
+
+  factory Context.fromJson(Map<String, dynamic> json) {
+    return Context(
+      ancestors: (json['ancestors'] as List<dynamic>)
+          .map((e) => Status.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      descendants: (json['descendants'] as List<dynamic>)
+          .map((e) => Status.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+}
+
 class Mastodon {
   static Mastodon? _instance;
   static Mastodon get instance => _instance!;
@@ -878,6 +1041,70 @@ class Mastodon {
     if (response.statusCode == 200) {
       return (jsonDecode(response.body) as List<dynamic>)
           .map((e) => Status.fromJson(e as Map<String, dynamic>))
+          .toList();
+    }
+
+    throw Exception("Failed to load home timeline (${response.body})");
+  }
+
+  static Future<List<Conversation>> getConversations(
+    String userInstanceName,
+    String accessToken, {
+    int limit = 20,
+  }) async {
+    var response = await getFromInstance(
+      userInstanceName,
+      "/conversations" + "?limit=$limit",
+      accessToken: accessToken,
+    );
+
+    if (response.statusCode == 200) {
+      return (jsonDecode(response.body) as List<dynamic>)
+          .map((e) => Conversation.fromJson(e as Map<String, dynamic>))
+          .toList();
+    }
+
+    throw Exception("Failed to load home timeline (${response.body})");
+  }
+
+  static Future<Context> getContext(
+    String statusId,
+    String userInstanceName,
+    String accessToken,
+  ) async {
+    var response = await getFromInstance(
+      userInstanceName,
+      "/statuses/$statusId/context",
+      accessToken: accessToken,
+    );
+
+    if (response.statusCode == 200) {
+      return Context.fromJson(
+          jsonDecode(response.body) as Map<String, dynamic>);
+    }
+
+    throw Exception("Failed to load home timeline (${response.body})");
+  }
+
+  static Future<List<Notification>> getNotifications(
+    String userInstanceName,
+    String accessToken, {
+    int limit = 40,
+    List<String>? types,
+    String? accountId,
+  }) async {
+    var response = await getFromInstance(
+      userInstanceName,
+      "/notifications" +
+          "?limit=$limit" +
+          (accountId != null ? "&account_id=$accountId" : "") +
+          (types != null ? "&types=${types.join(",")}" : ""),
+      accessToken: accessToken,
+    );
+
+    if (response.statusCode == 200) {
+      return (jsonDecode(response.body) as List<dynamic>)
+          .map((e) => Notification.fromJson(e as Map<String, dynamic>))
           .toList();
     }
 
