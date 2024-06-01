@@ -14,10 +14,16 @@ class FediMatchLogo extends StatelessWidget {
             color: Theme.of(context).colorScheme.primary,
           ),
           child: Text('Fedi',
-              style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
+              style: Theme.of(context)
+                  .textTheme
+                  .titleLarge!
+                  .copyWith(color: Theme.of(context).colorScheme.onPrimary)),
         ),
         Text('Match',
-            style: TextStyle(color: Theme.of(context).colorScheme.primary)),
+            style: Theme.of(context)
+                .textTheme
+                .titleLarge!
+                .copyWith(color: Theme.of(context).colorScheme.primary)),
       ],
     );
   }

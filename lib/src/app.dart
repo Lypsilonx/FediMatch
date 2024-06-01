@@ -36,8 +36,8 @@ class FediMatch extends StatelessWidget {
           ],
           onGenerateTitle: (BuildContext context) =>
               AppLocalizations.of(context)!.appTitle,
-          theme: ThemeData(),
-          darkTheme: ThemeData.dark(),
+          theme: SettingsController.instance.theme,
+          darkTheme: SettingsController.instance.darkTheme,
           themeMode: SettingsController.instance.themeMode,
           onGenerateRoute: (RouteSettings routeSettings) {
             return MaterialPageRoute<void>(

@@ -44,7 +44,10 @@ class _LoginViewState extends State<LoginView> {
           children: switch (LoginView.loginStep) {
             0 => [
                 SizedBox(height: 40),
-                const Text('Login', style: TextStyle(fontSize: 24)),
+                Text(
+                  'Login',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
                 SizedBox(height: 40),
                 TextFormField(
                   controller: textFieldController,
@@ -83,7 +86,10 @@ class _LoginViewState extends State<LoginView> {
               ],
             1 => [
                 SizedBox(height: 40),
-                const Text('Login', style: TextStyle(fontSize: 24)),
+                Text(
+                  'Login',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
                 SizedBox(height: 40),
                 TextFormField(
                   controller: textFieldController,

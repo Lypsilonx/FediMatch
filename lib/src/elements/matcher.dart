@@ -1,6 +1,6 @@
 import 'package:fedi_match/mastodon.dart';
+import 'package:fedi_match/src/settings/matched_data.dart';
 import 'package:fedi_match/src/settings/settings_controller.dart';
-import 'package:fedi_match/src/settings/settings_service.dart';
 import 'package:fedi_match/util.dart';
 import 'package:flutter/material.dart';
 
@@ -22,6 +22,8 @@ class Matcher {
     return toUpload.length;
   }
 
+  static String advertisedLink = "https://testflight.apple.com/join/Xf4FTWiG";
+
   static Future<String> uploadLikes() async {
     final Map<String, bool> toUpload = {};
     for (String url in liked) {
@@ -33,7 +35,8 @@ class Matcher {
 
     toUpload.removeWhere((url, superlike) => uploaded.contains(url));
 
-    int successfullUploads = 0;
+    List<String> data = [];
+
     for (var url in toUpload.keys) {
       var instanceUsername = Mastodon.instanceUsernameFromUrl(url);
       String instance = instanceUsername.$1;
@@ -48,24 +51,30 @@ class Matcher {
       String plainText = url + ":" + (toUpload[url]! ? "superlike" : "like");
       final encrypted = Crypotography.rsaEncrypt(remotePublicKey, plainText);
 
-      var ownInstanceUsername =
-          Mastodon.instanceUsernameFromUrl(Mastodon.instance.self.url);
-      String ownInstance = ownInstanceUsername.$1;
-
-      print(encrypted);
-
-      Mastodon.sendStatus(
-        ownInstance,
-        encrypted.map((byte) => byte.toString()).join(","), // convert to string
-        SettingsController.instance.accessToken,
-        visibility: "unlisted",
-      );
-
+      data.add(encrypted.map((byte) => byte.toString()).join(","));
       uploaded.add(url);
-      successfullUploads++;
     }
 
-    print("Uploaded $successfullUploads likes");
+    if (data.isEmpty) {
+      return "No new likes to upload";
+    }
+
+    var ownInstanceUsername =
+        Mastodon.instanceUsernameFromUrl(Mastodon.instance.self.url);
+    String ownInstance = ownInstanceUsername.$1;
+
+    String message = advertisedLink + "?fedi_match_data=${data.join("|")}";
+
+    Mastodon.sendStatus(
+      ownInstance,
+      message,
+      SettingsController.instance.accessToken,
+      visibility: "unlisted",
+      spoilerText: "FediMatch",
+      sensitive: true,
+    );
+
+    print("Uploaded ${data.length} likes");
 
     findMatches();
 
@@ -95,26 +104,30 @@ class Matcher {
             continue;
           }
 
-          String encrypted =
+          String data =
               status.content.replaceAll("<p>", "").replaceAll("</p>", "");
-          // render html chars as unicode
-          print("Encrypted: $encrypted");
 
-          // check if all characters are numbers or commas
-          if (encrypted.characters
-              .every((char) => char == "," || int.tryParse(char) != null)) {
-            try {
-              final decrypted = Crypotography.rsaDecrypt(
-                  SettingsController.instance.privateMatchKey,
-                  encrypted.split(",").map(int.parse).toList());
-              print("Decrypted: $decrypted");
-              if (decrypted.contains(Mastodon.instance.self.url)) {
-                addMatch(account);
-                break;
+          // extract data from link
+          data = data.split("?fedi_match_data=")[1].split("\"")[0];
+
+          for (String encrypted in data.split("|")) {
+            print("Encrypted: $encrypted");
+            // check if all characters are numbers or commas
+            if (encrypted.characters
+                .every((char) => char == "," || int.tryParse(char) != null)) {
+              try {
+                final decrypted = Crypotography.rsaDecrypt(
+                    SettingsController.instance.privateMatchKey,
+                    encrypted.split(",").map(int.parse).toList());
+                print("Decrypted: $decrypted");
+                if (decrypted.contains(Mastodon.instance.self.url)) {
+                  addMatch(account);
+                  break;
+                }
+              } catch (e) {
+                print("Error: $e");
+                continue;
               }
-            } catch (e) {
-              print("Error: $e");
-              continue;
             }
           }
         }

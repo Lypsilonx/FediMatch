@@ -1,4 +1,5 @@
 import 'package:fedi_match/mastodon.dart';
+import 'package:fedi_match/src/elements/did_not_opt_in_icon.dart';
 import 'package:fedi_match/src/views/account_details_view.dart';
 import 'package:fedi_match/src/views/account_chat_view.dart';
 import 'package:flutter/material.dart';
@@ -30,7 +31,7 @@ class _AccountViewState extends State<AccountView> {
             : null,
         title: widget.showIcon
             ? Text(
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                style: Theme.of(context).textTheme.titleMedium,
                 widget.account.getDisplayName() == ""
                     ? widget.account.username
                     : widget.account.getDisplayName(),
@@ -40,7 +41,7 @@ class _AccountViewState extends State<AccountView> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+                    style: Theme.of(context).textTheme.titleLarge,
                     widget.account.getDisplayName(),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -48,28 +49,12 @@ class _AccountViewState extends State<AccountView> {
                 ],
               ),
         subtitle: Text(
-          style: TextStyle(fontSize: 14),
+          style: Theme.of(context).textTheme.bodyMedium,
           "@" + widget.account.username + "@" + instance,
           overflow: TextOverflow.ellipsis,
         ),
-        trailing: !widget.account.hasFediMatchField()
-            ? Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.warning,
-                    color: Theme.of(context).colorScheme.error,
-                  ),
-                  Text(
-                    "Did not\nOpt-in",
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
-                      fontSize: 8,
-                    ),
-                  ),
-                ],
-              )
-            : null,
+        trailing:
+            !widget.account.hasFediMatchField() ? DidNotOptInIcon() : null,
         onTap: () {
           switch (widget.goto) {
             case "info":

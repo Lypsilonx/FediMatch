@@ -1,17 +1,6 @@
+import 'package:fedi_match/src/settings/matched_data.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-class MatchedData {
-  final List<String> liked;
-  final List<String> disliked;
-  final List<String> superliked;
-  final List<String> matches;
-
-  final List<String> uploaded;
-
-  MatchedData(
-      this.liked, this.disliked, this.superliked, this.matches, this.uploaded);
-}
 
 class SettingsService {
   static SettingsService? _instance;
@@ -28,60 +17,19 @@ class SettingsService {
 
   static const String _settingsPrefix = "FediMatch";
 
-  // Matched Data
-  static const String matchedDataKey = "${_settingsPrefix}MatchedData";
-  static const String matchedDataKeyLiked = "${matchedDataKey}Liked";
-  static const String matchedDataKeyDisliked = "${matchedDataKey}Disliked";
-  static const String matchedDataKeySuperliked = "${matchedDataKey}Superliked";
-  static const String matchedDataKeyMatches = "${matchedDataKey}Matches";
-  static const String matchedDataKeyUploaded = "${matchedDataKey}Uploaded";
-  Future<MatchedData> matchedData() async {
-    return MatchedData(
-        _preferences!.getStringList(matchedDataKeyLiked) ?? [],
-        _preferences!.getStringList(matchedDataKeyDisliked) ?? [],
-        _preferences!.getStringList(matchedDataKeySuperliked) ?? [],
-        _preferences!.getStringList(matchedDataKeyMatches) ?? [],
-        _preferences!.getStringList(matchedDataKeyUploaded) ?? []);
-  }
-
-  Future<void> updateMatchedData(MatchedData matchedData) async {
-    _preferences!.setStringList(matchedDataKeyLiked, matchedData.liked);
-    _preferences!.setStringList(matchedDataKeyDisliked, matchedData.disliked);
-    _preferences!
-        .setStringList(matchedDataKeySuperliked, matchedData.superliked);
-    _preferences!.setStringList(matchedDataKeyMatches, matchedData.matches);
-    _preferences!.setStringList(matchedDataKeyUploaded, matchedData.uploaded);
-  }
-
-  // User Instance Name
-  static const String userInstanceNameKey =
-      "${_settingsPrefix}UserInstanceName";
-  static const String userInstanceNameDefault = "mastodon.social";
-  Future<String> userInstanceName() async {
-    if (_preferences!.containsKey(userInstanceNameKey)) {
-      return _preferences!.getString(userInstanceNameKey)!;
+  // Theme Color
+  static const String themeColorKey = "${_settingsPrefix}ThemeColor";
+  static const Color themeColorDefault = Colors.deepPurple;
+  Future<Color> themeColor() async {
+    if (_preferences!.containsKey(themeColorKey)) {
+      return Color(_preferences!.getInt(themeColorKey)!);
     }
 
-    return userInstanceNameDefault;
+    return themeColorDefault;
   }
 
-  Future<void> updateUserInstanceName(String userInstanceName) async {
-    _preferences!.setString(userInstanceNameKey, userInstanceName);
-  }
-
-  // Access Token
-  static const String accessTokenKey = "${_settingsPrefix}AccessToken";
-  static const String accessTokenDefault = "";
-  Future<String> accessToken() async {
-    if (_preferences!.containsKey(accessTokenKey)) {
-      return _preferences!.getString(accessTokenKey)!;
-    }
-
-    return accessTokenDefault;
-  }
-
-  Future<void> updateAccessToken(String accessToken) async {
-    _preferences!.setString(accessTokenKey, accessToken);
+  Future<void> updateThemeColor(Color themeColor) async {
+    _preferences!.setInt(themeColorKey, themeColor.value);
   }
 
   // Theme Mode
@@ -115,6 +63,78 @@ class SettingsService {
 
   Future<void> updateShowNonOptInAccounts(bool showNonOptInAccounts) async {
     _preferences!.setBool(showNonOptInAccountsKey, showNonOptInAccounts);
+  }
+
+  // Chat Mention Safety
+  static const String chatMentionSafetyKey =
+      "${_settingsPrefix}ChatMentionSafety";
+  static const bool chatMentionSafetyDefault = true;
+  Future<bool> chatMentionSafety() async {
+    if (_preferences!.containsKey(chatMentionSafetyKey)) {
+      return _preferences!.getBool(chatMentionSafetyKey)!;
+    }
+
+    return chatMentionSafetyDefault;
+  }
+
+  Future<void> updateChatMentionSafety(bool chatMentionSafety) async {
+    _preferences!.setBool(chatMentionSafetyKey, chatMentionSafety);
+  }
+
+  // User Instance Name
+  static const String userInstanceNameKey =
+      "${_settingsPrefix}UserInstanceName";
+  static const String userInstanceNameDefault = "mastodon.social";
+  Future<String> userInstanceName() async {
+    if (_preferences!.containsKey(userInstanceNameKey)) {
+      return _preferences!.getString(userInstanceNameKey)!;
+    }
+
+    return userInstanceNameDefault;
+  }
+
+  Future<void> updateUserInstanceName(String userInstanceName) async {
+    _preferences!.setString(userInstanceNameKey, userInstanceName);
+  }
+
+  // Access Token
+  static const String accessTokenKey = "${_settingsPrefix}AccessToken";
+  static const String accessTokenDefault = "";
+  Future<String> accessToken() async {
+    if (_preferences!.containsKey(accessTokenKey)) {
+      return _preferences!.getString(accessTokenKey)!;
+    }
+
+    return accessTokenDefault;
+  }
+
+  Future<void> updateAccessToken(String accessToken) async {
+    _preferences!.setString(accessTokenKey, accessToken);
+  }
+
+  // Matched Data
+  static const String matchedDataKey = "${_settingsPrefix}MatchedData";
+  static const String matchedDataKeyLiked = "${matchedDataKey}Liked";
+  static const String matchedDataKeyDisliked = "${matchedDataKey}Disliked";
+  static const String matchedDataKeySuperliked = "${matchedDataKey}Superliked";
+  static const String matchedDataKeyMatches = "${matchedDataKey}Matches";
+  static const String matchedDataKeyUploaded = "${matchedDataKey}Uploaded";
+  Future<MatchedData> matchedData() async {
+    return MatchedData(
+        _preferences!.getStringList(matchedDataKeyLiked) ?? [],
+        _preferences!.getStringList(matchedDataKeyDisliked) ?? [],
+        _preferences!.getStringList(matchedDataKeySuperliked) ?? [],
+        _preferences!.getStringList(matchedDataKeyMatches) ?? [],
+        _preferences!.getStringList(matchedDataKeyUploaded) ?? []);
+  }
+
+  Future<void> updateMatchedData(MatchedData matchedData) async {
+    _preferences!.setStringList(matchedDataKeyLiked, matchedData.liked);
+    _preferences!.setStringList(matchedDataKeyDisliked, matchedData.disliked);
+    _preferences!
+        .setStringList(matchedDataKeySuperliked, matchedData.superliked);
+    _preferences!.setStringList(matchedDataKeyMatches, matchedData.matches);
+    _preferences!.setStringList(matchedDataKeyUploaded, matchedData.uploaded);
   }
 
   // Private Match Key

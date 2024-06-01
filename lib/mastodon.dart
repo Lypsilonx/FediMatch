@@ -280,6 +280,10 @@ class Account {
     String fediMatchFieldValue =
         fields.where((e) => e.name == "FediMatch").first.value ?? "";
 
+    if (fediMatchFieldValue.isEmpty) {
+      return [];
+    }
+
     return fediMatchFieldValue.split(", ").map((e) {
       if (!e.contains(":")) {
         return FediMatchTag("none", e);
@@ -1132,8 +1136,13 @@ class Mastodon {
   }
 
   static Future<String> sendStatus(
-      String userInstanceName, String text, String accessToken,
-      {String visibility = "public"}) async {
+    String userInstanceName,
+    String text,
+    String accessToken, {
+    String visibility = "public",
+    String spoilerText = "",
+    bool sensitive = false,
+  }) async {
     var response = await postToInstance(
       userInstanceName,
       "statuses",
@@ -1141,6 +1150,8 @@ class Mastodon {
       body: <String, String>{
         'status': text,
         'visibility': visibility,
+        'spoiler_text': spoilerText,
+        'sensitive': sensitive ? "true" : "false",
       },
     );
 

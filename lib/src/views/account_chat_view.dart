@@ -216,7 +216,10 @@ class _AccountChatViewState extends State<AccountChatView> {
 
         await Mastodon.sendStatus(
             instance,
-            recipientMention + (message as types.TextMessage).text,
+            recipientMention +
+                (SettingsController.instance.chatMentionSafety
+                    ? ((message as types.TextMessage).text.replaceAll("@", ""))
+                    : (message as types.TextMessage).text),
             SettingsController.instance.accessToken,
             visibility: "direct");
         break;

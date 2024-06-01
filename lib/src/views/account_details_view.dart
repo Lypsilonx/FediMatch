@@ -184,6 +184,8 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
                           children: accountStatuses.length > 0 ||
                                   actualAccount.statusesCount == 0
                               ? accountStatuses
+                                  .where((element) =>
+                                      element.visibility == "public")
                                   .map((e) => StatusView(e))
                                   .toList()
                               : [

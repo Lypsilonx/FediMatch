@@ -1,3 +1,4 @@
+import 'package:fedi_match/src/settings/matched_data.dart';
 import 'package:flutter/material.dart';
 
 import 'settings_service.dart';
@@ -11,17 +12,90 @@ class SettingsController with ChangeNotifier {
   static SettingsController get instance => _instance;
 
   Future<void> loadSettings() async {
+    _themeColor = await _settingsService.themeColor();
+    updateThemeColor(_themeColor);
     _themeMode = await _settingsService.themeMode();
+    _showNonOptInAccounts = await _settingsService.showNonOptInAccounts();
+    _chatMentionSafety = await _settingsService.chatMentionSafety();
+
     _userInstanceName = await _settingsService.userInstanceName();
     _accessToken = await _settingsService.accessToken();
     _matchedData = await _settingsService.matchedData();
-    _showNonOptInAccounts = await _settingsService.showNonOptInAccounts();
     _privateMatchKey = await _settingsService.privateMatchKey();
     _publicMatchKey = await _settingsService.publicMatchKey();
 
     _instance = this;
 
     notifyListeners();
+  }
+
+  late ThemeData _darkTheme;
+  ThemeData get darkTheme => _darkTheme;
+
+  late ThemeMode _themeMode;
+  ThemeMode get themeMode => _themeMode;
+
+  late Color _themeColor;
+  Color get themeColor => _themeColor;
+
+  void updateThemeColor(Color? newThemeColor) async {
+    if (newThemeColor == null) return;
+
+    _themeColor = newThemeColor;
+    _theme = ThemeData.from(
+      useMaterial3: true,
+      colorScheme: ColorScheme.fromSeed(
+        brightness: Brightness.light,
+        seedColor: _themeColor,
+      ),
+    );
+    _darkTheme = ThemeData.from(
+      useMaterial3: true,
+      colorScheme: ColorScheme.fromSeed(
+        brightness: Brightness.dark,
+        seedColor: _themeColor,
+      ),
+    );
+
+    notifyListeners();
+    await _settingsService.updateThemeColor(themeColor);
+  }
+
+  late ThemeData _theme;
+  ThemeData get theme => _theme;
+
+  Future<void> updateThemeMode(ThemeMode? newThemeMode) async {
+    if (newThemeMode == null) return;
+    if (newThemeMode == _themeMode) return;
+
+    _themeMode = newThemeMode;
+
+    notifyListeners();
+    await _settingsService.updateThemeMode(newThemeMode);
+  }
+
+  late bool _showNonOptInAccounts;
+  bool get showNonOptInAccounts => _showNonOptInAccounts;
+
+  Future<void> updateShowNonOptInAccounts(bool newShowNonOptInAccounts) async {
+    if (newShowNonOptInAccounts == _showNonOptInAccounts) return;
+
+    _showNonOptInAccounts = newShowNonOptInAccounts;
+
+    notifyListeners();
+    await _settingsService.updateShowNonOptInAccounts(newShowNonOptInAccounts);
+  }
+
+  late bool _chatMentionSafety;
+  bool get chatMentionSafety => _chatMentionSafety;
+
+  Future<void> updateChatMentionSafety(bool newChatMentionSafety) async {
+    if (newChatMentionSafety == _chatMentionSafety) return;
+
+    _chatMentionSafety = newChatMentionSafety;
+
+    notifyListeners();
+    await _settingsService.updateChatMentionSafety(newChatMentionSafety);
   }
 
   late String _userInstanceName;
@@ -61,31 +135,6 @@ class SettingsController with ChangeNotifier {
 
     notifyListeners();
     await _settingsService.updateMatchedData(newMatchedData);
-  }
-
-  late ThemeMode _themeMode;
-  ThemeMode get themeMode => _themeMode;
-
-  Future<void> updateThemeMode(ThemeMode? newThemeMode) async {
-    if (newThemeMode == null) return;
-    if (newThemeMode == _themeMode) return;
-
-    _themeMode = newThemeMode;
-
-    notifyListeners();
-    await _settingsService.updateThemeMode(newThemeMode);
-  }
-
-  late bool _showNonOptInAccounts;
-  bool get showNonOptInAccounts => _showNonOptInAccounts;
-
-  Future<void> updateShowNonOptInAccounts(bool newShowNonOptInAccounts) async {
-    if (newShowNonOptInAccounts == _showNonOptInAccounts) return;
-
-    _showNonOptInAccounts = newShowNonOptInAccounts;
-
-    notifyListeners();
-    await _settingsService.updateShowNonOptInAccounts(newShowNonOptInAccounts);
   }
 
   late String _privateMatchKey;

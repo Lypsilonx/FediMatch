@@ -80,9 +80,17 @@ class _MatchListSectionState extends State<MatchListSection> {
       leading: widget.icon == null
           ? null
           : Icon(widget.icon, color: widget.color ?? Colors.black),
-      title: Text(widget.title + " (${widget.urls.length})"),
+      title: Text(
+        widget.title + " (${widget.urls.length})",
+        style: Theme.of(context).textTheme.titleMedium,
+      ),
       children: widget.urls.isEmpty
-          ? <Widget>[Text(widget.emptyMessage ?? "no matches yet")]
+          ? <Widget>[
+              Text(
+                widget.emptyMessage ?? "no matches yet",
+                style: Theme.of(context).textTheme.labelLarge,
+              )
+            ]
           : [
               ListView.builder(
                 shrinkWrap: true,

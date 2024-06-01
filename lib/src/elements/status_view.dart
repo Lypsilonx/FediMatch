@@ -50,6 +50,19 @@ class StatusView extends StatelessWidget {
                           ),
                     Column(
                       children: [
+                        status.spoilerText != ""
+                            ? Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  Text(
+                                    status.spoilerText,
+                                    style:
+                                        Theme.of(context).textTheme.titleSmall,
+                                  ),
+                                  SizedBox(height: 10),
+                                ],
+                              )
+                            : Container(),
                         status.getContent(
                             style: onlyContent
                                 ? TextStyle(
