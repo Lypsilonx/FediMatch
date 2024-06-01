@@ -5,8 +5,12 @@ class MatchedData {
   final List<String> liked;
   final List<String> disliked;
   final List<String> superliked;
+  final List<String> matches;
 
-  MatchedData(this.liked, this.disliked, this.superliked);
+  final List<String> uploaded;
+
+  MatchedData(
+      this.liked, this.disliked, this.superliked, this.matches, this.uploaded);
 }
 
 class SettingsService {
@@ -29,11 +33,15 @@ class SettingsService {
   static const String matchedDataKeyLiked = "${matchedDataKey}Liked";
   static const String matchedDataKeyDisliked = "${matchedDataKey}Disliked";
   static const String matchedDataKeySuperliked = "${matchedDataKey}Superliked";
+  static const String matchedDataKeyMatches = "${matchedDataKey}Matches";
+  static const String matchedDataKeyUploaded = "${matchedDataKey}Uploaded";
   Future<MatchedData> matchedData() async {
     return MatchedData(
         _preferences!.getStringList(matchedDataKeyLiked) ?? [],
         _preferences!.getStringList(matchedDataKeyDisliked) ?? [],
-        _preferences!.getStringList(matchedDataKeySuperliked) ?? []);
+        _preferences!.getStringList(matchedDataKeySuperliked) ?? [],
+        _preferences!.getStringList(matchedDataKeyMatches) ?? [],
+        _preferences!.getStringList(matchedDataKeyUploaded) ?? []);
   }
 
   Future<void> updateMatchedData(MatchedData matchedData) async {
@@ -41,6 +49,8 @@ class SettingsService {
     _preferences!.setStringList(matchedDataKeyDisliked, matchedData.disliked);
     _preferences!
         .setStringList(matchedDataKeySuperliked, matchedData.superliked);
+    _preferences!.setStringList(matchedDataKeyMatches, matchedData.matches);
+    _preferences!.setStringList(matchedDataKeyUploaded, matchedData.uploaded);
   }
 
   // User Instance Name
@@ -105,5 +115,36 @@ class SettingsService {
 
   Future<void> updateShowNonOptInAccounts(bool showNonOptInAccounts) async {
     _preferences!.setBool(showNonOptInAccountsKey, showNonOptInAccounts);
+  }
+
+  // Private Match Key
+  static const String privateMatchKeyKey = "${_settingsPrefix}PrivateMatchKey";
+  static const String privateMatchKeyDefault = "";
+  Future<String> privateMatchKey() async {
+    if (_preferences!.containsKey(privateMatchKeyKey)) {
+      return _preferences!.getString(privateMatchKeyKey)!;
+    }
+
+    return privateMatchKeyDefault;
+  }
+
+  Future<void> updatePrivateMatchKey(String privateMatchKey) async {
+    _preferences!.setString(privateMatchKeyKey, privateMatchKey);
+  }
+
+  // Public Match Key
+  static const String publicMatchKeyKey = "${_settingsPrefix}PublicMatchKey";
+  static const String publicMatchKeyDefault = "";
+
+  Future<String> publicMatchKey() async {
+    if (_preferences!.containsKey(publicMatchKeyKey)) {
+      return _preferences!.getString(publicMatchKeyKey)!;
+    }
+
+    return publicMatchKeyDefault;
+  }
+
+  Future<void> updatePublicMatchKey(String publicMatchKey) async {
+    _preferences!.setString(publicMatchKeyKey, publicMatchKey);
   }
 }

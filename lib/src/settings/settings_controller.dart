@@ -16,6 +16,9 @@ class SettingsController with ChangeNotifier {
     _accessToken = await _settingsService.accessToken();
     _matchedData = await _settingsService.matchedData();
     _showNonOptInAccounts = await _settingsService.showNonOptInAccounts();
+    _privateMatchKey = await _settingsService.privateMatchKey();
+    _publicMatchKey = await _settingsService.publicMatchKey();
+
     _instance = this;
 
     notifyListeners();
@@ -83,5 +86,29 @@ class SettingsController with ChangeNotifier {
 
     notifyListeners();
     await _settingsService.updateShowNonOptInAccounts(newShowNonOptInAccounts);
+  }
+
+  late String _privateMatchKey;
+  String get privateMatchKey => _privateMatchKey;
+
+  Future<void> updatePrivateMatchKey(String newPrivateMatchKey) async {
+    if (newPrivateMatchKey == _privateMatchKey) return;
+
+    _privateMatchKey = newPrivateMatchKey;
+
+    notifyListeners();
+    await _settingsService.updatePrivateMatchKey(newPrivateMatchKey);
+  }
+
+  late String _publicMatchKey;
+  String get publicMatchKey => _publicMatchKey;
+
+  Future<void> updatePublicMatchKey(String newPublicMatchKey) async {
+    if (newPublicMatchKey == _publicMatchKey) return;
+
+    _publicMatchKey = newPublicMatchKey;
+
+    notifyListeners();
+    await _settingsService.updatePublicMatchKey(newPublicMatchKey);
   }
 }

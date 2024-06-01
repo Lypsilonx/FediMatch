@@ -1,5 +1,6 @@
 import 'package:fedi_match/mastodon.dart';
 import 'package:fedi_match/src/elements/fedi_match_logo.dart';
+import 'package:fedi_match/util.dart';
 import 'package:flutter/material.dart';
 import '../settings/settings_controller.dart';
 
@@ -64,26 +65,14 @@ class _LoginViewState extends State<LoginView> {
                       backgroundColor: WidgetStateProperty.all<Color>(
                           Theme.of(context).colorScheme.primary)),
                   onPressed: () async {
-                    String result =
-                        await Mastodon.OpenExternalLogin(instanceName);
-                    print(result);
-                    if (result == "OK") {
+                    Util.executeWhenOK(
+                        Mastodon.OpenExternalLogin(instanceName), context,
+                        onOK: () {
                       setState(() {
                         textFieldController.clear();
                         LoginView.loginStep = 1;
                       });
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text(
-                          result,
-                          style: new TextStyle(
-                            color: Theme.of(context).colorScheme.onError,
-                          ),
-                        ),
-                        showCloseIcon: true,
-                        backgroundColor: Theme.of(context).colorScheme.error,
-                      ));
-                    }
+                    });
                   },
                   child: Text(
                     style: TextStyle(
@@ -132,25 +121,12 @@ class _LoginViewState extends State<LoginView> {
                           backgroundColor: WidgetStateProperty.all<Color>(
                               Theme.of(context).colorScheme.primary)),
                       onPressed: () async {
-                        String result = await Mastodon.Login(
-                            SettingsController.instance,
-                            authCode,
-                            instanceName);
-                        if (result == "OK") {
+                        Util.executeWhenOK(
+                            Mastodon.Login(SettingsController.instance,
+                                authCode, instanceName),
+                            context, onOK: () {
                           Navigator.pushReplacementNamed(context, "/");
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                            content: Text(
-                              result,
-                              style: new TextStyle(
-                                color: Theme.of(context).colorScheme.onError,
-                              ),
-                            ),
-                            showCloseIcon: true,
-                            backgroundColor:
-                                Theme.of(context).colorScheme.error,
-                          ));
-                        }
+                        });
                       },
                       child: Text(
                         style: TextStyle(

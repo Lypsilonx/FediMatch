@@ -1,3 +1,4 @@
+import 'package:fedi_match/src/elements/matcher.dart';
 import 'package:fedi_match/src/settings/settings_controller.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
@@ -55,7 +56,11 @@ class Field {
       hash += "&fields_attributes[$i][value]=${fields[i].value}";
     }
 
-    hash = hash.substring(1);
+    if (hash.length > 0) {
+      hash = hash.substring(1);
+    } else {
+      hash = "fields_attributes[0][name]=&fields_attributes[0][value]=";
+    }
 
     return hash;
   }
@@ -250,6 +255,21 @@ class Account {
   // ! This is a custom field that is not part of the Mastodon API
   bool hasFediMatchField() {
     return fields.any((e) => e.name == "FediMatch");
+  }
+
+  bool hasFediMatchKeyField() {
+    return fields.any((e) => e.name == "FediMatchKey");
+  }
+
+  String getFediMatchPublickey() {
+    if (!hasFediMatchKeyField()) {
+      return "";
+    }
+
+    String fediMatchFieldValue =
+        fields.where((e) => e.name == "FediMatchKey").first.value ?? "";
+
+    return fediMatchFieldValue;
   }
 
   List<FediMatchTag> getFediMatchTags() {
@@ -1183,7 +1203,13 @@ class Mastodon {
     }
 
     var fields = Mastodon.instance.self.fields;
-    fields.add(Field(name: "FediMatch", value: "", verifiedAt: false));
+    fields.add(
+      Field(
+        name: "FediMatch",
+        value: "",
+        verifiedAt: false,
+      ),
+    );
 
     var response = await http.patch(
       Uri.parse(
@@ -1200,6 +1226,39 @@ class Mastodon {
     }
 
     return "Failed to opt in to FediMatch (${response.body})";
+  }
+
+  static Future<String> optInToFediMatchMatching(
+      String userInstanceName, String accessToken) async {
+    if (Mastodon.instance.self.hasFediMatchKeyField()) {
+      return "Already opted in to FediMatch Matching";
+    }
+
+    String publicKey = await Matcher.generateKeyValuePair();
+    var fields = Mastodon.instance.self.fields;
+    fields.add(
+      Field(
+        name: "FediMatchKey",
+        value: publicKey,
+        verifiedAt: false,
+      ),
+    );
+
+    var response = await http.patch(
+      Uri.parse(
+          "https://$userInstanceName/api/v1/accounts/update_credentials?" +
+              Field.getHashFrom(fields)),
+      headers: <String, String>{
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return "OK";
+    }
+
+    return "Failed to opt in to FediMatch Matching (${response.body})";
   }
 
   static Future<String> optOutOfFediMatch(
@@ -1222,9 +1281,40 @@ class Mastodon {
     );
 
     if (response.statusCode == 200) {
-      return "OK";
+      if (Mastodon.instance.self.hasFediMatchKeyField()) {
+        return await optOutOfFediMatchMatching(userInstanceName, accessToken);
+      } else {
+        return "OK";
+      }
     }
 
     return "Failed to opt out of FediMatch (${response.body})";
+  }
+
+  static Future<String> optOutOfFediMatchMatching(
+      String userInstanceName, String accessToken) async {
+    if (!Mastodon.instance.self.hasFediMatchKeyField()) {
+      return "Already opted out of FediMatch Matching";
+    }
+
+    var fields = Mastodon.instance.self.fields;
+    fields.removeWhere((element) => element.name == "FediMatchKey");
+    await Matcher.deleteKeyValuePair();
+
+    var response = await http.patch(
+      Uri.parse(
+          'https://$userInstanceName/api/v1/accounts/update_credentials?' +
+              Field.getHashFrom(fields)),
+      headers: <String, String>{
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return "OK";
+    }
+
+    return "Failed to opt out of FediMatch Matching (${response.body})";
   }
 }

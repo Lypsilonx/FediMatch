@@ -46,12 +46,7 @@ class _AccountListViewState extends State<AccountListView> {
           }
 
           // filter out disliked, liked and superliked accounts
-          if (Matcher.disliked
-                  .any((dislikedAccount) => dislikedAccount == element.url) ||
-              Matcher.liked
-                  .any((likedAccount) => likedAccount == element.url) ||
-              Matcher.superliked.any(
-                  (superlikedAccount) => superlikedAccount == element.url)) {
+          if (Matcher.any().any((accountUrl) => accountUrl == element.url)) {
             filtered = true;
           }
 
