@@ -23,14 +23,17 @@ class FediMatchLogo extends StatelessWidget {
                 width: 50,
                 height: 50,
                 colorFilter: ColorFilter.mode(
-                    Theme.of(context).colorScheme.primary, BlendMode.modulate)),
+                  Theme.of(context).colorScheme.inversePrimary,
+                  BlendMode.modulate,
+                )),
             SvgPicture.asset('assets/FediMatch_Logo_2.svg',
                 semanticsLabel: 'Fedi Match Logo',
                 width: 50,
                 height: 50,
                 colorFilter: ColorFilter.mode(
-                    Theme.of(context).colorScheme.inversePrimary,
-                    BlendMode.modulate)),
+                  Theme.of(context).colorScheme.primary,
+                  BlendMode.modulate,
+                )),
           ],
         ),
         Container(

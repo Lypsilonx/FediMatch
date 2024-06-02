@@ -20,7 +20,7 @@ class SettingsService {
 
   // Theme Color
   static const String themeColorKey = "${_settingsPrefix}ThemeColor";
-  static const FlexScheme themeColorDefault = FlexScheme.deepPurple;
+  static const FlexScheme themeColorDefault = FlexScheme.red;
   Future<FlexScheme> themeColor() async {
     if (_preferences!.containsKey(themeColorKey)) {
       return FlexScheme.values[_preferences!.getInt(themeColorKey)!];
