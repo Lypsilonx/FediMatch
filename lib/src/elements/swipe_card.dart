@@ -17,6 +17,8 @@ class SwipeCard extends StatelessWidget {
         builder: (BuildContext context, BoxConstraints constraints) {
       return GestureDetector(
           child: Card(
+            elevation: 5,
+            shadowColor: Theme.of(context).colorScheme.primary.withAlpha(50),
             clipBehavior: Clip.hardEdge,
             color: Theme.of(context).colorScheme.surfaceContainer,
             child: Column(

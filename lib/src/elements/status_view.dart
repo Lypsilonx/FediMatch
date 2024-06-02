@@ -1,5 +1,6 @@
 import 'package:fedi_match/mastodon.dart';
 import 'package:fedi_match/src/elements/account_view.dart';
+import 'package:fedi_match/util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
 
@@ -23,7 +24,8 @@ class StatusView extends StatelessWidget {
                   color: onlyContent
                       ? Colors.transparent
                       : Theme.of(context).colorScheme.surfaceContainer,
-                  borderRadius: BorderRadius.circular(5),
+                  boxShadow: onlyContent ? [] : Util.boxShadow(context),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 margin:
                     onlyContent ? EdgeInsets.all(0) : EdgeInsets.only(top: 10),

@@ -1,5 +1,6 @@
 import 'package:fedi_match/src/settings/matched_data.dart';
 import 'package:flutter/material.dart';
+import 'package:flex_color_scheme/flex_color_scheme.dart';
 
 import 'settings_service.dart';
 
@@ -35,27 +36,15 @@ class SettingsController with ChangeNotifier {
   late ThemeMode _themeMode;
   ThemeMode get themeMode => _themeMode;
 
-  late Color _themeColor;
-  Color get themeColor => _themeColor;
+  late FlexScheme _themeColor;
+  FlexScheme get themeColor => _themeColor;
 
-  void updateThemeColor(Color? newThemeColor) async {
+  void updateThemeColor(FlexScheme? newThemeColor) async {
     if (newThemeColor == null) return;
 
     _themeColor = newThemeColor;
-    _theme = ThemeData.from(
-      useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        brightness: Brightness.light,
-        seedColor: _themeColor,
-      ),
-    );
-    _darkTheme = ThemeData.from(
-      useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        brightness: Brightness.dark,
-        seedColor: _themeColor,
-      ),
-    );
+    _theme = FlexThemeData.light(scheme: newThemeColor, useMaterial3: true);
+    _darkTheme = FlexThemeData.dark(scheme: newThemeColor, useMaterial3: true);
 
     notifyListeners();
     await _settingsService.updateThemeColor(themeColor);

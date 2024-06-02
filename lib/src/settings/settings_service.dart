@@ -1,4 +1,5 @@
 import 'package:fedi_match/src/settings/matched_data.dart';
+import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -19,17 +20,17 @@ class SettingsService {
 
   // Theme Color
   static const String themeColorKey = "${_settingsPrefix}ThemeColor";
-  static const Color themeColorDefault = Colors.deepPurple;
-  Future<Color> themeColor() async {
+  static const FlexScheme themeColorDefault = FlexScheme.deepPurple;
+  Future<FlexScheme> themeColor() async {
     if (_preferences!.containsKey(themeColorKey)) {
-      return Color(_preferences!.getInt(themeColorKey)!);
+      return FlexScheme.values[_preferences!.getInt(themeColorKey)!];
     }
 
     return themeColorDefault;
   }
 
-  Future<void> updateThemeColor(Color themeColor) async {
-    _preferences!.setInt(themeColorKey, themeColor.value);
+  Future<void> updateThemeColor(FlexScheme themeColor) async {
+    _preferences!.setInt(themeColorKey, themeColor.index);
   }
 
   // Theme Mode

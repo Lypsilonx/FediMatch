@@ -4,8 +4,8 @@ import 'package:fedi_match/src/elements/matcher.dart';
 import 'package:fedi_match/src/elements/nav_bar.dart';
 import 'package:fedi_match/src/views/login_view.dart';
 import 'package:fedi_match/util.dart';
+import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import '../settings/settings_controller.dart';
 
 class SettingsView extends StatefulWidget {
@@ -55,44 +55,99 @@ class _SettingsViewState extends State<SettingsView> {
                 'Color',
                 style: Theme.of(context).textTheme.labelLarge,
               ),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.circle,
-                      color: SettingsController.instance.themeColor),
-                  Icon(Icons.colorize,
-                      color: Theme.of(context).colorScheme.primary),
-                ],
-              ),
-              onTap: () {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: const Text('Pick a color!'),
-                      content: SingleChildScrollView(
-                        child: BlockPicker(
-                          pickerColor: SettingsController.instance.themeColor,
-                          onColorChanged: (Color color) {
-                            setState(() {
-                              SettingsController.instance
-                                  .updateThemeColor(color);
-                            });
-                          },
-                        ),
-                      ),
-                      actions: <Widget>[
-                        ElevatedButton(
-                          child: const Text('Got it'),
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
+              trailing: DropdownButton<FlexScheme>(
+                underline: Container(),
+                value: SettingsController.instance.themeColor,
+                onChanged: SettingsController.instance.updateThemeColor,
+                selectedItemBuilder: (BuildContext context) {
+                  return FlexScheme.values.map((FlexScheme scheme) {
+                    return Align(
+                      alignment: Alignment.centerRight,
+                      child: Text(scheme.name),
+                    );
+                  }).toList();
+                },
+                items: FlexScheme.values.map((FlexScheme scheme) {
+                  return DropdownMenuItem(
+                    alignment: Alignment.centerRight,
+                    value: scheme,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(scheme.name),
+                        Container(
+                          width: 20,
+                          height: 20,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          child: GridView.count(
+                            crossAxisCount: 2,
+                            children: [
+                              Container(
+                                color: FlexColorScheme.light(scheme: scheme)
+                                    .primary,
+                              ),
+                              Container(
+                                color: FlexColorScheme.light(scheme: scheme)
+                                    .secondary,
+                              ),
+                              Container(
+                                color: FlexColorScheme.dark(scheme: scheme)
+                                    .primary,
+                              ),
+                              Container(
+                                color: FlexColorScheme.dark(scheme: scheme)
+                                    .secondary,
+                              ),
+                            ],
+                          ),
                         ),
                       ],
-                    );
-                  },
-                );
-              },
+                    ),
+                  );
+                }).toList(),
+              ),
+              // Row(
+              //   mainAxisSize: MainAxisSize.min,
+              //   children: [
+              //     Icon(Icons.circle,
+              //         color: SettingsController.instance.themeColor),
+              //     Icon(Icons.colorize,
+              //         color: Theme.of(context).colorScheme.primary),
+              //   ],
+              // ),
+              // onTap: () {
+              //   showDialog(
+              //     context: context,
+              //     builder: (BuildContext context) {
+              //       return AlertDialog(
+              //         title: const Text('Pick a color!'),
+              //         content: SingleChildScrollView(
+              //           child: BlockPicker(
+              //             pickerColor: SettingsController.instance.themeColor,
+              //             onColorChanged: (Color color) {
+              //               setState(() {
+              //                 SettingsController.instance
+              //                     .updateThemeColor(color);
+              //               });
+              //             },
+              //           ),
+              //         ),
+              //         actions: <Widget>[
+              //           ElevatedButton(
+              //             child: const Text('Got it'),
+              //             onPressed: () {
+              //               Navigator.of(context).pop();
+              //             },
+              //           ),
+              //         ],
+              //       );
+              //     },
+              //   );
+              // },
             ),
             // Theme
             ListTile(

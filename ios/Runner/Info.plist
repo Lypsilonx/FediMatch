@@ -38,5 +38,7 @@
 	</array>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>This App does not use this feature yet</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 </dict>
 </plist>

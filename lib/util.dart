@@ -19,6 +19,16 @@ class Util {
     });
   }
 
+  static List<BoxShadow> boxShadow(BuildContext context) {
+    return [
+      BoxShadow(
+          offset: Offset(0, 4),
+          blurRadius: 10,
+          spreadRadius: -5,
+          color: Theme.of(context).colorScheme.primary.withAlpha(100))
+    ];
+  }
+
   static void showErrorScaffold(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(
