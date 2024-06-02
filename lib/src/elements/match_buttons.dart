@@ -46,10 +46,10 @@ class MatchButtons extends StatelessWidget {
           ActionButton(
               Icon(Icons.favorite,
                   color: Theme.of(context).brightness == Brightness.dark
-                      ? Colors.green[900]!
+                      ? Colors.green[900]
                       : Colors.white),
               Theme.of(context).brightness == Brightness.dark
-                  ? Colors.green[400]!
+                  ? Colors.green
                   : Colors.green, () {
             controller.swipeRight();
             if (postSwipe != null) {

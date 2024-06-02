@@ -28,13 +28,14 @@ class _AccountListViewState extends State<AccountListView> {
     List<Account> accounts = [];
     try {
       do {
-        // List<Account> new_accounts = [];
-        // new_accounts
-        //     .add(await Mastodon.getAccount("kolektiva.social", "Lypsilonx"));
-        // new_accounts.add(await Mastodon.getAccount("todon.eu", "LilaHexe"));
         int pageSize = 50;
         List<Account> new_accounts = await Mastodon.getDirectory(
             limit: pageSize, offset: pageKey * pageSize);
+
+        setState(() {
+          loadingMessage =
+              "Seacedhing for accounts... (${accounts.length}/${pageKey * pageSize})";
+        });
 
         // filter accounts
         accounts.addAll(new_accounts.where((element) {
@@ -57,11 +58,6 @@ class _AccountListViewState extends State<AccountListView> {
 
           return !filtered;
         }).toList());
-
-        setState(() {
-          loadingMessage =
-              "Seacedhing for accounts... (${accounts.length}/${pageKey * pageSize})";
-        });
 
         pageKey++;
         _currentPage = pageKey;

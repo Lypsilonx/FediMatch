@@ -7,7 +7,7 @@ import '../settings/settings_controller.dart';
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
 
-  static const routeName = '/login';
+  static const routeName = 'login';
 
   @override
   State<LoginView> createState() => _LoginViewState();
@@ -27,7 +27,7 @@ class _LoginViewState extends State<LoginView> {
       Mastodon.Update(SettingsController.instance.userInstanceName,
               SettingsController.instance.accessToken)
           .whenComplete(() {
-        Navigator.popUntil(context, ModalRoute.withName('/'));
+        Navigator.pushReplacementNamed(context, "/");
       });
     }
 
