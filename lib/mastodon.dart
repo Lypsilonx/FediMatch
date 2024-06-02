@@ -1014,6 +1014,9 @@ class Mastodon {
   }
 
   static Future<void> Logout(SettingsController controller) async {
+    await optOutOfFediMatchMatching(
+        SettingsController.instance.userInstanceName,
+        SettingsController.instance.accessToken);
     controller.updateUserInstanceName("");
     controller.updateAccessToken("");
 
@@ -1311,6 +1314,7 @@ class Mastodon {
     var fields = Mastodon.instance.self.fields;
     fields.removeWhere((element) => element.name == "FediMatchKey");
     await Matcher.deleteKeyValuePair();
+    Matcher.uploaded = [];
 
     var response = await http.patch(
       Uri.parse(

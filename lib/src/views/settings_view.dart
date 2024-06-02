@@ -356,7 +356,7 @@ class _SettingsViewState extends State<SettingsView> {
                     context,
                     "Delete Matcher Data",
                     "Are you sure you want to delete all Matcher data?"
-                        "\nYou will loose ${Matcher.liked.length} liked accounts, ${Matcher.disliked.length} disliked accounts and ${Matcher.superliked.length} superliked accounts.",
+                        "\nYou will loose ${Matcher.liked.length} liked accounts, ${Matcher.disliked.length} disliked accounts and ${Matcher.superliked.length} superliked accounts, as well as ${Matcher.matches.length} matches.",
                     "Delete",
                     () {
                       Matcher.clear();
@@ -391,11 +391,11 @@ class _SettingsViewState extends State<SettingsView> {
                     context,
                     "Logout",
                     "Are you sure you want to log out?"
-                        "\nYou will loose ${Matcher.liked.length} liked accounts, ${Matcher.disliked.length} disliked accounts and ${Matcher.superliked.length} superliked accounts.",
+                        "\nThis will opt you out of FediMatch Matching and delete all Matcher data."
+                        "\nYou will loose ${Matcher.liked.length} liked accounts, ${Matcher.disliked.length} disliked accounts and ${Matcher.superliked.length} superliked accounts, as well as ${Matcher.matches.length} matches.",
                     "Logout",
                     () async {
                       Matcher.clear();
-                      Navigator.popUntil(context, ModalRoute.withName('/'));
                       await Mastodon.Logout(SettingsController.instance);
                       Navigator.pushReplacementNamed(
                           context, LoginView.routeName);

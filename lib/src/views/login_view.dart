@@ -7,9 +7,7 @@ import '../settings/settings_controller.dart';
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
 
-  static const routeName = 'login';
-
-  static int loginStep = 0;
+  static const routeName = '/login';
 
   @override
   State<LoginView> createState() => _LoginViewState();
@@ -18,6 +16,7 @@ class LoginView extends StatefulWidget {
 class _LoginViewState extends State<LoginView> {
   String instanceName = "";
   String authCode = "";
+  int loginStep = 0;
 
   final textFieldController = TextEditingController();
 
@@ -28,7 +27,7 @@ class _LoginViewState extends State<LoginView> {
       Mastodon.Update(SettingsController.instance.userInstanceName,
               SettingsController.instance.accessToken)
           .whenComplete(() {
-        Navigator.pushReplacementNamed(context, "/");
+        Navigator.popUntil(context, ModalRoute.withName('/'));
       });
     }
 
@@ -41,7 +40,7 @@ class _LoginViewState extends State<LoginView> {
         padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
-          children: switch (LoginView.loginStep) {
+          children: switch (loginStep) {
             0 => [
                 SizedBox(height: 40),
                 Text(
@@ -73,7 +72,7 @@ class _LoginViewState extends State<LoginView> {
                         onOK: () {
                       setState(() {
                         textFieldController.clear();
-                        LoginView.loginStep = 1;
+                        loginStep = 1;
                       });
                     });
                   },
@@ -113,7 +112,7 @@ class _LoginViewState extends State<LoginView> {
                               Theme.of(context).colorScheme.error)),
                       onPressed: () {
                         setState(() {
-                          LoginView.loginStep = 0;
+                          loginStep = 0;
                         });
                       },
                       child: Text(

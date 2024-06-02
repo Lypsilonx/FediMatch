@@ -50,6 +50,7 @@ class _AccountChatViewState extends State<AccountChatView> {
   final List<types.Message> _messages = [];
   List<types.Message> _messagesCache = [];
   bool messagesLoaded = false;
+  late Timer updateTimer;
 
   @override
   void initState() {
@@ -67,11 +68,15 @@ class _AccountChatViewState extends State<AccountChatView> {
     });
 
     //call updateChat every 5 seconds
-    Timer.periodic(Duration(seconds: 20), (timer) {
+    updateTimer = Timer.periodic(Duration(seconds: 20), (timer) {
       updateChat();
     });
+  }
 
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {});
+  @override
+  void dispose() {
+    updateTimer.cancel();
+    super.dispose();
   }
 
   Future<void> updateChat() async {
