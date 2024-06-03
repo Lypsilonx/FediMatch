@@ -300,20 +300,25 @@ class _SettingsViewState extends State<SettingsView> {
                       onChanged: (bool value) {
                         if (value) {
                           Util.popUpDialog(
-                            context,
-                            "FediMatch Matching",
-                            "FediMatch Matching will post your likes and superlikes as encrypted unlisted toots."
-                                "\nThis will allow other FediMatch users (only the ones affected by each like or superlike) to make a match with you."
-                                "\n\nDo you want to opt-in to FediMatch Matching?",
-                            "Acknowledge",
-                            () => Util.executeWhenOK(
-                              Mastodon.optInToFediMatchMatching(
-                                  SettingsController.instance.userInstanceName,
-                                  SettingsController.instance.accessToken),
                               context,
-                              onOK: Update,
-                            ),
-                          );
+                              "FediMatch Matching",
+                              "FediMatch Matching will post your likes and superlikes as encrypted unlisted toots."
+                                  "\nThis will allow other FediMatch users (only the ones affected by each like or superlike) to make a match with you."
+                                  "\n\nDo you want to opt-in to FediMatch Matching?",
+                              "Acknowledge", () {
+                            Util.askForPassword(
+                              context,
+                              (password) => Util.executeWhenOK(
+                                Mastodon.optInToFediMatchMatching(
+                                    SettingsController
+                                        .instance.userInstanceName,
+                                    SettingsController.instance.accessToken,
+                                    password),
+                                context,
+                                onOK: Update,
+                              ),
+                            );
+                          });
                         } else {
                           Util.executeWhenOK(
                             Mastodon.optOutOfFediMatchMatching(
@@ -391,7 +396,6 @@ class _SettingsViewState extends State<SettingsView> {
                     context,
                     "Logout",
                     "Are you sure you want to log out?"
-                        "\nThis will opt you out of FediMatch Matching and delete all Matcher data."
                         "\nYou will loose ${Matcher.liked.length} liked accounts, ${Matcher.disliked.length} disliked accounts and ${Matcher.superliked.length} superliked accounts, as well as ${Matcher.matches.length} matches.",
                     "Logout",
                     () async {

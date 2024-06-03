@@ -227,9 +227,9 @@ class Matcher {
     uploaded = matchedData.uploaded;
   }
 
-  static Future<String> generateKeyValuePair() async {
-    final keyPair =
-        Crypotography.generateRSAkeyPair(Crypotography.secureRandom());
+  static Future<String> generateKeyValuePair(String password) async {
+    final keyPair = Crypotography.generateRSAkeyPair(
+        Crypotography.secureRandom(password + Mastodon.instance.self.url));
 
     final publicKey = Crypotography.fromPublicKey(keyPair.publicKey);
     final privateKey = Crypotography.fromPrivateKey(keyPair.privateKey);

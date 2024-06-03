@@ -1014,9 +1014,8 @@ class Mastodon {
   }
 
   static Future<void> Logout(SettingsController controller) async {
-    await optOutOfFediMatchMatching(
-        SettingsController.instance.userInstanceName,
-        SettingsController.instance.accessToken);
+    await Matcher.deleteKeyValuePair();
+    Matcher.uploaded = [];
     controller.updateUserInstanceName("");
     controller.updateAccessToken("");
 
@@ -1243,12 +1242,12 @@ class Mastodon {
   }
 
   static Future<String> optInToFediMatchMatching(
-      String userInstanceName, String accessToken) async {
+      String userInstanceName, String accessToken, String password) async {
     if (Mastodon.instance.self.hasFediMatchKeyField()) {
       return "Already opted in to FediMatch Matching";
     }
 
-    String publicKey = await Matcher.generateKeyValuePair();
+    String publicKey = await Matcher.generateKeyValuePair(password);
     var fields = Mastodon.instance.self.fields;
     fields.add(
       Field(

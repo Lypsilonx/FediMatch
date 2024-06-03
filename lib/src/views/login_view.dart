@@ -1,5 +1,6 @@
 import 'package:fedi_match/mastodon.dart';
 import 'package:fedi_match/src/elements/fedi_match_logo.dart';
+import 'package:fedi_match/src/elements/matcher.dart';
 import 'package:fedi_match/util.dart';
 import 'package:flutter/material.dart';
 import '../settings/settings_controller.dart';
@@ -16,21 +17,34 @@ class LoginView extends StatefulWidget {
 class _LoginViewState extends State<LoginView> {
   String instanceName = "";
   String authCode = "";
+  String matchingPassword = "";
   int loginStep = 0;
 
   final textFieldController = TextEditingController();
 
   @override
-  Widget build(BuildContext context) {
+  void initState() {
+    super.initState();
     if (SettingsController.instance.userInstanceName != "" &&
         SettingsController.instance.accessToken != "") {
       Mastodon.Update(SettingsController.instance.userInstanceName,
               SettingsController.instance.accessToken)
           .whenComplete(() {
+        if (Mastodon.instance.self.hasFediMatchKeyField() &&
+            SettingsController.instance.privateMatchKey == "") {
+          setState(() {
+            textFieldController.clear();
+            loginStep = 2;
+          });
+          return;
+        }
         Navigator.pushReplacementNamed(context, "/");
       });
     }
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: FediMatchLogo(),
@@ -130,8 +144,102 @@ class _LoginViewState extends State<LoginView> {
                             Mastodon.Login(SettingsController.instance,
                                 authCode, instanceName),
                             context, onOK: () {
+                          if (Mastodon.instance.self.hasFediMatchKeyField() &&
+                              SettingsController.instance.privateMatchKey ==
+                                  "") {
+                            setState(() {
+                              textFieldController.clear();
+                              loginStep = 2;
+                            });
+                            return;
+                          }
+
                           Navigator.pushReplacementNamed(context, "/");
                         });
+                      },
+                      child: Text(
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.onPrimary),
+                        "Login",
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            2 => [
+                SizedBox(height: 40),
+                Text(
+                  'Login',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                SizedBox(height: 40),
+                TextFormField(
+                  controller: textFieldController,
+                  autocorrect: false,
+                  decoration: const InputDecoration(
+                    labelText: 'Enter Matching-Password',
+                  ),
+                  onChanged: (String value) {
+                    setState(() {
+                      matchingPassword = value;
+                    });
+                  },
+                ),
+                SizedBox(height: 60),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    TextButton(
+                      style: new ButtonStyle(
+                          backgroundColor: WidgetStateProperty.all<Color>(
+                              Theme.of(context).colorScheme.error)),
+                      onPressed: () {
+                        setState(() {
+                          loginStep = 0;
+                        });
+                      },
+                      child: Text(
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.onError),
+                        "Back",
+                      ),
+                    ),
+                    TextButton(
+                      style: new ButtonStyle(
+                          backgroundColor: WidgetStateProperty.all<Color>(
+                              Theme.of(context).colorScheme.error)),
+                      onPressed: () async {
+                        Util.executeWhenOK(
+                            Mastodon.optOutOfFediMatchMatching(
+                                SettingsController.instance.userInstanceName,
+                                SettingsController.instance.accessToken),
+                            context, onOK: () {
+                          Navigator.pushReplacementNamed(context, "/");
+                        });
+                      },
+                      child: Text(
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.onError),
+                        "Opt-out",
+                      ),
+                    ),
+                    TextButton(
+                      style: new ButtonStyle(
+                          backgroundColor: WidgetStateProperty.all<Color>(
+                              Theme.of(context).colorScheme.primary)),
+                      onPressed: () async {
+                        await Matcher.generateKeyValuePair(matchingPassword);
+                        if (SettingsController.instance.publicMatchKey !=
+                            Mastodon.instance.self.getFediMatchPublickey()) {
+                          setState(() {
+                            textFieldController.clear();
+                            Util.showErrorScaffold(
+                                context, "Matching Password not correct");
+                          });
+                          return;
+                        }
+
+                        Navigator.pushReplacementNamed(context, "/");
                       },
                       child: Text(
                         style: TextStyle(

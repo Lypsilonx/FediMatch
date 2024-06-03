@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import "package:pointycastle/export.dart";
 
 class Util {
@@ -54,8 +55,53 @@ class Util {
             TextButton(
               child: Text(confirmText),
               onPressed: () {
-                confirmAction();
                 Navigator.of(context).pop();
+                confirmAction();
+              },
+            ),
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  static void askForPassword(
+      BuildContext context, void Function(String password) confirmAction) {
+    InputTextFieldController controller = new InputTextFieldController();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Enter new Matching-Password"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                  "Choose a secure password to encrypt your matching data.\nYou will need this password to log in on other devices."),
+              TextFormField(
+                controller: controller,
+                obscureText: true,
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text("Confirm"),
+              onPressed: () {
+                if (controller.text.isEmpty) {
+                  showErrorScaffold(context, "Password cannot be empty.");
+                  return;
+                }
+
+                Navigator.of(context).pop();
+                confirmAction(controller.text);
               },
             ),
             TextButton(
@@ -95,13 +141,13 @@ class Crypotography {
     return AsymmetricKeyPair<RSAPublicKey, RSAPrivateKey>(myPublic, myPrivate);
   }
 
-  static SecureRandom secureRandom() {
+  static SecureRandom secureRandom(String password) {
     final secureRandom = FortunaRandom();
 
-    final seedSource = Random.secure();
     final seeds = <int>[];
     for (int i = 0; i < 32; i++) {
-      seeds.add(seedSource.nextInt(255));
+      // add 32 random bytes (from 0 to 255) to the seed by iterating through the password
+      seeds.add(min(password.codeUnitAt(i % password.length), 255));
     }
     secureRandom.seed(KeyParameter(Uint8List.fromList(seeds)));
 
