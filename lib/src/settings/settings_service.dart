@@ -50,22 +50,6 @@ class SettingsService {
     _preferences!.setString(themeModeKey, themeMode.name);
   }
 
-  // Show Non-Opt-In Accounts
-  static const String showNonOptInAccountsKey =
-      "${_settingsPrefix}ShowNonOptInAccounts";
-  static const bool showNonOptInAccountsDefault = true;
-  Future<bool> showNonOptInAccounts() async {
-    if (_preferences!.containsKey(showNonOptInAccountsKey)) {
-      return _preferences!.getBool(showNonOptInAccountsKey)!;
-    }
-
-    return showNonOptInAccountsDefault;
-  }
-
-  Future<void> updateShowNonOptInAccounts(bool showNonOptInAccounts) async {
-    _preferences!.setBool(showNonOptInAccountsKey, showNonOptInAccounts);
-  }
-
   // Chat Mention Safety
   static const String chatMentionSafetyKey =
       "${_settingsPrefix}ChatMentionSafety";
@@ -80,6 +64,22 @@ class SettingsService {
 
   Future<void> updateChatMentionSafety(bool chatMentionSafety) async {
     _preferences!.setBool(chatMentionSafetyKey, chatMentionSafety);
+  }
+
+  // Show Non-Opt-In Accounts
+  static const String showNonOptInAccountsKey =
+      "${_settingsPrefix}ShowNonOptInAccounts";
+  static const bool showNonOptInAccountsDefault = true;
+  Future<bool> showNonOptInAccounts() async {
+    if (_preferences!.containsKey(showNonOptInAccountsKey)) {
+      return _preferences!.getBool(showNonOptInAccountsKey)!;
+    }
+
+    return showNonOptInAccountsDefault;
+  }
+
+  Future<void> updateShowNonOptInAccounts(bool showNonOptInAccounts) async {
+    _preferences!.setBool(showNonOptInAccountsKey, showNonOptInAccounts);
   }
 
   // User Instance Name

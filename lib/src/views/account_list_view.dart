@@ -1,8 +1,10 @@
+import 'package:fedi_match/fedi_match_helper.dart';
 import 'package:fedi_match/src/elements/fedi_match_logo.dart';
 import 'package:fedi_match/src/elements/matcher.dart';
 import 'package:fedi_match/src/elements/nav_bar.dart';
 import 'package:fedi_match/src/elements/swipe_card.dart';
 import 'package:fedi_match/src/settings/settings_controller.dart';
+import 'package:fedi_match/util.dart';
 import 'package:flutter/material.dart';
 
 import 'package:fedi_match/mastodon.dart';
@@ -52,7 +54,7 @@ class _AccountListViewState extends State<AccountListView> {
           }
 
           if (!SettingsController.instance.showNonOptInAccounts &&
-              !element.hasFediMatchField()) {
+              !element.hasFediMatchField) {
             filtered = true;
           }
 
@@ -63,7 +65,7 @@ class _AccountListViewState extends State<AccountListView> {
         _currentPage = pageKey;
       } while (accounts.length < 5);
     } catch (e) {
-      print(e);
+      Util.showErrorScaffold(context, e.toString());
     }
     setState(() {
       _list.addAll(accounts);

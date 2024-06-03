@@ -1,4 +1,5 @@
 import 'package:appinio_swiper/appinio_swiper.dart';
+import 'package:fedi_match/fedi_match_helper.dart';
 import 'package:fedi_match/mastodon.dart';
 import 'package:fedi_match/src/elements/account_view.dart';
 import 'package:fedi_match/src/elements/match_buttons.dart';
@@ -22,14 +23,18 @@ class AccountDetailsView extends StatefulWidget {
 
   static List<Widget> renderFediMatchTags(
       BuildContext context, Account account) {
-    return account.getFediMatchTags().map((e) {
+    return account.fediMatchTags.map((e) {
       return Container(
           padding: EdgeInsets.only(left: 10, right: 10, top: 5, bottom: 5),
           margin: EdgeInsets.only(top: 5, right: 5),
           decoration: BoxDecoration(
-            color: AccountDetailsView.tagColors(Theme.of(context))[e.tagType]!
+            color: HSLColor.fromColor(Theme.of(context).colorScheme.secondary)
+                .withHue(HSLColor.fromColor(AccountDetailsView.tagColors(
+                        Theme.of(context))[e.tagType]!)
+                    .hue)
+                .toColor()
                 .withAlpha(100),
-            borderRadius: BorderRadius.circular(5),
+            borderRadius: BorderRadius.circular(10),
           ),
           child: Text(e.tagValue));
     }).toList();
@@ -51,14 +56,13 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
     imageUrls = [
       widget.account.avatar,
     ];
-    var instanceUsername = Mastodon.instanceUsernameFromUrl(widget.account.url);
-    var instance = instanceUsername.$1;
-    var username = instanceUsername.$2;
-    Mastodon.getAccount(instance, username).then((value) {
+    Mastodon.getAccount(widget.account.instance, widget.account.username)
+        .then((value) {
       setState(() {
         actualAccount = value;
 
-        Mastodon.getAccountStatuses(instance, actualAccount.id).then((value) {
+        Mastodon.getAccountStatuses(widget.account.instance, actualAccount.id)
+            .then((value) {
           setState(() {
             accountStatuses = value;
             List<String> new_images = value

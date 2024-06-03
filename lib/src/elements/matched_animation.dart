@@ -32,7 +32,6 @@ class _MatchedAnimationState extends State<MatchedAnimation>
 
   @override
   Widget build(BuildContext context) {
-    print(Matcher.newMatches.length);
     if (Matcher.newMatches.length > 0) {
       controller.forward();
     } else {

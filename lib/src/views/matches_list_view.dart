@@ -1,3 +1,4 @@
+import 'package:fedi_match/fedi_match_helper.dart';
 import 'package:fedi_match/mastodon.dart';
 import 'package:fedi_match/src/elements/match_list_section.dart';
 import 'package:fedi_match/src/elements/matched_animation.dart';
@@ -102,7 +103,7 @@ class _MatchesListViewState extends State<MatchesListView> {
                     ),
                     SizedBox(height: 20),
                     // Upload Likes
-                    Mastodon.instance.self.hasFediMatchKeyField() &&
+                    Mastodon.instance.self.hasFediMatchKeyField &&
                             Matcher.numToUpload() > 0
                         ? TextButton(
                             style: new ButtonStyle(

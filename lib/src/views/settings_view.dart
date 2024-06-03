@@ -1,3 +1,4 @@
+import 'package:fedi_match/fedi_match_helper.dart';
 import 'package:fedi_match/mastodon.dart';
 import 'package:fedi_match/src/elements/account_view.dart';
 import 'package:fedi_match/src/elements/matcher.dart';
@@ -184,39 +185,6 @@ class _SettingsViewState extends State<SettingsView> {
               ),
             ),
 
-            // Show non-opt-in accounts
-            ListTile(
-              leading: Icon(Icons.warning_rounded,
-                  color: SettingsController.instance.showNonOptInAccounts
-                      ? Theme.of(context).colorScheme.error
-                      : Theme.of(context).colorScheme.onSurface),
-              title: Text(
-                'Show non-opt-in accounts',
-                style: Theme.of(context).textTheme.labelLarge,
-              ),
-              trailing: Switch(
-                value: SettingsController.instance.showNonOptInAccounts,
-                onChanged: (bool value) {
-                  if (value) {
-                    Util.popUpDialog(
-                        context,
-                        "Show non-opt-in accounts",
-                        "Showing non-opt-in accounts will allow you to see accounts that have not opted in to FediMatch."
-                            "\nThis will allow you to see more accounts, but you will not be able to match with them."
-                            "\nPeople who have not opted in to FediMatch might not want you to find their account and/or chat with them."
-                            "\n\nDo you want to show non-opt-in accounts?",
-                        "Acknowledge", () {
-                      SettingsController.instance
-                          .updateShowNonOptInAccounts(value);
-                      Update();
-                    });
-                  }
-                  SettingsController.instance.updateShowNonOptInAccounts(value);
-                  Update();
-                },
-              ),
-            ),
-
             // Chat mention safety
             ListTile(
               leading: Icon(Icons.shield,
@@ -253,7 +221,7 @@ class _SettingsViewState extends State<SettingsView> {
             // Opt-in
             ListTile(
               leading: Icon(Icons.handshake,
-                  color: Mastodon.instance.self.hasFediMatchField()
+                  color: Mastodon.instance.self.hasFediMatchField
                       ? Theme.of(context).colorScheme.primary
                       : Theme.of(context).colorScheme.onSurface),
               title: Text(
@@ -261,21 +229,17 @@ class _SettingsViewState extends State<SettingsView> {
                 style: Theme.of(context).textTheme.labelLarge,
               ),
               trailing: Switch(
-                value: Mastodon.instance.self.hasFediMatchField(),
+                value: Mastodon.instance.self.hasFediMatchField,
                 onChanged: (bool value) {
                   if (value) {
                     Util.executeWhenOK(
-                      Mastodon.optInToFediMatch(
-                          SettingsController.instance.userInstanceName,
-                          SettingsController.instance.accessToken),
+                      FediMatchHelper.optInToFediMatch(),
                       context,
                       onOK: Update,
                     );
                   } else {
                     Util.executeWhenOK(
-                      Mastodon.optOutOfFediMatch(
-                          SettingsController.instance.userInstanceName,
-                          SettingsController.instance.accessToken),
+                      FediMatchHelper.optOutOfFediMatch(),
                       context,
                       onOK: Update,
                     );
@@ -285,10 +249,10 @@ class _SettingsViewState extends State<SettingsView> {
             ),
 
             // Opt-in Matching
-            Mastodon.instance.self.hasFediMatchField()
+            Mastodon.instance.self.hasFediMatchField
                 ? ListTile(
                     leading: Icon(Icons.hotel_class,
-                        color: Mastodon.instance.self.hasFediMatchKeyField()
+                        color: Mastodon.instance.self.hasFediMatchKeyField
                             ? Theme.of(context).colorScheme.primary
                             : Theme.of(context).colorScheme.onSurface),
                     title: Text(
@@ -296,7 +260,7 @@ class _SettingsViewState extends State<SettingsView> {
                       style: Theme.of(context).textTheme.labelLarge,
                     ),
                     trailing: Switch(
-                      value: Mastodon.instance.self.hasFediMatchKeyField(),
+                      value: Mastodon.instance.self.hasFediMatchKeyField,
                       onChanged: (bool value) {
                         if (value) {
                           Util.popUpDialog(
@@ -309,10 +273,7 @@ class _SettingsViewState extends State<SettingsView> {
                             Util.askForPassword(
                               context,
                               (password) => Util.executeWhenOK(
-                                Mastodon.optInToFediMatchMatching(
-                                    SettingsController
-                                        .instance.userInstanceName,
-                                    SettingsController.instance.accessToken,
+                                FediMatchHelper.optInToFediMatchMatching(
                                     password),
                                 context,
                                 onOK: Update,
@@ -321,9 +282,7 @@ class _SettingsViewState extends State<SettingsView> {
                           });
                         } else {
                           Util.executeWhenOK(
-                            Mastodon.optOutOfFediMatchMatching(
-                                SettingsController.instance.userInstanceName,
-                                SettingsController.instance.accessToken),
+                            FediMatchHelper.optOutOfFediMatchMatching(),
                             context,
                             onOK: Update,
                           );
@@ -333,6 +292,40 @@ class _SettingsViewState extends State<SettingsView> {
                   )
                 : Container(),
             SizedBox(height: 20),
+            Text("Filtering", style: Theme.of(context).textTheme.titleMedium),
+            // Filters
+            // Show non-opt-in accounts
+            ListTile(
+              leading: Icon(Icons.warning_rounded,
+                  color: SettingsController.instance.showNonOptInAccounts
+                      ? Theme.of(context).colorScheme.error
+                      : Theme.of(context).colorScheme.onSurface),
+              title: Text(
+                'Show non-opt-in accounts',
+                style: Theme.of(context).textTheme.labelLarge,
+              ),
+              trailing: Switch(
+                value: SettingsController.instance.showNonOptInAccounts,
+                onChanged: (bool value) {
+                  if (value) {
+                    Util.popUpDialog(
+                        context,
+                        "Show non-opt-in accounts",
+                        "Showing non-opt-in accounts will allow you to see accounts that have not opted in to FediMatch."
+                            "\nThis will allow you to see more accounts, but you will not be able to match with them."
+                            "\nPeople who have not opted in to FediMatch might not want you to find their account and/or chat with them."
+                            "\n\nDo you want to show non-opt-in accounts?",
+                        "Acknowledge", () {
+                      SettingsController.instance
+                          .updateShowNonOptInAccounts(value);
+                      Update();
+                    });
+                  }
+                  SettingsController.instance.updateShowNonOptInAccounts(value);
+                  Update();
+                },
+              ),
+            ),
 
             SizedBox(height: 20),
             Text("Danger zone", style: Theme.of(context).textTheme.titleMedium),
@@ -400,7 +393,13 @@ class _SettingsViewState extends State<SettingsView> {
                     "Logout",
                     () async {
                       Matcher.clear();
-                      await Mastodon.Logout(SettingsController.instance);
+
+                      await Mastodon.Logout();
+                      await Matcher.deleteKeyValuePair();
+                      Matcher.uploaded = [];
+                      SettingsController.instance.updateUserInstanceName("");
+                      SettingsController.instance.updateAccessToken("");
+
                       Navigator.pushReplacementNamed(
                           context, LoginView.routeName);
                     },

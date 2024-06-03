@@ -1,5 +1,3 @@
-import 'package:fedi_match/src/elements/matcher.dart';
-import 'package:fedi_match/src/settings/settings_controller.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
@@ -230,6 +228,13 @@ class Account {
     );
   }
 
+  String get instance {
+    String instance = url.replaceFirst("https://", "");
+    instance = instance.split("/").first;
+
+    return instance;
+  }
+
   HtmlWidget getNote() {
     var noteWithEmojis = note;
 
@@ -251,58 +256,7 @@ class Account {
 
     return displayNameWithoutEmojis;
   }
-
-  // ! This is a custom field that is not part of the Mastodon API
-  bool hasFediMatchField() {
-    return fields.any((e) => e.name == "FediMatch");
-  }
-
-  bool hasFediMatchKeyField() {
-    return fields.any((e) => e.name == "FediMatchKey");
-  }
-
-  String getFediMatchPublickey() {
-    if (!hasFediMatchKeyField()) {
-      return "";
-    }
-
-    String fediMatchFieldValue =
-        fields.where((e) => e.name == "FediMatchKey").first.value ?? "";
-
-    return fediMatchFieldValue;
-  }
-
-  List<FediMatchTag> getFediMatchTags() {
-    if (!hasFediMatchField()) {
-      return [];
-    }
-
-    String fediMatchFieldValue =
-        fields.where((e) => e.name == "FediMatch").first.value ?? "";
-
-    if (fediMatchFieldValue.isEmpty) {
-      return [];
-    }
-
-    return fediMatchFieldValue.split(", ").map((e) {
-      if (!e.contains(":")) {
-        return FediMatchTag("none", e);
-      }
-
-      String tagType = e.split(":")[0];
-      String tagValue = e.split(":")[1];
-      return FediMatchTag(tagType, tagValue);
-    }).toList();
-  }
 }
-
-class FediMatchTag {
-  String tagType;
-  String tagValue;
-
-  FediMatchTag(this.tagType, this.tagValue);
-}
-// ! This is a custom field that is not part of the Mastodon API
 
 class StatusMention {
   final String id;
@@ -968,8 +922,9 @@ class Mastodon {
     return "OK";
   }
 
-  static Future<String> Login(SettingsController controller, String authCode,
-      String instanceName) async {
+  static Future<String> Login(String authCode, String instanceName,
+      {Function(String)? receiveInstanceName,
+      Function(String)? receiveAccessToken}) async {
     var result = await http.post(
       Uri.parse('https://$instanceName/oauth/token'),
       headers: <String, String>{
@@ -991,8 +946,12 @@ class Mastodon {
 
     String accessToken = jsonDecode(result.body)['access_token'];
 
-    controller.updateUserInstanceName(instanceName);
-    controller.updateAccessToken(accessToken);
+    if (receiveInstanceName != null) {
+      receiveInstanceName(instanceName);
+    }
+    if (receiveAccessToken != null) {
+      receiveAccessToken(accessToken);
+    }
 
     return await Update(instanceName, accessToken);
   }
@@ -1013,24 +972,9 @@ class Mastodon {
     return "OK";
   }
 
-  static Future<void> Logout(SettingsController controller) async {
-    await Matcher.deleteKeyValuePair();
-    Matcher.uploaded = [];
-    controller.updateUserInstanceName("");
-    controller.updateAccessToken("");
-
+  static Future<void> Logout() async {
     _instance = null;
     return;
-  }
-
-  static (String instance, String username) instanceUsernameFromUrl(
-      String url) {
-    String username = url.split("/").last;
-    username = username.replaceFirst("@", "");
-    String instance = url.replaceFirst("https://", "");
-    instance = instance.split("/").first;
-
-    return (instance, username);
   }
 
   static Future<Account> getAccount(
@@ -1166,10 +1110,8 @@ class Mastodon {
 
   static Future<List<Account>> getDirectory(
       {int limit = 10, int offset = 0}) async {
-    var instanceUsername = instanceUsernameFromUrl(Mastodon.instance.self.url);
-    String instance = instanceUsername.$1;
-    var response = await getFromInstance(
-        instance, "directory?limit=$limit&offset=$offset");
+    var response = await getFromInstance(Mastodon.instance.self.instance,
+        "directory?limit=$limit&offset=$offset");
 
     if (response.statusCode == 200) {
       return (jsonDecode(response.body) as List<dynamic>)
@@ -1206,129 +1148,5 @@ class Mastodon {
             },
       body: body,
     );
-  }
-
-  // ! This is a custom field that is not part of the Mastodon API
-  static Future<String> optInToFediMatch(
-      String userInstanceName, String accessToken) async {
-    if (Mastodon.instance.self.hasFediMatchField()) {
-      return "Already opted in to FediMatch";
-    }
-
-    var fields = Mastodon.instance.self.fields;
-    fields.add(
-      Field(
-        name: "FediMatch",
-        value: "",
-        verifiedAt: false,
-      ),
-    );
-
-    var response = await http.patch(
-      Uri.parse(
-          "https://$userInstanceName/api/v1/accounts/update_credentials?" +
-              Field.getHashFrom(fields)),
-      headers: <String, String>{
-        'Authorization': 'Bearer $accessToken',
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      return "OK";
-    }
-
-    return "Failed to opt in to FediMatch (${response.body})";
-  }
-
-  static Future<String> optInToFediMatchMatching(
-      String userInstanceName, String accessToken, String password) async {
-    if (Mastodon.instance.self.hasFediMatchKeyField()) {
-      return "Already opted in to FediMatch Matching";
-    }
-
-    String publicKey = await Matcher.generateKeyValuePair(password);
-    var fields = Mastodon.instance.self.fields;
-    fields.add(
-      Field(
-        name: "FediMatchKey",
-        value: publicKey,
-        verifiedAt: false,
-      ),
-    );
-
-    var response = await http.patch(
-      Uri.parse(
-          "https://$userInstanceName/api/v1/accounts/update_credentials?" +
-              Field.getHashFrom(fields)),
-      headers: <String, String>{
-        'Authorization': 'Bearer $accessToken',
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      return "OK";
-    }
-
-    return "Failed to opt in to FediMatch Matching (${response.body})";
-  }
-
-  static Future<String> optOutOfFediMatch(
-      String userInstanceName, String accessToken) async {
-    if (!Mastodon.instance.self.hasFediMatchField()) {
-      return "Already opted out of FediMatch";
-    }
-
-    var fields = Mastodon.instance.self.fields;
-    fields.removeWhere((element) => element.name == "FediMatch");
-
-    var response = await http.patch(
-      Uri.parse(
-          'https://$userInstanceName/api/v1/accounts/update_credentials?' +
-              Field.getHashFrom(fields)),
-      headers: <String, String>{
-        'Authorization': 'Bearer $accessToken',
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      if (Mastodon.instance.self.hasFediMatchKeyField()) {
-        return await optOutOfFediMatchMatching(userInstanceName, accessToken);
-      } else {
-        return "OK";
-      }
-    }
-
-    return "Failed to opt out of FediMatch (${response.body})";
-  }
-
-  static Future<String> optOutOfFediMatchMatching(
-      String userInstanceName, String accessToken) async {
-    if (!Mastodon.instance.self.hasFediMatchKeyField()) {
-      return "Already opted out of FediMatch Matching";
-    }
-
-    var fields = Mastodon.instance.self.fields;
-    fields.removeWhere((element) => element.name == "FediMatchKey");
-    await Matcher.deleteKeyValuePair();
-    Matcher.uploaded = [];
-
-    var response = await http.patch(
-      Uri.parse(
-          'https://$userInstanceName/api/v1/accounts/update_credentials?' +
-              Field.getHashFrom(fields)),
-      headers: <String, String>{
-        'Authorization': 'Bearer $accessToken',
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      return "OK";
-    }
-
-    return "Failed to opt out of FediMatch Matching (${response.body})";
   }
 }

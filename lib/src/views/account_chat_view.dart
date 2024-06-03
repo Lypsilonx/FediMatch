@@ -55,11 +55,8 @@ class _AccountChatViewState extends State<AccountChatView> {
   @override
   void initState() {
     super.initState();
-
-    var instanceUsername = Mastodon.instanceUsernameFromUrl(widget.account.url);
-    var instance = instanceUsername.$1;
-    var username = instanceUsername.$2;
-    Mastodon.getAccount(instance, username).then((value) async {
+    Mastodon.getAccount(widget.account.instance, widget.account.username)
+        .then((value) async {
       setState(() {
         actualAccount = value;
 
@@ -87,9 +84,7 @@ class _AccountChatViewState extends State<AccountChatView> {
       _messages.clear();
     });
 
-    var instanceUsername = Mastodon.instanceUsernameFromUrl(actualAccount.url);
-    var instance = instanceUsername.$1;
-    await Mastodon.getAccountStatuses(instance, actualAccount.id,
+    await Mastodon.getAccountStatuses(actualAccount.instance, actualAccount.id,
             excludeReblogs: true,
             limit: 40,
             accessToken: SettingsController.instance.accessToken)
@@ -111,12 +106,8 @@ class _AccountChatViewState extends State<AccountChatView> {
     });
 
     if (actualAccount.url != Mastodon.instance.self.url) {
-      var selfInstanceUsername =
-          Mastodon.instanceUsernameFromUrl(Mastodon.instance.self.url);
-      String selfInstance = selfInstanceUsername.$1;
-
       var conversations = await Mastodon.getConversations(
-        selfInstance,
+        Mastodon.instance.self.instance,
         SettingsController.instance.accessToken,
         limit: 40,
       );
@@ -129,8 +120,10 @@ class _AccountChatViewState extends State<AccountChatView> {
           .toList();
 
       for (var conversation in conversations) {
-        var context = await Mastodon.getContext(conversation.lastStatus!.id,
-            selfInstance, SettingsController.instance.accessToken);
+        var context = await Mastodon.getContext(
+            conversation.lastStatus!.id,
+            Mastodon.instance.self.instance,
+            SettingsController.instance.accessToken);
         List<Status> statuses = [];
         statuses.add(conversation.lastStatus!);
         statuses.addAll(context.ancestors);
@@ -209,18 +202,11 @@ class _AccountChatViewState extends State<AccountChatView> {
   void _addMessage(types.Message message) async {
     switch (message.type) {
       case types.MessageType.text:
-        var instanceUsername =
-            Mastodon.instanceUsernameFromUrl(Mastodon.instance.self.url);
-        var instance = instanceUsername.$1;
-        var recipientInstanceUsername =
-            Mastodon.instanceUsernameFromUrl(actualAccount.url);
-        var recipientInstance = recipientInstanceUsername.$1;
-        var recipientUsername = recipientInstanceUsername.$2;
-
-        var recipientMention = "@$recipientUsername@$recipientInstance ";
+        var recipientMention =
+            "@${actualAccount.username}@${actualAccount.instance} ";
 
         await Mastodon.sendStatus(
-            instance,
+            Mastodon.instance.self.instance,
             recipientMention +
                 (SettingsController.instance.chatMentionSafety
                     ? ((message as types.TextMessage).text.replaceAll("@", ""))

@@ -1,3 +1,4 @@
+import 'package:fedi_match/fedi_match_helper.dart';
 import 'package:fedi_match/mastodon.dart';
 import 'package:fedi_match/src/settings/matched_data.dart';
 import 'package:fedi_match/src/settings/settings_controller.dart';
@@ -38,12 +39,12 @@ class Matcher {
     List<String> data = [];
 
     for (var url in toUpload.keys) {
-      var instanceUsername = Mastodon.instanceUsernameFromUrl(url);
+      var instanceUsername = FediMatchHelper.instanceUsernameFromUrl(url);
       String instance = instanceUsername.$1;
       String username = instanceUsername.$2;
       Account account = await Mastodon.getAccount(instance, username);
 
-      final remotePublicKey = account.getFediMatchPublickey();
+      final remotePublicKey = account.fediMatchPublickey;
       if (remotePublicKey == "") {
         continue;
       }
@@ -59,22 +60,16 @@ class Matcher {
       return "No new likes to upload";
     }
 
-    var ownInstanceUsername =
-        Mastodon.instanceUsernameFromUrl(Mastodon.instance.self.url);
-    String ownInstance = ownInstanceUsername.$1;
-
     String message = advertisedLink + "?fedi_match_data=${data.join("|")}";
 
     Mastodon.sendStatus(
-      ownInstance,
+      Mastodon.instance.self.instance,
       message,
       SettingsController.instance.accessToken,
       visibility: "unlisted",
       spoilerText: "FediMatch",
       sensitive: true,
     );
-
-    print("Uploaded ${data.length} likes");
 
     findMatches();
 
@@ -89,11 +84,10 @@ class Matcher {
     potentialMatches.removeWhere((url) => matches.contains(url));
 
     for (String url in potentialMatches) {
-      var instanceUsername = Mastodon.instanceUsernameFromUrl(url);
+      var instanceUsername = FediMatchHelper.instanceUsernameFromUrl(url);
       String instance = instanceUsername.$1;
       String username = instanceUsername.$2;
 
-      print("Checking $instance $username");
       try {
         final account = await Mastodon.getAccount(instance, username);
         final statuses = await Mastodon.getAccountStatuses(instance, account.id,
@@ -111,7 +105,6 @@ class Matcher {
           data = data.split("?fedi_match_data=")[1].split("\"")[0];
 
           for (String encrypted in data.split("|")) {
-            print("Encrypted: $encrypted");
             // check if all characters are numbers or commas
             if (encrypted.characters
                 .every((char) => char == "," || int.tryParse(char) != null)) {
@@ -119,21 +112,18 @@ class Matcher {
                 final decrypted = Crypotography.rsaDecrypt(
                     SettingsController.instance.privateMatchKey,
                     encrypted.split(",").map(int.parse).toList());
-                print("Decrypted: $decrypted");
                 if (decrypted.contains(Mastodon.instance.self.url)) {
                   addMatch(account);
                   break;
                 }
               } catch (e) {
-                print("Error: $e");
-                continue;
+                return "Error: $e";
               }
             }
           }
         }
       } catch (e) {
-        print("Error: $e");
-        continue;
+        return "Error: $e";
       }
     }
 

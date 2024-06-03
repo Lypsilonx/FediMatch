@@ -1,3 +1,4 @@
+import 'package:fedi_match/fedi_match_helper.dart';
 import 'package:fedi_match/mastodon.dart';
 import 'package:fedi_match/src/elements/fedi_match_logo.dart';
 import 'package:fedi_match/src/elements/matcher.dart';
@@ -30,7 +31,7 @@ class _LoginViewState extends State<LoginView> {
       Mastodon.Update(SettingsController.instance.userInstanceName,
               SettingsController.instance.accessToken)
           .whenComplete(() {
-        if (Mastodon.instance.self.hasFediMatchKeyField() &&
+        if (Mastodon.instance.self.hasFediMatchKeyField &&
             SettingsController.instance.privateMatchKey == "") {
           setState(() {
             textFieldController.clear();
@@ -141,10 +142,13 @@ class _LoginViewState extends State<LoginView> {
                               Theme.of(context).colorScheme.primary)),
                       onPressed: () async {
                         Util.executeWhenOK(
-                            Mastodon.Login(SettingsController.instance,
-                                authCode, instanceName),
+                            Mastodon.Login(authCode, instanceName,
+                                receiveInstanceName: SettingsController
+                                    .instance.updateUserInstanceName,
+                                receiveAccessToken: SettingsController
+                                    .instance.updateAccessToken),
                             context, onOK: () {
-                          if (Mastodon.instance.self.hasFediMatchKeyField() &&
+                          if (Mastodon.instance.self.hasFediMatchKeyField &&
                               SettingsController.instance.privateMatchKey ==
                                   "") {
                             setState(() {
@@ -210,9 +214,7 @@ class _LoginViewState extends State<LoginView> {
                               Theme.of(context).colorScheme.error)),
                       onPressed: () async {
                         Util.executeWhenOK(
-                            Mastodon.optOutOfFediMatchMatching(
-                                SettingsController.instance.userInstanceName,
-                                SettingsController.instance.accessToken),
+                            FediMatchHelper.optOutOfFediMatchMatching(),
                             context, onOK: () {
                           Navigator.pushReplacementNamed(context, "/");
                         });
@@ -230,7 +232,7 @@ class _LoginViewState extends State<LoginView> {
                       onPressed: () async {
                         await Matcher.generateKeyValuePair(matchingPassword);
                         if (SettingsController.instance.publicMatchKey !=
-                            Mastodon.instance.self.getFediMatchPublickey()) {
+                            Mastodon.instance.self.fediMatchPublickey) {
                           setState(() {
                             textFieldController.clear();
                             Util.showErrorScaffold(

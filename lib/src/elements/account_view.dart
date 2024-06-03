@@ -1,3 +1,4 @@
+import 'package:fedi_match/fedi_match_helper.dart';
 import 'package:fedi_match/mastodon.dart';
 import 'package:fedi_match/src/elements/did_not_opt_in_icon.dart';
 import 'package:fedi_match/src/views/account_details_view.dart';
@@ -20,8 +21,6 @@ class AccountView extends StatefulWidget {
 class _AccountViewState extends State<AccountView> {
   @override
   Widget build(BuildContext context) {
-    var instanceUsername = Mastodon.instanceUsernameFromUrl(widget.account.url);
-    var instance = instanceUsername.$1;
     return ListTile(
         contentPadding: EdgeInsets.all(widget.edgeInset),
         leading: widget.showIcon
@@ -50,11 +49,10 @@ class _AccountViewState extends State<AccountView> {
               ),
         subtitle: Text(
           style: Theme.of(context).textTheme.bodyMedium,
-          "@" + widget.account.username + "@" + instance,
+          "@" + widget.account.username + "@" + widget.account.instance,
           overflow: TextOverflow.ellipsis,
         ),
-        trailing:
-            !widget.account.hasFediMatchField() ? DidNotOptInIcon() : null,
+        trailing: !widget.account.hasFediMatchField ? DidNotOptInIcon() : null,
         onTap: () {
           switch (widget.goto) {
             case "info":
@@ -62,7 +60,7 @@ class _AccountViewState extends State<AccountView> {
                   arguments: {"account": widget.account});
               break;
             case "chat":
-              if (!widget.account.hasFediMatchField()) {
+              if (!widget.account.hasFediMatchField) {
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                     content: Text("This user did not opt-in to FediMatch"),
                     action: SnackBarAction(

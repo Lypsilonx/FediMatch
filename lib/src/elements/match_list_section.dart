@@ -1,3 +1,4 @@
+import 'package:fedi_match/fedi_match_helper.dart';
 import 'package:fedi_match/mastodon.dart';
 import 'package:fedi_match/src/elements/account_view.dart';
 import 'package:flutter/material.dart';
@@ -25,7 +26,7 @@ class MatchListSection extends StatefulWidget {
 
 class _MatchListSectionState extends State<MatchListSection> {
   Widget renderAsMatch(String url, int index) {
-    var instanceUsername = Mastodon.instanceUsernameFromUrl(url);
+    var instanceUsername = FediMatchHelper.instanceUsernameFromUrl(url);
     var instance = instanceUsername.$1;
     var username = instanceUsername.$2;
     Future<Account> account = Mastodon.getAccount(instance, username);

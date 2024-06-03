@@ -63,18 +63,6 @@ class SettingsController with ChangeNotifier {
     await _settingsService.updateThemeMode(newThemeMode);
   }
 
-  late bool _showNonOptInAccounts;
-  bool get showNonOptInAccounts => _showNonOptInAccounts;
-
-  Future<void> updateShowNonOptInAccounts(bool newShowNonOptInAccounts) async {
-    if (newShowNonOptInAccounts == _showNonOptInAccounts) return;
-
-    _showNonOptInAccounts = newShowNonOptInAccounts;
-
-    notifyListeners();
-    await _settingsService.updateShowNonOptInAccounts(newShowNonOptInAccounts);
-  }
-
   late bool _chatMentionSafety;
   bool get chatMentionSafety => _chatMentionSafety;
 
@@ -85,6 +73,18 @@ class SettingsController with ChangeNotifier {
 
     notifyListeners();
     await _settingsService.updateChatMentionSafety(newChatMentionSafety);
+  }
+
+  late bool _showNonOptInAccounts;
+  bool get showNonOptInAccounts => _showNonOptInAccounts;
+
+  Future<void> updateShowNonOptInAccounts(bool newShowNonOptInAccounts) async {
+    if (newShowNonOptInAccounts == _showNonOptInAccounts) return;
+
+    _showNonOptInAccounts = newShowNonOptInAccounts;
+
+    notifyListeners();
+    await _settingsService.updateShowNonOptInAccounts(newShowNonOptInAccounts);
   }
 
   late String _userInstanceName;
