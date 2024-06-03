@@ -67,98 +67,92 @@ class _MatchesListViewState extends State<MatchesListView> {
           ),
         ],
       ),
-      body: LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) {
-          return Stack(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: ListView(
-                  controller: ScrollController(),
+      body: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: ListView(
+              controller: ScrollController(),
+              children: [
+                Flex(
+                  direction: Axis.horizontal,
                   children: [
-                    Flex(
-                      direction: Axis.horizontal,
-                      children: [
-                        Container(
-                          width: constraints.maxWidth - 100,
-                          child: TextFormField(
-                            controller: searchController,
-                            autocorrect: false,
-                            decoration: const InputDecoration(
-                              labelText: 'Search',
-                              helperText: 'search for a user',
-                            ),
-                            onFieldSubmitted: (String value) async {
-                              search(value);
-                            },
-                          ),
+                    Expanded(
+                      child: TextFormField(
+                        controller: searchController,
+                        autocorrect: false,
+                        decoration: const InputDecoration(
+                          labelText: 'Search',
+                          helperText: 'search for a user',
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.search),
-                          onPressed: () async {
-                            search(searchController.text);
-                          },
-                        ),
-                      ],
+                        onFieldSubmitted: (String value) async {
+                          search(value);
+                        },
+                      ),
                     ),
-                    SizedBox(height: 20),
-                    // Upload Likes
-                    Mastodon.instance.self.hasFediMatchKeyField &&
-                            Matcher.numToUpload() > 0
-                        ? TextButton(
-                            style: new ButtonStyle(
-                                backgroundColor: WidgetStateProperty.all<Color>(
-                                    Theme.of(context).colorScheme.primary)),
-                            onPressed: () {
-                              Util.executeWhenOK(
-                                Matcher.uploadLikes(),
-                                context,
-                                onOK: () {
-                                  setState(() {});
-                                },
-                              );
-                            },
-                            child: Text(
-                              style: TextStyle(
-                                  color:
-                                      Theme.of(context).colorScheme.onPrimary),
-                              "Upload Likes (${Matcher.numToUpload()})",
-                            ),
-                          )
-                        : Container(),
-                    SizedBox(height: 20),
-                    MatchListSection(
-                      "Matches",
-                      Matcher.matches,
-                      color: Colors.orange,
-                      icon: Icons.hotel_class,
-                      emptyMessage: "no matches yet",
-                      initiallyExpanded: true,
-                      onDismissed: (url) => Matcher.removeMatch(url),
-                    ),
-                    MatchListSection(
-                      "Superliked",
-                      Matcher.superliked,
-                      color: Colors.blue,
-                      icon: Icons.star,
-                      emptyMessage: "no superlikes yet",
-                      onDismissed: (url) => Matcher.removeSuperlike(url),
-                    ),
-                    MatchListSection(
-                      "Liked",
-                      Matcher.liked,
-                      color: Colors.green,
-                      icon: Icons.favorite,
-                      emptyMessage: "no likes yet",
-                      onDismissed: (url) => Matcher.removeLike(url),
+                    IconButton(
+                      icon: const Icon(Icons.search),
+                      onPressed: () async {
+                        search(searchController.text);
+                      },
                     ),
                   ],
                 ),
-              ),
-              MatchedAnimation(),
-            ],
-          );
-        },
+                SizedBox(height: 20),
+                // Upload Likes
+                Mastodon.instance.self.hasFediMatchKeyField &&
+                        Matcher.numToUpload() > 0
+                    ? TextButton(
+                        style: new ButtonStyle(
+                            backgroundColor: WidgetStateProperty.all<Color>(
+                                Theme.of(context).colorScheme.primary)),
+                        onPressed: () {
+                          Util.executeWhenOK(
+                            Matcher.uploadLikes(),
+                            context,
+                            onOK: () {
+                              setState(() {});
+                            },
+                          );
+                        },
+                        child: Text(
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.onPrimary),
+                          "Upload Likes (${Matcher.numToUpload()})",
+                        ),
+                      )
+                    : Container(),
+                SizedBox(height: 20),
+                MatchListSection(
+                  "Matches",
+                  Matcher.matches,
+                  color: Colors.orange,
+                  icon: Icons.hotel_class,
+                  emptyMessage: "no matches yet",
+                  initiallyExpanded: true,
+                  onMatchDismissed: (url) => Matcher.removeMatch(url),
+                ),
+                MatchListSection(
+                  "Superliked",
+                  Matcher.superliked,
+                  color: Colors.blue,
+                  icon: Icons.star,
+                  emptyMessage: "no superlikes yet",
+                  onMatchDismissed: (url) => Matcher.removeSuperlike(url),
+                ),
+                MatchListSection(
+                  "Liked",
+                  Matcher.liked,
+                  color: Colors.green,
+                  icon: Icons.favorite,
+                  emptyMessage: "no likes yet",
+                  onMatchDismissed: (url) => Matcher.removeLike(url),
+                ),
+              ],
+            ),
+          ),
+          MatchedAnimation(),
+        ],
       ),
     );
   }

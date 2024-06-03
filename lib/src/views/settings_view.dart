@@ -1,6 +1,7 @@
 import 'package:fedi_match/fedi_match_helper.dart';
 import 'package:fedi_match/mastodon.dart';
 import 'package:fedi_match/src/elements/account_view.dart';
+import 'package:fedi_match/src/elements/dismissable_list.dart';
 import 'package:fedi_match/src/elements/matcher.dart';
 import 'package:fedi_match/src/elements/nav_bar.dart';
 import 'package:fedi_match/src/views/login_view.dart';
@@ -19,12 +20,25 @@ class SettingsView extends StatefulWidget {
 }
 
 class _SettingsViewState extends State<SettingsView> {
-  void Update() => setState(() {
-        Util.executeWhenOK(
-            Mastodon.Update(SettingsController.instance.userInstanceName,
-                SettingsController.instance.accessToken),
-            context);
-      });
+  void Update() => Util.executeWhenOK(
+        Mastodon.Update(SettingsController.instance.userInstanceName,
+            SettingsController.instance.accessToken),
+        context,
+        onOK: () => setState(() {}),
+      );
+
+  final TextEditingController addFilterTagController = TextEditingController();
+  String tagAddType = "none";
+
+  void addTag(String type, String value) {
+    if (value.isEmpty) {
+      return;
+    }
+    FediMatchHelper.setFediMatchTags(Mastodon.instance.self.fediMatchTags
+        .followedBy([FediMatchTag(type, value)]).toList());
+    addFilterTagController.clear();
+    Update();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -111,44 +125,6 @@ class _SettingsViewState extends State<SettingsView> {
                   );
                 }).toList(),
               ),
-              // Row(
-              //   mainAxisSize: MainAxisSize.min,
-              //   children: [
-              //     Icon(Icons.circle,
-              //         color: SettingsController.instance.themeColor),
-              //     Icon(Icons.colorize,
-              //         color: Theme.of(context).colorScheme.primary),
-              //   ],
-              // ),
-              // onTap: () {
-              //   showDialog(
-              //     context: context,
-              //     builder: (BuildContext context) {
-              //       return AlertDialog(
-              //         title: const Text('Pick a color!'),
-              //         content: SingleChildScrollView(
-              //           child: BlockPicker(
-              //             pickerColor: SettingsController.instance.themeColor,
-              //             onColorChanged: (Color color) {
-              //               setState(() {
-              //                 SettingsController.instance
-              //                     .updateThemeColor(color);
-              //               });
-              //             },
-              //           ),
-              //         ),
-              //         actions: <Widget>[
-              //           ElevatedButton(
-              //             child: const Text('Got it'),
-              //             onPressed: () {
-              //               Navigator.of(context).pop();
-              //             },
-              //           ),
-              //         ],
-              //       );
-              //     },
-              //   );
-              // },
             ),
             // Theme
             ListTile(
@@ -293,6 +269,7 @@ class _SettingsViewState extends State<SettingsView> {
                 : Container(),
             SizedBox(height: 20),
             Text("Filtering", style: Theme.of(context).textTheme.titleMedium),
+
             // Filters
             // Show non-opt-in accounts
             ListTile(
@@ -327,29 +304,113 @@ class _SettingsViewState extends State<SettingsView> {
               ),
             ),
 
+            // Filter tags
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                color: FediMatchTag.getColor(Theme.of(context), tagAddType),
+              ),
+              padding: EdgeInsets.only(left: 10, right: 10),
+              child: Flex(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                direction: Axis.horizontal,
+                children: [
+                  DropdownButton<String>(
+                    underline: Container(),
+                    value: tagAddType,
+                    onChanged: (value) {
+                      setState(() {
+                        tagAddType = value!;
+                      });
+                    },
+                    items: FediMatchTag.colors(Theme.of(context))
+                        .keys
+                        .map((e) => DropdownMenuItem(
+                              value: e,
+                              child: Text(e),
+                            ))
+                        .toList(),
+                  ),
+                  Expanded(
+                    child: TextFormField(
+                      controller: addFilterTagController,
+                      decoration: InputDecoration(
+                        labelText: "Add tag",
+                        border: InputBorder.none,
+                      ),
+                      onFieldSubmitted: (value) {
+                        addTag(tagAddType, value);
+                      },
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.add),
+                    onPressed: () {
+                      addTag(tagAddType, addFilterTagController.text);
+                    },
+                  ),
+                ],
+              ),
+            ),
+            DismissableList(
+              "Your tags",
+              Mastodon.instance.self.fediMatchTags.map(
+                (e) {
+                  return ListTile(
+                    tileColor:
+                        FediMatchTag.getColor(Theme.of(context), e.tagType),
+                    title: Text(e.tagValue),
+                  );
+                },
+              ).toList(),
+              icon: Icons.tag,
+              initiallyExpanded: true,
+              onStateChanged: () {
+                setState(() {});
+              },
+              onDismissed: (index) {
+                Util.executeWhenOK(
+                  FediMatchHelper.setFediMatchTags(Mastodon
+                      .instance.self.fediMatchTags
+                      .where((e) =>
+                          e.tagValue !=
+                          Mastodon.instance.self.fediMatchTags[index].tagValue)
+                      .toList()),
+                  context,
+                  onOK: Update,
+                );
+              },
+            ),
+
             SizedBox(height: 20),
             Text("Danger zone", style: Theme.of(context).textTheme.titleMedium),
             // Clear Matcher data
             Padding(
               padding: const EdgeInsets.only(
                   left: 20, right: 20, bottom: 10, top: 10),
-              child: ListTile(
-                trailing: Icon(
-                  Icons.delete,
-                  color: Theme.of(context).colorScheme.onError,
+              child: TextButton(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Clear Matcher data',
+                      style: Theme.of(context).textTheme.labelLarge!.copyWith(
+                          color: Theme.of(context).colorScheme.onError),
+                    ),
+                    Icon(
+                      Icons.delete,
+                      color: Theme.of(context).colorScheme.onError,
+                    ),
+                  ],
                 ),
-                title: Text(
-                  'Clear Matcher data',
-                  style: Theme.of(context)
-                      .textTheme
-                      .labelLarge!
-                      .copyWith(color: Theme.of(context).colorScheme.onError),
+                style: TextButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  backgroundColor: Theme.of(context).colorScheme.error,
                 ),
-                tileColor: Theme.of(context).colorScheme.error,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                onTap: () {
+                onPressed: () {
                   Util.popUpDialog(
                     context,
                     "Delete Matcher Data",
@@ -368,23 +429,28 @@ class _SettingsViewState extends State<SettingsView> {
             // Logout
             Padding(
               padding: const EdgeInsets.only(left: 20, right: 20),
-              child: ListTile(
-                trailing: Icon(
-                  Icons.logout,
-                  color: Theme.of(context).colorScheme.onError,
+              child: TextButton(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Logout',
+                      style: Theme.of(context).textTheme.labelLarge!.copyWith(
+                          color: Theme.of(context).colorScheme.onError),
+                    ),
+                    Icon(
+                      Icons.logout,
+                      color: Theme.of(context).colorScheme.onError,
+                    ),
+                  ],
                 ),
-                title: Text(
-                  'Logout',
-                  style: Theme.of(context)
-                      .textTheme
-                      .labelLarge!
-                      .copyWith(color: Theme.of(context).colorScheme.onError),
+                style: TextButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  backgroundColor: Theme.of(context).colorScheme.error,
                 ),
-                tileColor: Theme.of(context).colorScheme.error,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                onTap: () {
+                onPressed: () {
                   Util.popUpDialog(
                     context,
                     "Logout",

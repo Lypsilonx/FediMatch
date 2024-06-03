@@ -14,13 +14,6 @@ class AccountDetailsView extends StatefulWidget {
 
   static const routeName = '/account';
 
-  static Map<String, Color> tagColors(ThemeData theme) {
-    return {
-      "none": theme.colorScheme.shadow,
-      "interest": Colors.blue,
-    };
-  }
-
   static List<Widget> renderFediMatchTags(
       BuildContext context, Account account) {
     return account.fediMatchTags.map((e) {
@@ -28,12 +21,7 @@ class AccountDetailsView extends StatefulWidget {
           padding: EdgeInsets.only(left: 10, right: 10, top: 5, bottom: 5),
           margin: EdgeInsets.only(top: 5, right: 5),
           decoration: BoxDecoration(
-            color: HSLColor.fromColor(Theme.of(context).colorScheme.secondary)
-                .withHue(HSLColor.fromColor(AccountDetailsView.tagColors(
-                        Theme.of(context))[e.tagType]!)
-                    .hue)
-                .toColor()
-                .withAlpha(100),
+            color: FediMatchTag.getColor(Theme.of(context), e.tagType),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Text(e.tagValue));

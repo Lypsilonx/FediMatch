@@ -1,6 +1,7 @@
 import 'package:fedi_match/mastodon.dart';
 import 'package:fedi_match/src/elements/matcher.dart';
 import 'package:fedi_match/src/settings/settings_controller.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class FediMatchTag {
@@ -8,6 +9,20 @@ class FediMatchTag {
   String tagValue;
 
   FediMatchTag(this.tagType, this.tagValue);
+
+  static Map<String, Color> colors(ThemeData theme) {
+    return {
+      "none": theme.colorScheme.shadow,
+      "interest": Colors.blue,
+    };
+  }
+
+  static getColor(ThemeData theme, String tagType) {
+    return HSLColor.fromColor(theme.colorScheme.secondary)
+        .withHue(HSLColor.fromColor(colors(theme)[tagType]!).hue)
+        .toColor()
+        .withAlpha(100);
+  }
 }
 
 extension AccountExtensions on Account {
@@ -185,7 +200,7 @@ class FediMatchHelper {
     return "Failed to opt out of FediMatch Matching (${response.body})";
   }
 
-  Future<String> setFediMatchTags(List<FediMatchTag> tags) async {
+  static Future<String> setFediMatchTags(List<FediMatchTag> tags) async {
     var fields = self.fields;
     fields.removeWhere((element) => element.name == "FediMatch");
 
