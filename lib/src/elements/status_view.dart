@@ -41,7 +41,7 @@ class StatusView extends StatelessWidget {
                             children: [
                               Container(
                                 width: constraints.maxWidth -
-                                    (isBoosted ? 100 : 50),
+                                    (isBoosted ? 75 : 50),
                                 child:
                                     AccountView(status.account, edgeInset: 0),
                               ),

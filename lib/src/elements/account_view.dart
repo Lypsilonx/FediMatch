@@ -1,6 +1,7 @@
 import 'package:fedi_match/fedi_match_helper.dart';
 import 'package:fedi_match/mastodon.dart';
 import 'package:fedi_match/src/elements/did_not_opt_in_icon.dart';
+import 'package:fedi_match/src/settings/settings_controller.dart';
 import 'package:fedi_match/src/views/account_details_view.dart';
 import 'package:fedi_match/src/views/account_chat_view.dart';
 import 'package:flutter/material.dart';
@@ -52,7 +53,16 @@ class _AccountViewState extends State<AccountView> {
           "@" + widget.account.username + "@" + widget.account.instance,
           overflow: TextOverflow.ellipsis,
         ),
-        trailing: !widget.account.hasFediMatchField ? DidNotOptInIcon() : null,
+        trailing: !widget.account.hasFediMatchField
+            ? DidNotOptInIcon()
+            : Container(
+                child: Text(
+                  widget.account
+                      .rateWithFilters(SettingsController.instance.filters)
+                      .$2
+                      .toString(),
+                ),
+              ),
         onTap: () {
           switch (widget.goto) {
             case "info":

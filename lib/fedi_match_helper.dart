@@ -2,33 +2,123 @@ import 'package:fedi_match/mastodon.dart';
 import 'package:fedi_match/src/elements/matcher.dart';
 import 'package:fedi_match/src/settings/settings_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:uuid/uuid.dart';
 
+class FediMatchTagType {
+  final String name;
+  final String description;
+  final IconData icon;
+  final Color color;
+  final Function(ThemeData theme)? pureColor;
+
+  FediMatchTagType(this.name, this.description, this.icon,
+      {this.color = Colors.grey, this.pureColor = null});
+
+  getColor(ThemeData theme) {
+    if (pureColor != null) {
+      return pureColor!(theme);
+    }
+
+    return HSLColor.fromColor(theme.colorScheme.secondary)
+        .withHue(HSLColor.fromColor(color).hue)
+        .toColor()
+        .withAlpha(128);
+  }
+
+  static FediMatchTagType fromString(String name) {
+    for (var type in all) {
+      if (type.name == name) {
+        return type;
+      }
+    }
+
+    return FediMatchTagType(name, "", Icons.tag);
+  }
+
+  static List<FediMatchTagType> get all => [Interest, None];
+
+  static FediMatchTagType Interest = FediMatchTagType(
+    "Interest",
+    "Interests you have",
+    Icons.star,
+    color: Colors.blue,
+  );
+
+  static FediMatchTagType None = FediMatchTagType(
+    "None",
+    "No specific tag",
+    Icons.tag,
+    pureColor: (theme) => Colors.grey.withAlpha(100),
+  );
+}
+
 class FediMatchTag {
-  String tagType;
+  FediMatchTagType tagType;
   String tagValue;
 
   FediMatchTag(this.tagType, this.tagValue);
+}
 
-  static Map<String, Color> colors(ThemeData theme) {
-    return {
-      "none": theme.colorScheme.shadow,
-      "interest": Colors.blue,
-    };
-  }
+class FediMatchFilterMode {
+  final String name;
+  final String description;
+  final IconData icon;
+  final Color color;
+  final Function(ThemeData theme)? pureColor;
 
-  static getColor(ThemeData theme, String tagType) {
+  FediMatchFilterMode(this.name, this.description, this.icon,
+      {this.color = Colors.grey, this.pureColor = null});
+
+  getColor(ThemeData theme) {
+    if (pureColor != null) {
+      return pureColor!(theme);
+    }
+
     return HSLColor.fromColor(theme.colorScheme.secondary)
-        .withHue(HSLColor.fromColor(colors(theme)[tagType]!).hue)
+        .withHue(HSLColor.fromColor(color).hue)
         .toColor()
-        .withAlpha(100);
+        .withAlpha(128);
   }
+
+  static FediMatchFilterMode fromString(String name) {
+    for (var mode in all) {
+      if (mode.name == name) {
+        return mode;
+      }
+    }
+
+    return FediMatchFilterMode(name, "", Icons.filter);
+  }
+
+  static List<FediMatchFilterMode> get all => [Must, Preference, Cant];
+
+  static FediMatchFilterMode Must = FediMatchFilterMode(
+    "Must",
+    "Must match",
+    Icons.check,
+    color: Colors.green,
+  );
+
+  static FediMatchFilterMode Preference = FediMatchFilterMode(
+    "Should",
+    "Should match",
+    Icons.arrow_upward,
+    color: Colors.blue,
+  );
+
+  static FediMatchFilterMode Cant = FediMatchFilterMode(
+    "Can't",
+    "Must not match",
+    Icons.close,
+    color: Colors.red,
+  );
 }
 
 class FediMatchFilter {
   String id;
-  String mode;
+  FediMatchFilterMode mode;
   String search;
   String preference;
   int? value;
@@ -43,7 +133,7 @@ class FediMatchFilter {
 
   factory FediMatchFilter.fromJson(Map<String, dynamic> json) {
     return FediMatchFilter(
-      json['mode'],
+      FediMatchFilterMode.fromString(json['mode']),
       json['search'],
       json['preference'],
       value: json['value'],
@@ -54,19 +144,10 @@ class FediMatchFilter {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'mode': mode,
+      'mode': mode.name,
       'search': search,
       'preference': preference,
       'value': value,
-    };
-  }
-
-  static Color color(String mode, ThemeData theme) {
-    return switch (mode) {
-      "must" => Colors.green.withAlpha(100),
-      "preference" => Colors.blue.withAlpha(100),
-      "cant" => theme.colorScheme.error.withAlpha(100),
-      _ => theme.colorScheme.surfaceContainer,
     };
   }
 }
@@ -105,13 +186,50 @@ extension AccountExtensions on Account {
 
     return fediMatchFieldValue.split(", ").map((e) {
       if (!e.contains(":")) {
-        return FediMatchTag("none", e);
+        return FediMatchTag(FediMatchTagType.None, e);
       }
 
-      String tagType = e.split(":")[0];
+      String tagName = e.split(":")[0];
       String tagValue = e.split(":")[1];
-      return FediMatchTag(tagType, tagValue);
+      return FediMatchTag(FediMatchTagType.fromString(tagName), tagValue);
     }).toList();
+  }
+
+  (bool, double) rateWithFilters(List<FediMatchFilter> filters) {
+    List<FediMatchTag> tags = fediMatchTags;
+
+    double score = 0;
+    double total = 0;
+
+    for (var filter in filters) {
+      bool fulfilled = false;
+      switch (filter.search) {
+        case "tags":
+          fulfilled = tags.any(
+              (e) => e.tagType.name + ":" + e.tagValue == filter.preference);
+          break;
+        case "note":
+          fulfilled = note.contains(filter.search);
+          break;
+      }
+
+      if (filter.mode == FediMatchFilterMode.Must) {
+        if (!fulfilled) {
+          return (false, 0);
+        }
+      } else if (filter.mode == FediMatchFilterMode.Preference) {
+        if (fulfilled) {
+          score += filter.value ?? 1;
+        }
+        total += filter.value ?? 1;
+      } else if (filter.mode == FediMatchFilterMode.Cant) {
+        if (fulfilled) {
+          return (false, 0);
+        }
+      }
+    }
+
+    return (true, score / total);
   }
 }
 
@@ -251,7 +369,7 @@ class FediMatchHelper {
     fields.removeWhere((element) => element.name == "FediMatch");
 
     String fediMatchFieldValue =
-        tags.map((e) => e.tagType + ":" + e.tagValue).toList().join(", ");
+        tags.map((e) => e.tagType.name + ":" + e.tagValue).toList().join(", ");
 
     fields.add(
       Field(

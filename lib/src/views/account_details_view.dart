@@ -21,7 +21,7 @@ class AccountDetailsView extends StatefulWidget {
           padding: EdgeInsets.only(left: 10, right: 10, top: 5, bottom: 5),
           margin: EdgeInsets.only(top: 5, right: 5),
           decoration: BoxDecoration(
-            color: FediMatchTag.getColor(Theme.of(context), e.tagType),
+            color: e.tagType.getColor(Theme.of(context)),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Text(e.tagValue));
@@ -162,7 +162,7 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
                         ),
                         child: actualAccount.getNote(),
                       ),
-                      Flex(
+                      Wrap(
                         direction: Axis.horizontal,
                         children: AccountDetailsView.renderFediMatchTags(
                           context,

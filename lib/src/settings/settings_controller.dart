@@ -93,13 +93,14 @@ class SettingsController with ChangeNotifier {
   late List<FediMatchFilter> _filters;
   List<FediMatchFilter> get filters => _filters;
 
-  Future<void> updateFilters(List<FediMatchFilter> newFilters) async {
-    if (newFilters == _filters) return;
+  Future<String> updateFilters(List<FediMatchFilter> newFilters) async {
+    if (newFilters == _filters) return "OK";
 
     _filters = newFilters;
 
     notifyListeners();
     await _settingsService.updateFilters(newFilters);
+    return "OK";
   }
 
   late String _userInstanceName;
