@@ -1,3 +1,4 @@
+import 'package:fedi_match/fedi_match_helper.dart';
 import 'package:fedi_match/src/settings/matched_data.dart';
 import 'package:flutter/material.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
@@ -16,8 +17,10 @@ class SettingsController with ChangeNotifier {
     _themeColor = await _settingsService.themeColor();
     updateThemeColor(_themeColor);
     _themeMode = await _settingsService.themeMode();
-    _showNonOptInAccounts = await _settingsService.showNonOptInAccounts();
     _chatMentionSafety = await _settingsService.chatMentionSafety();
+
+    _showNonOptInAccounts = await _settingsService.showNonOptInAccounts();
+    _filters = await _settingsService.filters();
 
     _userInstanceName = await _settingsService.userInstanceName();
     _accessToken = await _settingsService.accessToken();
@@ -85,6 +88,18 @@ class SettingsController with ChangeNotifier {
 
     notifyListeners();
     await _settingsService.updateShowNonOptInAccounts(newShowNonOptInAccounts);
+  }
+
+  late List<FediMatchFilter> _filters;
+  List<FediMatchFilter> get filters => _filters;
+
+  Future<void> updateFilters(List<FediMatchFilter> newFilters) async {
+    if (newFilters == _filters) return;
+
+    _filters = newFilters;
+
+    notifyListeners();
+    await _settingsService.updateFilters(newFilters);
   }
 
   late String _userInstanceName;

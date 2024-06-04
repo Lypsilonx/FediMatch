@@ -7,6 +7,7 @@ class DismissableList extends StatefulWidget {
   final IconData? icon;
   final String? emptyMessage;
   final bool initiallyExpanded;
+  final BorderRadius borderRadius;
   final void Function()? onStateChanged;
   final void Function(int index)? onDismissed;
 
@@ -15,6 +16,7 @@ class DismissableList extends StatefulWidget {
       this.icon,
       this.emptyMessage,
       this.initiallyExpanded = false,
+      this.borderRadius = const BorderRadius.all(Radius.circular(10)),
       this.onStateChanged,
       this.onDismissed});
 
@@ -33,10 +35,10 @@ class _DismissableListState extends State<DismissableList> {
       },
       initiallyExpanded: widget.initiallyExpanded,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: widget.borderRadius,
       ),
       collapsedShape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: widget.borderRadius,
       ),
       leading: widget.icon == null
           ? null
@@ -47,9 +49,12 @@ class _DismissableListState extends State<DismissableList> {
       ),
       children: widget.items.isEmpty
           ? <Widget>[
-              Text(
-                widget.emptyMessage ?? "Empty",
-                style: Theme.of(context).textTheme.labelLarge,
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Text(
+                  widget.emptyMessage ?? "Empty",
+                  style: Theme.of(context).textTheme.labelLarge,
+                ),
               )
             ]
           : [

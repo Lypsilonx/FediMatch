@@ -3,6 +3,7 @@ import 'package:fedi_match/src/elements/matcher.dart';
 import 'package:fedi_match/src/settings/settings_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:uuid/uuid.dart';
 
 class FediMatchTag {
   String tagType;
@@ -22,6 +23,51 @@ class FediMatchTag {
         .withHue(HSLColor.fromColor(colors(theme)[tagType]!).hue)
         .toColor()
         .withAlpha(100);
+  }
+}
+
+class FediMatchFilter {
+  String id;
+  String mode;
+  String search;
+  String preference;
+  int? value;
+
+  FediMatchFilter(
+    this.mode,
+    this.search,
+    this.preference, {
+    this.value,
+    String? id,
+  }) : id = id ?? Uuid().v4();
+
+  factory FediMatchFilter.fromJson(Map<String, dynamic> json) {
+    return FediMatchFilter(
+      json['mode'],
+      json['search'],
+      json['preference'],
+      value: json['value'],
+      id: json['id'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'mode': mode,
+      'search': search,
+      'preference': preference,
+      'value': value,
+    };
+  }
+
+  static Color color(String mode, ThemeData theme) {
+    return switch (mode) {
+      "must" => Colors.green.withAlpha(100),
+      "preference" => Colors.blue.withAlpha(100),
+      "cant" => theme.colorScheme.error.withAlpha(100),
+      _ => theme.colorScheme.surfaceContainer,
+    };
   }
 }
 

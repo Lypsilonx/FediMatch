@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:fedi_match/fedi_match_helper.dart';
 import 'package:fedi_match/src/settings/matched_data.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
@@ -80,6 +83,25 @@ class SettingsService {
 
   Future<void> updateShowNonOptInAccounts(bool showNonOptInAccounts) async {
     _preferences!.setBool(showNonOptInAccountsKey, showNonOptInAccounts);
+  }
+
+  // Filters
+  static const String filtersKey = "${_settingsPrefix}Filters";
+  static const List<FediMatchFilter> filtersDefault = [];
+  Future<List<FediMatchFilter>> filters() async {
+    if (_preferences!.containsKey(filtersKey)) {
+      return _preferences!
+          .getStringList(filtersKey)!
+          .map((e) => FediMatchFilter.fromJson(jsonDecode(e)))
+          .toList();
+    }
+
+    return filtersDefault;
+  }
+
+  Future<void> updateFilters(List<FediMatchFilter> filters) async {
+    _preferences!
+        .setStringList(filtersKey, filters.map((e) => jsonEncode(e)).toList());
   }
 
   // User Instance Name
