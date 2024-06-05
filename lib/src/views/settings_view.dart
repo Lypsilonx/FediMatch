@@ -43,6 +43,16 @@ class _SettingsViewState extends State<SettingsView> {
       return;
     }
 
+    if (value.contains(":")) {
+      Util.showErrorScaffold(context, "Tag can't contain ':'");
+      return;
+    }
+
+    if (value.contains(",")) {
+      Util.showErrorScaffold(context, "Tag can't contain ','");
+      return;
+    }
+
     Util.executeWhenOK(
       FediMatchHelper.setFediMatchTags(Mastodon.instance.self.fediMatchTags
           .followedBy([FediMatchTag(type, value)]).toList()),
@@ -61,6 +71,11 @@ class _SettingsViewState extends State<SettingsView> {
     if (mode == FediMatchFilterMode.Preference &&
         (value == null || value == 0)) {
       Util.showErrorScaffold(context, "Value can't be empty or 0");
+      return;
+    }
+
+    if (search == "tags" && preference.contains(",")) {
+      Util.showErrorScaffold(context, "Tags can't contain ','");
       return;
     }
 
@@ -457,12 +472,26 @@ class _SettingsViewState extends State<SettingsView> {
                                         child: TextFormField(
                                           controller: addFilterTagController,
                                           decoration: InputDecoration(
-                                            labelText: "Add tag",
-                                            border: InputBorder.none,
-                                          ),
+                                              labelText: "Add tag",
+                                              border: InputBorder.none,
+                                              helperText: FediMatchHelper
+                                                      .getFediMatchTagLength(
+                                                    Mastodon.instance.self
+                                                        .fediMatchTags
+                                                        .followedBy(
+                                                      [
+                                                        FediMatchTag(
+                                                            tagAddType,
+                                                            addFilterTagController
+                                                                .text)
+                                                      ],
+                                                    ).toList(),
+                                                  ).toString() +
+                                                  "/255"),
                                           onFieldSubmitted: (value) {
                                             addTag(tagAddType, value);
                                           },
+                                          onChanged: (value) => setState(() {}),
                                         ),
                                       ),
                                       IconButton(

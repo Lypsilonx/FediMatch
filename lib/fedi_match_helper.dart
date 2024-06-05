@@ -59,6 +59,15 @@ class FediMatchTag {
   String tagValue;
 
   FediMatchTag(this.tagType, this.tagValue);
+
+  @override
+  String toString() {
+    if (tagType == FediMatchTagType.None) {
+      return tagValue;
+    }
+
+    return tagType.name + ":" + tagValue;
+  }
 }
 
 class FediMatchFilterMode {
@@ -184,7 +193,7 @@ extension AccountExtensions on Account {
       return [];
     }
 
-    return fediMatchFieldValue.split(", ").map((e) {
+    return fediMatchFieldValue.split(",").map((e) {
       if (!e.contains(":")) {
         return FediMatchTag(FediMatchTagType.None, e);
       }
@@ -369,12 +378,16 @@ class FediMatchHelper {
     return "Failed to opt out of FediMatch Matching (${response.body})";
   }
 
+  static int getFediMatchTagLength(List<FediMatchTag> tags) {
+    return tags.map((e) => e.toString()).toList().join(",").length;
+  }
+
   static Future<String> setFediMatchTags(List<FediMatchTag> tags) async {
     var fields = self.fields;
     fields.removeWhere((element) => element.name == "FediMatch");
 
     String fediMatchFieldValue =
-        tags.map((e) => e.tagType.name + ":" + e.tagValue).toList().join(", ");
+        tags.map((e) => e.toString()).toList().join(",");
 
     fields.add(
       Field(
