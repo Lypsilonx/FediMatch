@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:fedi_match/fedi_match_helper.dart';
 import 'package:fedi_match/src/elements/fedi_match_logo.dart';
 import 'package:fedi_match/src/elements/matcher.dart';
@@ -88,74 +90,84 @@ class _AccountListViewState extends State<AccountListView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      bottomNavigationBar: NavBar("Home"),
-      appBar: AppBar(
-        leading: controller.cardIndex != 0
-            ? IconButton(
-                icon: const Icon(Icons.undo),
-                onPressed: () {
-                  controller.unswipe();
-                },
-              )
-            : Container(),
-        title: FediMatchLogo(),
-        actions: [
-          Container(width: 50),
-        ],
-      ),
-      body: AppinioSwiper(
-        controller: controller,
-        allowUnlimitedUnSwipe: true,
-        cardCount: _list.length == 0 ? 1 : _list.length,
-        swipeOptions: SwipeOptions.only(left: true, right: true, up: true),
-        onSwipeEnd: (int current, int next, SwiperActivity activity) {
-          _currentPage++;
-          if (next >= _list.length - 2) _fetchData(_currentPage);
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        return Scaffold(
+          bottomNavigationBar: NavBar("Home"),
+          appBar: AppBar(
+            leading: controller.cardIndex != 0
+                ? IconButton(
+                    icon: const Icon(Icons.undo),
+                    onPressed: () {
+                      controller.unswipe();
+                    },
+                  )
+                : Container(),
+            title: FediMatchLogo(),
+            actions: [
+              Container(width: 50),
+            ],
+          ),
+          body: AppinioSwiper(
+            controller: controller,
+            allowUnlimitedUnSwipe: true,
+            cardCount: _list.length == 0 ? 1 : _list.length,
+            swipeOptions: SwipeOptions.only(left: true, right: true, up: true),
+            onSwipeEnd: (int current, int next, SwiperActivity activity) {
+              _currentPage++;
+              if (next >= _list.length - 2) _fetchData(_currentPage);
 
-          switch (activity.runtimeType) {
-            case Swipe:
-              switch (activity.direction) {
-                case AxisDirection.left:
-                  Matcher.addToDisliked(_list[current]);
+              switch (activity.runtimeType) {
+                case Swipe:
+                  switch (activity.direction) {
+                    case AxisDirection.left:
+                      Matcher.addToDisliked(_list[current]);
+                      break;
+                    case AxisDirection.right:
+                      Matcher.addToLiked(_list[current]);
+                      break;
+                    case AxisDirection.up:
+                      Matcher.addToSuperliked(_list[current]);
+                      break;
+                    default:
+                  }
                   break;
-                case AxisDirection.right:
-                  Matcher.addToLiked(_list[current]);
-                  break;
-                case AxisDirection.up:
-                  Matcher.addToSuperliked(_list[current]);
+                case Unswipe:
+                  Matcher.unswipe(_list[next]);
                   break;
                 default:
+                  break;
               }
-              break;
-            case Unswipe:
-              Matcher.unswipe(_list[next]);
-              break;
-            default:
-              break;
-          }
 
-          setState(() {});
-        },
-        cardBuilder: (BuildContext context, int index) {
-          if (_list.length == 0) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CircularProgressIndicator(),
-                  Text(loadingMessage),
-                ],
-              ),
-            );
-          }
+              setState(() {});
+            },
+            cardBuilder: (BuildContext context, int index) {
+              if (_list.length == 0) {
+                return Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircularProgressIndicator(),
+                      Text(loadingMessage),
+                    ],
+                  ),
+                );
+              }
 
-          return Padding(
-            padding: EdgeInsets.all(20),
-            child: SwipeCard(controller, _list[index]),
-          );
-        },
-      ),
+              var cardWidth =
+                  min(constraints.maxWidth, constraints.maxHeight * 0.48);
+              return Padding(
+                padding: EdgeInsets.only(
+                    top: 20,
+                    bottom: 20,
+                    left: (constraints.maxWidth - cardWidth) / 2 + 20,
+                    right: (constraints.maxWidth - cardWidth) / 2 + 20),
+                child: SwipeCard(controller, _list[index]),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }
