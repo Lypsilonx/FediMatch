@@ -472,22 +472,24 @@ class _SettingsViewState extends State<SettingsView> {
                                         child: TextFormField(
                                           controller: addFilterTagController,
                                           decoration: InputDecoration(
-                                              labelText: "Add tag",
-                                              border: InputBorder.none,
-                                              helperText: FediMatchHelper
-                                                      .getFediMatchTagLength(
-                                                    Mastodon.instance.self
-                                                        .fediMatchTags
-                                                        .followedBy(
-                                                      [
-                                                        FediMatchTag(
-                                                            tagAddType,
-                                                            addFilterTagController
-                                                                .text)
-                                                      ],
-                                                    ).toList(),
-                                                  ).toString() +
-                                                  "/255"),
+                                            labelText: "Add tag (" +
+                                                FediMatchHelper
+                                                    .getFediMatchTagLength(
+                                                  Mastodon.instance.self
+                                                      .fediMatchTags
+                                                      .followedBy(
+                                                    [
+                                                      FediMatchTag(
+                                                          tagAddType,
+                                                          addFilterTagController
+                                                              .text)
+                                                    ],
+                                                  ).toList(),
+                                                ).toString() +
+                                                "/255" +
+                                                ")",
+                                            border: InputBorder.none,
+                                          ),
                                           onFieldSubmitted: (value) {
                                             addTag(tagAddType, value);
                                           },
