@@ -655,7 +655,11 @@ class _SettingsViewState extends State<SettingsView> {
                                       addFilter(
                                         addPreferenceMode,
                                         addPreferenceSearch,
-                                        addPreferenceTagType.name + ":" + text,
+                                        (addPreferenceSearch == "tags"
+                                                ? addPreferenceTagType.name +
+                                                    ":"
+                                                : "") +
+                                            text,
                                         value: int.tryParse(
                                             addPreferenceValueController.text),
                                       );
@@ -668,8 +672,9 @@ class _SettingsViewState extends State<SettingsView> {
                                     addFilter(
                                       addPreferenceMode,
                                       addPreferenceSearch,
-                                      addPreferenceTagType.name +
-                                          ":" +
+                                      (addPreferenceSearch == "tags"
+                                              ? addPreferenceTagType.name + ":"
+                                              : "") +
                                           addPreferenceController.text,
                                       value: int.tryParse(
                                           addPreferenceValueController.text),
@@ -682,6 +687,25 @@ class _SettingsViewState extends State<SettingsView> {
                         ),
                       ),
                     ],
+                  ),
+                ),
+
+                // Show rating
+                ListTile(
+                  leading: Icon(Icons.percent,
+                      color: SettingsController.instance.showRating
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context).colorScheme.onSurface),
+                  title: Text(
+                    'Show rating',
+                    style: Theme.of(context).textTheme.labelLarge,
+                  ),
+                  trailing: Switch(
+                    value: SettingsController.instance.showRating,
+                    onChanged: (bool value) {
+                      SettingsController.instance.updateShowRating(value);
+                      Update();
+                    },
                   ),
                 ),
 

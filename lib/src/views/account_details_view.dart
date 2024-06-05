@@ -162,11 +162,15 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
                         ),
                         child: actualAccount.getNote(),
                       ),
-                      Wrap(
-                        direction: Axis.horizontal,
-                        children: AccountDetailsView.renderFediMatchTags(
-                          context,
-                          actualAccount,
+                      Container(
+                        width: constraints.maxWidth - 40,
+                        child: Wrap(
+                          direction: Axis.horizontal,
+                          spacing: 5,
+                          runSpacing: 5,
+                          alignment: WrapAlignment.start,
+                          children: AccountDetailsView.renderFediMatchTags(
+                              context, actualAccount),
                         ),
                       ),
                       Padding(

@@ -21,6 +21,7 @@ class SettingsController with ChangeNotifier {
 
     _showNonOptInAccounts = await _settingsService.showNonOptInAccounts();
     _filters = await _settingsService.filters();
+    _showRating = await _settingsService.showRating();
 
     _userInstanceName = await _settingsService.userInstanceName();
     _accessToken = await _settingsService.accessToken();
@@ -101,6 +102,18 @@ class SettingsController with ChangeNotifier {
     notifyListeners();
     await _settingsService.updateFilters(newFilters);
     return "OK";
+  }
+
+  late bool _showRating;
+  bool get showRating => _showRating;
+
+  Future<void> updateShowRating(bool newShowRating) async {
+    if (newShowRating == _showRating) return;
+
+    _showRating = newShowRating;
+
+    notifyListeners();
+    await _settingsService.updateShowRating(newShowRating);
   }
 
   late String _userInstanceName;

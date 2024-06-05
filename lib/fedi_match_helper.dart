@@ -209,7 +209,8 @@ extension AccountExtensions on Account {
               (e) => e.tagType.name + ":" + e.tagValue == filter.preference);
           break;
         case "note":
-          fulfilled = note.contains(filter.search);
+          fulfilled =
+              note.toLowerCase().contains(filter.preference.toLowerCase());
           break;
       }
 
@@ -227,6 +228,10 @@ extension AccountExtensions on Account {
           return (false, 0);
         }
       }
+    }
+
+    if (total == 0) {
+      return (true, 0);
     }
 
     return (true, score / total);

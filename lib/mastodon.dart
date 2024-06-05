@@ -248,6 +248,9 @@ class Account {
 
   String getDisplayName() {
     var displayNameWithoutEmojis = displayName;
+    if (displayNameWithoutEmojis == "") {
+      displayNameWithoutEmojis = username;
+    }
 
     for (var emoji in emojis) {
       displayNameWithoutEmojis =

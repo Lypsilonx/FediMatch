@@ -104,6 +104,22 @@ class SettingsService {
         .setStringList(filtersKey, filters.map((e) => jsonEncode(e)).toList());
   }
 
+  // Show Rating
+  static const String showRatingKey = "${_settingsPrefix}ShowRating";
+  static const bool showRatingDefault = true;
+
+  Future<bool> showRating() async {
+    if (_preferences!.containsKey(showRatingKey)) {
+      return _preferences!.getBool(showRatingKey)!;
+    }
+
+    return showRatingDefault;
+  }
+
+  Future<void> updateShowRating(bool showRating) async {
+    _preferences!.setBool(showRatingKey, showRating);
+  }
+
   // User Instance Name
   static const String userInstanceNameKey =
       "${_settingsPrefix}UserInstanceName";

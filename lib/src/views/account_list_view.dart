@@ -28,6 +28,7 @@ class _AccountListViewState extends State<AccountListView> {
 
   Future<void> _fetchData(int pageKey) async {
     List<Account> accounts = [];
+    // accounts.insert(0, Mastodon.instance.self);
     try {
       do {
         int pageSize = 50;
@@ -55,6 +56,12 @@ class _AccountListViewState extends State<AccountListView> {
 
           if (!SettingsController.instance.showNonOptInAccounts &&
               !element.hasFediMatchField) {
+            filtered = true;
+          }
+
+          if (!element
+              .rateWithFilters(SettingsController.instance.filters)
+              .$1) {
             filtered = true;
           }
 
