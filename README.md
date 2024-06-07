@@ -1,7 +1,7 @@
 # FediMatch
-Dating for the Fediverse.
+Explore the Fediverse.
 
-Meet interesting people on Mastodon & co. via an intuitive swiping interface. Filter, match, chat and express yourself!
+Meet interesting people on Mastodon & co. via an intuitive swiping interface in this new Fediverse client. Filter, match, chat and express yourself!
 
 ## Functionality
 - **Swiping**: Swipe left to pass, swipe right to like, swipe up to superlike.
