@@ -30,7 +30,7 @@ class _AccountListViewState extends State<AccountListView> {
 
   Future<void> _fetchData(int pageKey) async {
     List<Account> accounts = [];
-    // accounts.insert(0, Mastodon.instance.self);
+    //accounts.insert(0, await Mastodon.getAccount("kolektiva.social", "lypsilonx"));
     try {
       do {
         int pageSize = 50;
@@ -112,7 +112,7 @@ class _AccountListViewState extends State<AccountListView> {
             controller: controller,
             allowUnlimitedUnSwipe: true,
             cardCount: _list.length == 0 ? 1 : _list.length,
-            swipeOptions: SwipeOptions.only(left: true, right: true, up: true),
+            swipeOptions: SwipeOptions.only(left: true, right: true),
             onSwipeEnd: (int current, int next, SwiperActivity activity) {
               _currentPage++;
               if (next >= _list.length - 2) _fetchData(_currentPage);
@@ -125,9 +125,6 @@ class _AccountListViewState extends State<AccountListView> {
                       break;
                     case AxisDirection.right:
                       Matcher.addToLiked(_list[current]);
-                      break;
-                    case AxisDirection.up:
-                      Matcher.addToSuperliked(_list[current]);
                       break;
                     default:
                   }

@@ -8,37 +8,29 @@ import 'package:flutter/material.dart';
 class Matcher {
   static List<String> liked = [];
   static List<String> disliked = [];
-  static List<String> superliked = [];
   static List<String> matches = [];
-  static List<String> any() => liked + disliked + superliked + matches;
+  static List<String> any() => liked + disliked + matches;
 
   static List<String> uploaded = [];
   static List<Account> newMatches = [];
 
   static int numToUpload() {
-    final List<String> toUpload = liked + superliked;
+    final List<String> toUpload = liked;
 
     toUpload.removeWhere((url) => uploaded.contains(url));
 
     return toUpload.length;
   }
 
-  static String advertisedLink = "https://testflight.apple.com/join/Xf4FTWiG";
+  static String advertisedLink = "https://ko-fi.com/s/125ba584c4";
 
   static Future<String> uploadLikes() async {
-    final Map<String, bool> toUpload = {};
-    for (String url in liked) {
-      toUpload[url] = false;
-    }
-    for (String url in superliked) {
-      toUpload[url] = true;
-    }
-
-    toUpload.removeWhere((url, superlike) => uploaded.contains(url));
+    final List<String> toUpload = liked;
+    toUpload.removeWhere((url) => uploaded.contains(url));
 
     List<String> data = [];
 
-    for (var url in toUpload.keys) {
+    for (var url in toUpload) {
       var instanceUsername = FediMatchHelper.instanceUsernameFromUrl(url);
       String instance = instanceUsername.$1;
       String username = instanceUsername.$2;
@@ -49,7 +41,7 @@ class Matcher {
         continue;
       }
 
-      String plainText = url + ":" + (toUpload[url]! ? "superlike" : "like");
+      String plainText = url + ":" + "like";
       final encrypted = Crypotography.rsaEncrypt(remotePublicKey, plainText);
 
       data.add(encrypted.map((byte) => byte.toString()).join(","));
@@ -80,7 +72,7 @@ class Matcher {
   static Future<String> findMatches() async {
     // go through unlisted toots of liked and superliked accounts and try to decrypt them
     // if successful, add to matches
-    List<String> potentialMatches = liked + superliked;
+    List<String> potentialMatches = liked;
     potentialMatches.removeWhere((url) => matches.contains(url));
 
     for (String url in potentialMatches) {
@@ -90,8 +82,13 @@ class Matcher {
 
       try {
         final account = await Mastodon.getAccount(instance, username);
-        final statuses = await Mastodon.getAccountStatuses(instance, account.id,
-            limit: 40, excludeReblogs: true, excludeReplies: true);
+        final statuses = await Mastodon.getAccountStatuses(
+          account,
+          SettingsController.instance.accessToken,
+          limit: 40,
+          excludeReblogs: true,
+          excludeReplies: true,
+        );
 
         for (Status status in statuses) {
           if (status.visibility != "unlisted") {
@@ -149,15 +146,6 @@ class Matcher {
     saveToPrefs();
   }
 
-  static void addToSuperliked(Account account) {
-    if (any().contains(account.url)) {
-      return;
-    }
-
-    superliked.add(account.url);
-    saveToPrefs();
-  }
-
   static void addMatch(Account account) {
     if (matches.contains(account.url)) {
       return;
@@ -172,7 +160,6 @@ class Matcher {
   static void unswipe(Account account) {
     liked.remove(account.url);
     disliked.remove(account.url);
-    superliked.remove(account.url);
     saveToPrefs();
   }
 
@@ -186,11 +173,6 @@ class Matcher {
     saveToPrefs();
   }
 
-  static void removeSuperlike(String url) {
-    superliked.remove(url);
-    saveToPrefs();
-  }
-
   static void removeMatch(String url) {
     matches.remove(url);
     uploaded.remove(url);
@@ -198,21 +180,25 @@ class Matcher {
   }
 
   static void clear() {
+    SettingsController.instance.updateMatchedData(MatchedData([], [], [], []));
+    loadFromPrefs();
+  }
+
+  static void resetDislikes() {
     SettingsController.instance
-        .updateMatchedData(MatchedData([], [], [], [], []));
+        .updateMatchedData(MatchedData(liked, [], matches, uploaded));
     loadFromPrefs();
   }
 
   static void saveToPrefs() {
-    SettingsController.instance.updateMatchedData(
-        MatchedData(liked, disliked, superliked, matches, uploaded));
+    SettingsController.instance
+        .updateMatchedData(MatchedData(liked, disliked, matches, uploaded));
   }
 
   static void loadFromPrefs() {
     MatchedData matchedData = SettingsController.instance.matchedData;
     liked = matchedData.liked;
     disliked = matchedData.disliked;
-    superliked = matchedData.superliked;
     matches = matchedData.matches;
     uploaded = matchedData.uploaded;
   }

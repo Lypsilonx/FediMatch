@@ -84,11 +84,12 @@ class _AccountChatViewState extends State<AccountChatView> {
       _messages.clear();
     });
 
-    await Mastodon.getAccountStatuses(actualAccount.instance, actualAccount.id,
-            excludeReblogs: true,
-            limit: 40,
-            accessToken: SettingsController.instance.accessToken)
-        .then((statuses) {
+    await Mastodon.getAccountStatuses(
+      actualAccount,
+      excludeReblogs: true,
+      limit: 40,
+      SettingsController.instance.accessToken,
+    ).then((statuses) {
       statuses
           .where((status) => status.visibility == "direct")
           .where((status) => status.mentions
@@ -107,7 +108,6 @@ class _AccountChatViewState extends State<AccountChatView> {
 
     if (actualAccount.url != Mastodon.instance.self.url) {
       var conversations = await Mastodon.getConversations(
-        Mastodon.instance.self.instance,
         SettingsController.instance.accessToken,
         limit: 40,
       );
@@ -121,9 +121,9 @@ class _AccountChatViewState extends State<AccountChatView> {
 
       for (var conversation in conversations) {
         var context = await Mastodon.getContext(
-            conversation.lastStatus!.id,
-            Mastodon.instance.self.instance,
-            SettingsController.instance.accessToken);
+          conversation.lastStatus!.id,
+          SettingsController.instance.accessToken,
+        );
         List<Status> statuses = [];
         statuses.add(conversation.lastStatus!);
         statuses.addAll(context.ancestors);

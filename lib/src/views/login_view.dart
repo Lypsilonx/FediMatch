@@ -28,9 +28,10 @@ class _LoginViewState extends State<LoginView> {
     super.initState();
     if (SettingsController.instance.userInstanceName != "" &&
         SettingsController.instance.accessToken != "") {
-      Mastodon.Update(SettingsController.instance.userInstanceName,
-              SettingsController.instance.accessToken)
-          .whenComplete(() {
+      Mastodon.Update(
+        SettingsController.instance.userInstanceName,
+        SettingsController.instance.accessToken,
+      ).whenComplete(() {
         if (Mastodon.instance.self.hasFediMatchKeyField &&
             SettingsController.instance.privateMatchKey == "") {
           setState(() {

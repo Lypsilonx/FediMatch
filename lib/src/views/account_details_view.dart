@@ -4,6 +4,7 @@ import 'package:fedi_match/mastodon.dart';
 import 'package:fedi_match/src/elements/account_view.dart';
 import 'package:fedi_match/src/elements/match_buttons.dart';
 import 'package:fedi_match/src/elements/status_view.dart';
+import 'package:fedi_match/src/settings/settings_controller.dart';
 import 'package:flutter/material.dart';
 
 class AccountDetailsView extends StatefulWidget {
@@ -49,8 +50,10 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
       setState(() {
         actualAccount = value;
 
-        Mastodon.getAccountStatuses(widget.account.instance, actualAccount.id)
-            .then((value) {
+        Mastodon.getAccountStatuses(
+          widget.account,
+          SettingsController.instance.accessToken,
+        ).then((value) {
           setState(() {
             accountStatuses = value;
             List<String> new_images = value
@@ -197,6 +200,7 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
                   ? Container()
                   : MatchButtons(
                       controller: widget.controller!,
+                      account: actualAccount,
                       postSwipe: () {
                         Navigator.pop(
                           context,

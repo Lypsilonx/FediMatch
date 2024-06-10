@@ -79,7 +79,7 @@ class SwipeCard extends StatelessWidget {
                             ),
                           ],
                         ),
-                        MatchButtons(controller: controller),
+                        MatchButtons(controller: controller, account: account),
                       ],
                     ),
                   ),

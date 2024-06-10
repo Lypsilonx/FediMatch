@@ -259,6 +259,20 @@ class Account {
 
     return displayNameWithoutEmojis;
   }
+
+  Future<List<Account>> getFollowing() async {
+    List<Account> following = [];
+
+    // for each 40 in followingCount
+    String sinceId = "";
+    for (var i = 0; i < followingCount; i += 40) {
+      var result = await Mastodon.getFollowing(limit: 40, since_id: sinceId);
+      following.addAll(result);
+      sinceId = result.last.id;
+    }
+
+    return following;
+  }
 }
 
 class StatusMention {
@@ -862,12 +876,79 @@ class Context {
   }
 }
 
+class Relationship {
+  late String id;
+  late bool following;
+  late bool showingReblogs;
+  late bool notifying;
+  late List<String> languages;
+  late bool followedBy;
+  late bool blocking;
+  late bool blockedBy;
+  late bool muting;
+  late bool mutingNotifications;
+  late bool requested;
+  late bool requestedBy;
+  late bool domainBlocking;
+  late bool endorsed;
+  late String note;
+
+  Relationship({
+    required this.id,
+    required this.following,
+    required this.showingReblogs,
+    required this.notifying,
+    required this.languages,
+    required this.followedBy,
+    required this.blocking,
+    required this.blockedBy,
+    required this.muting,
+    required this.mutingNotifications,
+    required this.requested,
+    required this.requestedBy,
+    required this.domainBlocking,
+    required this.endorsed,
+    required this.note,
+  });
+
+  factory Relationship.fromJson(Map<String, dynamic> json) {
+    return Relationship(
+      id: json['id'],
+      following: json['following'],
+      showingReblogs: json['showing_reblogs'],
+      notifying: json['notifying'],
+      languages: json['languages'] == null
+          ? []
+          : (json['languages'] as List<dynamic>)
+              .map((e) => e as String)
+              .toList(),
+      followedBy: json['followed_by'],
+      blocking: json['blocking'],
+      blockedBy: json['blocked_by'],
+      muting: json['muting'],
+      mutingNotifications: json['muting_notifications'],
+      requested: json['requested'],
+      requestedBy: json['requested_by'],
+      domainBlocking: json['domain_blocking'],
+      endorsed: json['endorsed'],
+      note: json['note'],
+    );
+  }
+}
+
 class Mastodon {
   static Mastodon? _instance;
   static Mastodon get instance => _instance!;
-  Account self;
+  late Account self;
+  static List<String> selfFollowing = [];
+  static List<String> selfRequested = [];
 
-  Mastodon(Account self) : self = self {}
+  Mastodon(this.self) {
+    _instance = this;
+    self
+        .getFollowing()
+        .then((value) => selfFollowing = value.map((e) => e.url).toList());
+  }
 
   static String clientId = "";
   static String clientSecret = "";
@@ -961,8 +1042,10 @@ class Mastodon {
 
   static Future<String> Update(String instanceName, String accessToken) async {
     var result = await getFromInstance(
-        instanceName, "accounts/verify_credentials",
-        accessToken: accessToken);
+      instanceName,
+      "accounts/verify_credentials",
+      accessToken: accessToken,
+    );
 
     if (result.statusCode != 200) {
       return "Failed to get user information. (${result.body})";
@@ -971,7 +1054,7 @@ class Mastodon {
     Account account =
         Account.fromJson(jsonDecode(result.body) as Map<String, dynamic>);
 
-    _instance = Mastodon(account);
+    Mastodon(account);
     return "OK";
   }
 
@@ -982,8 +1065,8 @@ class Mastodon {
 
   static Future<Account> getAccount(
       String userInstanceName, String userName) async {
-    var response = await getFromInstance(
-        userInstanceName, "accounts/lookup?acct=$userName");
+    var response = await getFromInstance(Mastodon.instance.self.instance,
+        "accounts/lookup?acct=$userName@$userInstanceName");
 
     if (response.statusCode == 200) {
       return Account.fromJson(
@@ -991,24 +1074,24 @@ class Mastodon {
     }
 
     throw Exception(
-        "Failed to load user @$userName@$userInstanceName (${response.body})");
+        "Failed to load user $userName@$userInstanceName (${response.body})");
   }
 
   static Future<List<Status>> getAccountStatuses(
-    String userInstanceName,
-    String userId, {
+    Account account,
+    String accessToken, {
     int limit = 20,
     bool excludeReblogs = false,
     bool excludeReplies = false,
-    String? accessToken,
   }) async {
-    var response = await getFromInstance(
-      userInstanceName,
-      "/accounts/$userId/statuses" +
+    account = await getAccount(account.instance, account.username);
+
+    var response = await getFromInstanceAccess(
+      "/accounts/${account.id}/statuses" +
           "?limit=$limit" +
           (excludeReblogs ? "?exclude_reblogs=true" : "") +
           (excludeReplies ? "?exclude_replies=true" : ""),
-      accessToken: accessToken,
+      accessToken,
     );
 
     if (response.statusCode == 200) {
@@ -1021,14 +1104,12 @@ class Mastodon {
   }
 
   static Future<List<Conversation>> getConversations(
-    String userInstanceName,
     String accessToken, {
     int limit = 20,
   }) async {
-    var response = await getFromInstance(
-      userInstanceName,
+    var response = await getFromInstanceAccess(
       "/conversations" + "?limit=$limit",
-      accessToken: accessToken,
+      accessToken,
     );
 
     if (response.statusCode == 200) {
@@ -1042,13 +1123,11 @@ class Mastodon {
 
   static Future<Context> getContext(
     String statusId,
-    String userInstanceName,
     String accessToken,
   ) async {
-    var response = await getFromInstance(
-      userInstanceName,
+    var response = await getFromInstanceAccess(
       "/statuses/$statusId/context",
-      accessToken: accessToken,
+      accessToken,
     );
 
     if (response.statusCode == 200) {
@@ -1060,19 +1139,17 @@ class Mastodon {
   }
 
   static Future<List<Notification>> getNotifications(
-    String userInstanceName,
     String accessToken, {
     int limit = 40,
     List<String>? types,
     String? accountId,
   }) async {
-    var response = await getFromInstance(
-      userInstanceName,
+    var response = await getFromInstanceAccess(
       "/notifications" +
           "?limit=$limit" +
           (accountId != null ? "&account_id=$accountId" : "") +
           (types != null ? "&types=${types.join(",")}" : ""),
-      accessToken: accessToken,
+      accessToken,
     );
 
     if (response.statusCode == 200) {
@@ -1092,10 +1169,9 @@ class Mastodon {
     String spoilerText = "",
     bool sensitive = false,
   }) async {
-    var response = await postToInstance(
-      userInstanceName,
+    var response = await postToInstanceAccess(
       "statuses",
-      accessToken: accessToken,
+      accessToken,
       body: <String, String>{
         'status': text,
         'visibility': visibility,
@@ -1137,19 +1213,105 @@ class Mastodon {
     );
   }
 
+  static Future<http.Response> getFromInstanceAccess(
+      String path, String accessToken) async {
+    return http.get(
+      Uri.parse('https://${Mastodon.instance.self.instance}/api/v1/$path'),
+      headers: <String, String>{
+        'Authorization': 'Bearer $accessToken',
+      },
+    );
+  }
+
   static Future<http.Response> postToInstance(String instance, String path,
-      {String? accessToken, Map<String, String>? body}) async {
+      {Map<String, String>? body}) async {
     return http.post(
       Uri.parse('https://$instance/api/v1/$path'),
-      headers: accessToken != null
-          ? <String, String>{
-              'Authorization': 'Bearer $accessToken',
-              'Content-Type': 'application/x-www-form-urlencoded',
-            }
-          : <String, String>{
-              'Content-Type': 'application/x-www-form-urlencoded',
-            },
       body: body,
     );
+  }
+
+  static Future<http.Response> postToInstanceAccess(
+      String path, String accessToken,
+      {Map<String, String>? body}) async {
+    return http.post(
+      Uri.parse('https://${Mastodon.instance.self.instance}/api/v1/$path'),
+      headers: <String, String>{
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: body,
+    );
+  }
+
+  static Future<String> follow(Account account, String accessToken) async {
+    account = await getAccount(account.instance, account.username);
+
+    var response = await postToInstanceAccess(
+      "accounts/${account.id}/follow",
+      accessToken,
+    );
+
+    if (response.statusCode == 200) {
+      Relationship relationship =
+          Relationship.fromJson(jsonDecode(response.body));
+      if (relationship.following) {
+        Mastodon.selfFollowing.add(account.url);
+        return "OK";
+      } else if (relationship.requested) {
+        Mastodon.selfRequested.add(account.url);
+        return "Requested";
+      }
+    }
+
+    return "Failed to follow user (${response.body})";
+  }
+
+  static Future<String> unfollow(Account account, String accessToken) async {
+    account = await getAccount(account.instance, account.username);
+
+    var response = await postToInstanceAccess(
+      "accounts/${account.id}/unfollow",
+      accessToken,
+    );
+
+    if (response.statusCode == 200) {
+      Relationship relationship =
+          Relationship.fromJson(jsonDecode(response.body));
+      bool isOk = false;
+      if (!relationship.following) {
+        Mastodon.selfFollowing.remove(account.url);
+        isOk = true;
+      }
+      if (!relationship.requested) {
+        Mastodon.selfRequested.remove(account.url);
+        isOk = true;
+      }
+
+      if (isOk) {
+        return "OK";
+      }
+    }
+
+    return "Failed to unfollow user (${response.body})";
+  }
+
+  static Future<List<Account>> getFollowing({
+    int limit = 40,
+    String since_id = "",
+  }) async {
+    var response = await getFromInstance(
+      Mastodon.instance.self.instance,
+      "accounts/${Mastodon.instance.self.id}/following?limit=$limit" +
+          (since_id != "" ? "&since_id=$since_id" : ""),
+    );
+
+    if (response.statusCode == 200) {
+      return (jsonDecode(response.body) as List<dynamic>)
+          .map((e) => Account.fromJson(e as Map<String, dynamic>))
+          .toList();
+    }
+
+    throw Exception("Failed to load following (${response.body})");
   }
 }

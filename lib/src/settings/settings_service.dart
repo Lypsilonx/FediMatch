@@ -155,14 +155,12 @@ class SettingsService {
   static const String matchedDataKey = "${_settingsPrefix}MatchedData";
   static const String matchedDataKeyLiked = "${matchedDataKey}Liked";
   static const String matchedDataKeyDisliked = "${matchedDataKey}Disliked";
-  static const String matchedDataKeySuperliked = "${matchedDataKey}Superliked";
   static const String matchedDataKeyMatches = "${matchedDataKey}Matches";
   static const String matchedDataKeyUploaded = "${matchedDataKey}Uploaded";
   Future<MatchedData> matchedData() async {
     return MatchedData(
         _preferences!.getStringList(matchedDataKeyLiked) ?? [],
         _preferences!.getStringList(matchedDataKeyDisliked) ?? [],
-        _preferences!.getStringList(matchedDataKeySuperliked) ?? [],
         _preferences!.getStringList(matchedDataKeyMatches) ?? [],
         _preferences!.getStringList(matchedDataKeyUploaded) ?? []);
   }
@@ -170,8 +168,6 @@ class SettingsService {
   Future<void> updateMatchedData(MatchedData matchedData) async {
     _preferences!.setStringList(matchedDataKeyLiked, matchedData.liked);
     _preferences!.setStringList(matchedDataKeyDisliked, matchedData.disliked);
-    _preferences!
-        .setStringList(matchedDataKeySuperliked, matchedData.superliked);
     _preferences!.setStringList(matchedDataKeyMatches, matchedData.matches);
     _preferences!.setStringList(matchedDataKeyUploaded, matchedData.uploaded);
   }

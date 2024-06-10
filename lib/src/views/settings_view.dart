@@ -778,10 +778,55 @@ class _SettingsViewState extends State<SettingsView> {
                       context,
                       "Delete Matcher Data",
                       "Are you sure you want to delete all Matcher data?"
-                          "\nYou will loose ${Matcher.liked.length} liked accounts, ${Matcher.disliked.length} disliked accounts and ${Matcher.superliked.length} superliked accounts, as well as ${Matcher.matches.length} matches.",
+                          "\nYou will loose ${Matcher.liked.length} liked accounts and ${Matcher.disliked.length} disliked accounts, as well as ${Matcher.matches.length} matches.",
                       "Delete",
                       () {
                         Matcher.clear();
+                        Update();
+                      },
+                    );
+                  },
+                ),
+                SizedBox(height: 10),
+
+                // Reset dislikes
+                TextButton(
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                        left: 10, right: 10, top: 5, bottom: 5),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Reset dislikes',
+                          style: Theme.of(context)
+                              .textTheme
+                              .labelLarge!
+                              .copyWith(
+                                  color: Theme.of(context).colorScheme.onError),
+                        ),
+                        Icon(
+                          Icons.delete,
+                          color: Theme.of(context).colorScheme.onError,
+                        ),
+                      ],
+                    ),
+                  ),
+                  style: TextButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    backgroundColor: Theme.of(context).colorScheme.error,
+                  ),
+                  onPressed: () {
+                    Util.popUpDialog(
+                      context,
+                      "Reset your dislikes",
+                      "Are you sure you want to reset your dislikes?"
+                          "\n You might see people again, that you have disliked before!",
+                      "Reset",
+                      () {
+                        Matcher.resetDislikes();
                         Update();
                       },
                     );
@@ -823,7 +868,7 @@ class _SettingsViewState extends State<SettingsView> {
                       context,
                       "Logout",
                       "Are you sure you want to log out?"
-                          "\nYou will loose ${Matcher.liked.length} liked accounts, ${Matcher.disliked.length} disliked accounts and ${Matcher.superliked.length} superliked accounts, as well as ${Matcher.matches.length} matches.",
+                          "\nYou will loose ${Matcher.liked.length} liked accounts and ${Matcher.disliked.length} disliked accounts, as well as ${Matcher.matches.length} matches.",
                       "Logout",
                       () async {
                         Matcher.clear();

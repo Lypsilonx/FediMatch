@@ -133,14 +133,6 @@ class _MatchesListViewState extends State<MatchesListView> {
                   onMatchDismissed: (url) => Matcher.removeMatch(url),
                 ),
                 MatchListSection(
-                  "Superliked",
-                  Matcher.superliked,
-                  color: Colors.blue,
-                  icon: Icons.star,
-                  emptyMessage: "no superlikes yet",
-                  onMatchDismissed: (url) => Matcher.removeSuperlike(url),
-                ),
-                MatchListSection(
                   "Liked",
                   Matcher.liked,
                   color: Colors.green,
