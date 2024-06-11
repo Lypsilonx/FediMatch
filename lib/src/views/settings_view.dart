@@ -97,7 +97,7 @@ class _SettingsViewState extends State<SettingsView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      bottomNavigationBar: NavBar("Settings"),
+      bottomNavigationBar: NavBar(SettingsView.routeName),
       appBar: AppBar(
         title: Text(
           'Settings',
@@ -113,8 +113,6 @@ class _SettingsViewState extends State<SettingsView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 AccountView(Mastodon.instance.self, edgeInset: 0),
-                SizedBox(height: 20),
-
                 SizedBox(height: 20),
                 Text(
                   "General",
@@ -215,38 +213,6 @@ class _SettingsViewState extends State<SettingsView> {
                         child: Text('Dark Theme'),
                       )
                     ],
-                  ),
-                ),
-
-                // Chat mention safety
-                ListTile(
-                  leading: Icon(Icons.shield,
-                      color: SettingsController.instance.chatMentionSafety
-                          ? Theme.of(context).colorScheme.primary
-                          : Theme.of(context).colorScheme.onSurface),
-                  title: Text(
-                    'Chat mention safety',
-                    style: Theme.of(context).textTheme.labelLarge,
-                  ),
-                  trailing: Switch(
-                    value: SettingsController.instance.chatMentionSafety,
-                    onChanged: (bool value) {
-                      if (value) {
-                        Util.popUpDialog(
-                            context,
-                            "Chat mention safety",
-                            "Chat mention safety will prevent you from mentioning people in chat."
-                                "\nIt will remove all '@' characters from your messages."
-                                "\n\nDo you want to enable chat mention safety?",
-                            "Acknowledge", () {
-                          SettingsController.instance
-                              .updateChatMentionSafety(value);
-                          Update();
-                        });
-                      }
-                      SettingsController.instance
-                          .updateChatMentionSafety(value);
-                    },
                   ),
                 ),
 
@@ -403,7 +369,6 @@ class _SettingsViewState extends State<SettingsView> {
                 Text("Filtering",
                     style: Theme.of(context).textTheme.titleMedium),
 
-                // Filters
                 // Show non-opt-in accounts
                 ListTile(
                   leading: Icon(Icons.warning_rounded,
@@ -437,14 +402,16 @@ class _SettingsViewState extends State<SettingsView> {
                     },
                   ),
                 ),
+                SizedBox(height: 10),
 
-                // Filter tags
+                // Your tags
                 Mastodon.instance.self.hasFediMatchField
                     ? Container(
                         decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(10),
-                            color:
-                                Theme.of(context).colorScheme.primaryContainer,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .secondaryContainer,
                             boxShadow: Util.boxShadow(context)),
                         child: Column(
                           children: [
@@ -587,6 +554,28 @@ class _SettingsViewState extends State<SettingsView> {
                       )
                     : Container(),
                 SizedBox(height: 20),
+
+                // Show rating
+                ListTile(
+                  leading: Icon(Icons.percent,
+                      color: SettingsController.instance.showRating
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context).colorScheme.onSurface),
+                  title: Text(
+                    'Show rating',
+                    style: Theme.of(context).textTheme.labelLarge,
+                  ),
+                  trailing: Switch(
+                    value: SettingsController.instance.showRating,
+                    onChanged: (bool value) {
+                      SettingsController.instance.updateShowRating(value);
+                      Update();
+                    },
+                  ),
+                ),
+                SizedBox(height: 10),
+
+                // Your "Algorithm"
                 Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
@@ -795,71 +784,41 @@ class _SettingsViewState extends State<SettingsView> {
                   ),
                 ),
 
-                // Show rating
-                ListTile(
-                  leading: Icon(Icons.percent,
-                      color: SettingsController.instance.showRating
-                          ? Theme.of(context).colorScheme.primary
-                          : Theme.of(context).colorScheme.onSurface),
-                  title: Text(
-                    'Show rating',
-                    style: Theme.of(context).textTheme.labelLarge,
-                  ),
-                  trailing: Switch(
-                    value: SettingsController.instance.showRating,
-                    onChanged: (bool value) {
-                      SettingsController.instance.updateShowRating(value);
-                      Update();
-                    },
-                  ),
-                ),
-
-                SizedBox(height: 20),
+                SizedBox(height: 30),
                 Text("Danger zone",
                     style: Theme.of(context).textTheme.titleMedium),
                 SizedBox(height: 10),
-                // Clear Matcher data
-                TextButton(
-                  child: Padding(
-                    padding: const EdgeInsets.only(
-                        left: 10, right: 10, top: 5, bottom: 5),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Clear Matcher data',
-                          style: Theme.of(context)
-                              .textTheme
-                              .labelLarge!
-                              .copyWith(
-                                  color: Theme.of(context).colorScheme.onError),
-                        ),
-                        Icon(
-                          Icons.delete,
-                          color: Theme.of(context).colorScheme.onError,
-                        ),
-                      ],
-                    ),
+
+                // Chat mention safety
+                ListTile(
+                  leading: Icon(Icons.shield,
+                      color: SettingsController.instance.chatMentionSafety
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context).colorScheme.onSurface),
+                  title: Text(
+                    'Chat mention safety',
+                    style: Theme.of(context).textTheme.labelLarge,
                   ),
-                  style: TextButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    backgroundColor: Theme.of(context).colorScheme.error,
+                  trailing: Switch(
+                    value: SettingsController.instance.chatMentionSafety,
+                    onChanged: (bool value) {
+                      if (value) {
+                        Util.popUpDialog(
+                            context,
+                            "Chat mention safety",
+                            "Chat mention safety will prevent you from mentioning people in chat."
+                                "\nIt will remove all '@' characters from your messages."
+                                "\n\nDo you want to enable chat mention safety?",
+                            "Acknowledge", () {
+                          SettingsController.instance
+                              .updateChatMentionSafety(value);
+                          Update();
+                        });
+                      }
+                      SettingsController.instance
+                          .updateChatMentionSafety(value);
+                    },
                   ),
-                  onPressed: () {
-                    Util.popUpDialog(
-                      context,
-                      "Delete Matcher Data",
-                      "Are you sure you want to delete all Matcher data?"
-                          "\nYou will loose ${Matcher.liked.length} liked accounts and ${Matcher.disliked.length} disliked accounts, as well as ${Matcher.matches.length} matches.",
-                      "Delete",
-                      () {
-                        Matcher.clear();
-                        Update();
-                      },
-                    );
-                  },
                 ),
                 SizedBox(height: 10),
 
@@ -901,6 +860,51 @@ class _SettingsViewState extends State<SettingsView> {
                       "Reset",
                       () {
                         Matcher.resetDislikes();
+                        Update();
+                      },
+                    );
+                  },
+                ),
+                SizedBox(height: 10),
+
+                // Clear Matcher data
+                TextButton(
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                        left: 10, right: 10, top: 5, bottom: 5),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Clear Matcher data',
+                          style: Theme.of(context)
+                              .textTheme
+                              .labelLarge!
+                              .copyWith(
+                                  color: Theme.of(context).colorScheme.onError),
+                        ),
+                        Icon(
+                          Icons.delete,
+                          color: Theme.of(context).colorScheme.onError,
+                        ),
+                      ],
+                    ),
+                  ),
+                  style: TextButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    backgroundColor: Theme.of(context).colorScheme.error,
+                  ),
+                  onPressed: () {
+                    Util.popUpDialog(
+                      context,
+                      "Delete Matcher Data",
+                      "Are you sure you want to delete all Matcher data?"
+                          "\nYou will loose ${Matcher.liked.length} liked accounts and ${Matcher.disliked.length} disliked accounts, as well as ${Matcher.matches.length} matches.",
+                      "Delete",
+                      () {
+                        Matcher.clear();
                         Update();
                       },
                     );

@@ -32,8 +32,8 @@ class _AccountListViewState extends State<AccountListView> {
 
   Future<void> _fetchData(int pageKey) async {
     List<Account> accounts = [];
-    accounts.insert(
-        0, await Mastodon.getAccount("kolektiva.social", "lypsilonx"));
+    // accounts.insert(
+    //     0, await Mastodon.getAccount("kolektiva.social", "lypsilonx"));
     try {
       do {
         int pageSize = 50;
@@ -101,9 +101,9 @@ class _AccountListViewState extends State<AccountListView> {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         return Scaffold(
-          bottomNavigationBar: NavBar("Home"),
+          bottomNavigationBar: NavBar(AccountListView.routeName),
           appBar: AppBar(
-            leading: controller.cardIndex != 0
+            leading: history.length != 0
                 ? IconButton(
                     icon: const Icon(Icons.undo),
                     onPressed: () {

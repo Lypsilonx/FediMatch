@@ -46,10 +46,10 @@ class _MatchesListViewState extends State<MatchesListView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      bottomNavigationBar: NavBar("Likes & Matches"),
+      bottomNavigationBar: NavBar(MatchesListView.routeName),
       appBar: AppBar(
         title: Text(
-          'Likes & Matches',
+          'Matches & Likes',
           style: Theme.of(context).textTheme.titleLarge,
         ),
         actions: [
@@ -74,31 +74,6 @@ class _MatchesListViewState extends State<MatchesListView> {
             child: ListView(
               controller: ScrollController(),
               children: [
-                Flex(
-                  direction: Axis.horizontal,
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: searchController,
-                        autocorrect: false,
-                        decoration: const InputDecoration(
-                          labelText: 'Search',
-                          helperText: 'search for a user',
-                        ),
-                        onFieldSubmitted: (String value) async {
-                          search(value);
-                        },
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.search),
-                      onPressed: () async {
-                        search(searchController.text);
-                      },
-                    ),
-                  ],
-                ),
-                SizedBox(height: 20),
                 // Upload Likes
                 Mastodon.instance.self.hasFediMatchKeyField &&
                         Matcher.numToUpload() > 0
@@ -126,6 +101,7 @@ class _MatchesListViewState extends State<MatchesListView> {
                 MatchListSection(
                   "Matches",
                   Matcher.matches,
+                  goto: "chat",
                   color: Colors.orange,
                   icon: Icons.hotel_class,
                   emptyMessage: "no matches yet",
@@ -133,7 +109,7 @@ class _MatchesListViewState extends State<MatchesListView> {
                   onMatchDismissed: (url) => Matcher.removeMatch(url),
                 ),
                 MatchListSection(
-                  "Liked",
+                  "Likes",
                   Matcher.liked,
                   color: Colors.green,
                   icon: Icons.favorite,

@@ -7,20 +7,22 @@ import 'package:flutter/material.dart';
 class MatchListSection extends DismissableList {
   final String title;
   final List<String> urls;
+  final String goto;
   final void Function(String url)? onMatchDismissed;
 
   MatchListSection(this.title, this.urls,
-      {super.color,
+      {this.goto = "info",
+      super.color,
       super.icon,
       super.emptyMessage,
       super.initiallyExpanded = false,
       this.onMatchDismissed})
-      : super(title, urls.map((url) => renderAsMatch(url)).toList(),
+      : super(title, urls.map((url) => renderAsMatch(url, goto)).toList(),
             onDismissed: (index) {
           onMatchDismissed!(urls[index]);
         }) {}
 
-  static Widget renderAsMatch(String url) {
+  static Widget renderAsMatch(String url, String goto) {
     var instanceUsername = FediMatchHelper.instanceUsernameFromUrl(url);
     var instance = instanceUsername.$1;
     var username = instanceUsername.$2;
@@ -38,7 +40,7 @@ class MatchListSection extends DismissableList {
           if (snapshot.hasData) {
             return Padding(
               padding: const EdgeInsets.only(left: 20, right: 40),
-              child: AccountView(snapshot.data!, goto: "chat", edgeInset: 0),
+              child: AccountView(snapshot.data!, goto: goto, edgeInset: 0),
             );
           } else {
             return ListTile(

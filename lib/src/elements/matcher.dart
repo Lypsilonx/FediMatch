@@ -12,6 +12,7 @@ class Matcher {
   static List<String> any() => liked + disliked + matches;
 
   static List<String> uploaded = [];
+  static List<String> chats = [];
   static List<Account> newMatches = [];
 
   static int numToUpload() {
@@ -152,8 +153,18 @@ class Matcher {
     }
 
     matches.add(account.url);
+    chats.add(account.url);
     newMatches.add(account);
     unswipe(account);
+    saveToPrefs();
+  }
+
+  static void addToChats(Account account) {
+    if (chats.contains(account.url)) {
+      return;
+    }
+
+    chats.add(account.url);
     saveToPrefs();
   }
 
@@ -176,23 +187,25 @@ class Matcher {
   static void removeMatch(String url) {
     matches.remove(url);
     uploaded.remove(url);
+    chats.remove(url);
     saveToPrefs();
   }
 
   static void clear() {
-    SettingsController.instance.updateMatchedData(MatchedData([], [], [], []));
+    SettingsController.instance
+        .updateMatchedData(MatchedData([], [], [], [], []));
     loadFromPrefs();
   }
 
   static void resetDislikes() {
     SettingsController.instance
-        .updateMatchedData(MatchedData(liked, [], matches, uploaded));
+        .updateMatchedData(MatchedData(liked, [], matches, uploaded, chats));
     loadFromPrefs();
   }
 
   static void saveToPrefs() {
-    SettingsController.instance
-        .updateMatchedData(MatchedData(liked, disliked, matches, uploaded));
+    SettingsController.instance.updateMatchedData(
+        MatchedData(liked, disliked, matches, uploaded, chats));
   }
 
   static void loadFromPrefs() {
@@ -201,6 +214,7 @@ class Matcher {
     disliked = matchedData.disliked;
     matches = matchedData.matches;
     uploaded = matchedData.uploaded;
+    chats = matchedData.chats;
   }
 
   static Future<String> generateKeyValuePair(String password) async {

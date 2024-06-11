@@ -69,18 +69,6 @@ class SettingsController with ChangeNotifier {
     await _settingsService.updateThemeMode(newThemeMode);
   }
 
-  late bool _chatMentionSafety;
-  bool get chatMentionSafety => _chatMentionSafety;
-
-  Future<void> updateChatMentionSafety(bool newChatMentionSafety) async {
-    if (newChatMentionSafety == _chatMentionSafety) return;
-
-    _chatMentionSafety = newChatMentionSafety;
-
-    notifyListeners();
-    await _settingsService.updateChatMentionSafety(newChatMentionSafety);
-  }
-
   late FediMatchAction? _primaryAction;
   FediMatchAction? get primaryAction => _primaryAction;
 
@@ -141,6 +129,18 @@ class SettingsController with ChangeNotifier {
 
     notifyListeners();
     await _settingsService.updateShowRating(newShowRating);
+  }
+
+  late bool _chatMentionSafety;
+  bool get chatMentionSafety => _chatMentionSafety;
+
+  Future<void> updateChatMentionSafety(bool newChatMentionSafety) async {
+    if (newChatMentionSafety == _chatMentionSafety) return;
+
+    _chatMentionSafety = newChatMentionSafety;
+
+    notifyListeners();
+    await _settingsService.updateChatMentionSafety(newChatMentionSafety);
   }
 
   late String _userInstanceName;

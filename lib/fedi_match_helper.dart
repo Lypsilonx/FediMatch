@@ -151,7 +151,7 @@ class FediMatchAction {
   );
 
   static FediMatchAction LikeAndFollow = FediMatchAction(
-    "LikeAndFollow",
+    "Like & Follow",
     "Like and follow this person",
     Icons.star,
     (context, account) {

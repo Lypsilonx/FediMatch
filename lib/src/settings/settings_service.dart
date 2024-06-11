@@ -53,22 +53,6 @@ class SettingsService {
     _preferences!.setString(themeModeKey, themeMode.name);
   }
 
-  // Chat Mention Safety
-  static const String chatMentionSafetyKey =
-      "${_settingsPrefix}ChatMentionSafety";
-  static const bool chatMentionSafetyDefault = true;
-  Future<bool> chatMentionSafety() async {
-    if (_preferences!.containsKey(chatMentionSafetyKey)) {
-      return _preferences!.getBool(chatMentionSafetyKey)!;
-    }
-
-    return chatMentionSafetyDefault;
-  }
-
-  Future<void> updateChatMentionSafety(bool chatMentionSafety) async {
-    _preferences!.setBool(chatMentionSafetyKey, chatMentionSafety);
-  }
-
   // Primary Action
   static const String primaryActionKey = "${_settingsPrefix}PrimaryAction";
   static FediMatchAction? primaryActionDefault = FediMatchAction.Follow;
@@ -170,6 +154,22 @@ class SettingsService {
     _preferences!.setBool(showRatingKey, showRating);
   }
 
+  // Chat Mention Safety
+  static const String chatMentionSafetyKey =
+      "${_settingsPrefix}ChatMentionSafety";
+  static const bool chatMentionSafetyDefault = true;
+  Future<bool> chatMentionSafety() async {
+    if (_preferences!.containsKey(chatMentionSafetyKey)) {
+      return _preferences!.getBool(chatMentionSafetyKey)!;
+    }
+
+    return chatMentionSafetyDefault;
+  }
+
+  Future<void> updateChatMentionSafety(bool chatMentionSafety) async {
+    _preferences!.setBool(chatMentionSafetyKey, chatMentionSafety);
+  }
+
   // User Instance Name
   static const String userInstanceNameKey =
       "${_settingsPrefix}UserInstanceName";
@@ -207,12 +207,14 @@ class SettingsService {
   static const String matchedDataKeyDisliked = "${matchedDataKey}Disliked";
   static const String matchedDataKeyMatches = "${matchedDataKey}Matches";
   static const String matchedDataKeyUploaded = "${matchedDataKey}Uploaded";
+  static const String matchedDataKeyChats = "${matchedDataKey}Chats";
   Future<MatchedData> matchedData() async {
     return MatchedData(
         _preferences!.getStringList(matchedDataKeyLiked) ?? [],
         _preferences!.getStringList(matchedDataKeyDisliked) ?? [],
         _preferences!.getStringList(matchedDataKeyMatches) ?? [],
-        _preferences!.getStringList(matchedDataKeyUploaded) ?? []);
+        _preferences!.getStringList(matchedDataKeyUploaded) ?? [],
+        _preferences!.getStringList(matchedDataKeyChats) ?? []);
   }
 
   Future<void> updateMatchedData(MatchedData matchedData) async {
@@ -220,6 +222,7 @@ class SettingsService {
     _preferences!.setStringList(matchedDataKeyDisliked, matchedData.disliked);
     _preferences!.setStringList(matchedDataKeyMatches, matchedData.matches);
     _preferences!.setStringList(matchedDataKeyUploaded, matchedData.uploaded);
+    _preferences!.setStringList(matchedDataKeyChats, matchedData.chats);
   }
 
   // Private Match Key

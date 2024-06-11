@@ -2,6 +2,7 @@ import 'package:appinio_swiper/appinio_swiper.dart';
 import 'package:fedi_match/mastodon.dart';
 import 'package:fedi_match/src/settings/settings_controller.dart';
 import 'package:fedi_match/src/views/account_chat_view.dart';
+import 'package:fedi_match/src/views/chats_list_view.dart';
 import 'package:fedi_match/src/views/matches_list_view.dart';
 import 'package:fedi_match/src/views/login_view.dart';
 import 'package:fedi_match/src/views/settings_view.dart';
@@ -46,6 +47,7 @@ class FediMatch extends StatelessWidget {
                   return switch (routeSettings.name) {
                     LoginView.routeName => LoginView(),
                     SettingsView.routeName => SettingsView(),
+                    ChatsListView.routeName => ChatsListView(),
                     MatchesListView.routeName => MatchesListView(),
                     AccountDetailsView.routeName => AccountDetailsView(
                         (routeSettings.arguments as Map)["account"] as Account,

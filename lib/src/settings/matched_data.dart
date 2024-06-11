@@ -4,6 +4,8 @@ class MatchedData {
   final List<String> matches;
 
   final List<String> uploaded;
+  final List<String> chats;
 
-  MatchedData(this.liked, this.disliked, this.matches, this.uploaded);
+  MatchedData(
+      this.liked, this.disliked, this.matches, this.uploaded, this.chats);
 }
