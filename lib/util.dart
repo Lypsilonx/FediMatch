@@ -30,6 +30,37 @@ class Util {
     ];
   }
 
+  static Widget ImageErrorBuilder(
+      BuildContext context, Object error, StackTrace? stackTrace) {
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        return Container(
+          width: constraints.maxWidth,
+          height: constraints.maxWidth,
+          color: Theme.of(context).colorScheme.surface,
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.error,
+                  color: Theme.of(context).colorScheme.error,
+                ),
+                SizedBox(height: 10),
+                Text(
+                  "Error loading image",
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   static void showErrorScaffold(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(

@@ -5,6 +5,7 @@ import 'package:fedi_match/src/elements/account_view.dart';
 import 'package:fedi_match/src/elements/match_buttons.dart';
 import 'package:fedi_match/src/settings/settings_controller.dart';
 import 'package:fedi_match/src/views/account_details_view.dart';
+import 'package:fedi_match/util.dart';
 import 'package:flutter/material.dart';
 
 class SwipeCard extends StatelessWidget {
@@ -48,10 +49,12 @@ class SwipeCard extends StatelessWidget {
                         Column(
                           children: [
                             Image(
-                                image: NetworkImage(account.avatar),
-                                fit: BoxFit.cover,
-                                width: constraints.maxWidth - 10,
-                                height: constraints.maxWidth - 10),
+                              image: NetworkImage(account.avatar),
+                              fit: BoxFit.cover,
+                              width: constraints.maxWidth - 10,
+                              height: constraints.maxWidth - 10,
+                              errorBuilder: Util.ImageErrorBuilder,
+                            ),
                             Container(
                               width: constraints.maxWidth - 10,
                               child: Padding(

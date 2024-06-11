@@ -5,6 +5,7 @@ import 'package:fedi_match/src/elements/account_view.dart';
 import 'package:fedi_match/src/elements/match_buttons.dart';
 import 'package:fedi_match/src/elements/status_view.dart';
 import 'package:fedi_match/src/settings/settings_controller.dart';
+import 'package:fedi_match/util.dart';
 import 'package:flutter/material.dart';
 
 class AccountDetailsView extends StatefulWidget {
@@ -99,6 +100,7 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
                         fit: BoxFit.cover,
                         width: constraints.maxWidth,
                         height: constraints.maxWidth,
+                        errorBuilder: Util.ImageErrorBuilder,
                       )
                     : Stack(
                         children: [
