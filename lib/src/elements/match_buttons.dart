@@ -41,7 +41,7 @@ class _MatchButtonsState extends State<MatchButtons> {
             ),
             dislikeAction.getColor(Theme.of(context)),
             () {
-              widget.controller.swipeUp();
+              widget.controller.swipeLeft();
               if (widget.postSwipe != null) {
                 widget.postSwipe!();
               }

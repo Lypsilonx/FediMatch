@@ -108,12 +108,8 @@ class FediMatchAction {
     "Dislike",
     "Dislike this person",
     Icons.close,
-    (context, account) {
-      Matcher.addToLiked(account);
-    },
-    (context, account) {
-      Matcher.unswipe(account);
-    },
+    (context, account) {},
+    (context, account) {},
     pureColor: (_) => Colors.red,
   );
 
