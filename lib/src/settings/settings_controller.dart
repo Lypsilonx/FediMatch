@@ -18,6 +18,8 @@ class SettingsController with ChangeNotifier {
     updateThemeColor(_themeColor);
     _themeMode = await _settingsService.themeMode();
     _chatMentionSafety = await _settingsService.chatMentionSafety();
+    _primaryAction = await _settingsService.primaryAction();
+    _secondaryAction = await _settingsService.secondaryAction();
 
     _showNonOptInAccounts = await _settingsService.showNonOptInAccounts();
     _filters = await _settingsService.filters();
@@ -77,6 +79,31 @@ class SettingsController with ChangeNotifier {
 
     notifyListeners();
     await _settingsService.updateChatMentionSafety(newChatMentionSafety);
+  }
+
+  late FediMatchAction? _primaryAction;
+  FediMatchAction? get primaryAction => _primaryAction;
+
+  Future<void> updatePrimaryAction(FediMatchAction? newPrimaryAction) async {
+    if (newPrimaryAction == _primaryAction) return;
+
+    _primaryAction = newPrimaryAction;
+
+    notifyListeners();
+    await _settingsService.updatePrimaryAction(newPrimaryAction);
+  }
+
+  late FediMatchAction? _secondaryAction;
+  FediMatchAction? get secondaryAction => _secondaryAction;
+
+  Future<void> updateSecondaryAction(
+      FediMatchAction? newSecondaryAction) async {
+    if (newSecondaryAction == _secondaryAction) return;
+
+    _secondaryAction = newSecondaryAction;
+
+    notifyListeners();
+    await _settingsService.updateSecondaryAction(newSecondaryAction);
   }
 
   late bool _showNonOptInAccounts;

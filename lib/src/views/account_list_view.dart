@@ -90,6 +90,10 @@ class _AccountListViewState extends State<AccountListView> {
 
   @override
   Widget build(BuildContext context) {
+    FediMatchAction? primaryAction = SettingsController.instance.primaryAction;
+    FediMatchAction? secondaryAction =
+        SettingsController.instance.secondaryAction;
+
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         return Scaffold(
@@ -112,7 +116,11 @@ class _AccountListViewState extends State<AccountListView> {
             controller: controller,
             allowUnlimitedUnSwipe: true,
             cardCount: _list.length == 0 ? 1 : _list.length,
-            swipeOptions: SwipeOptions.only(left: true, right: true),
+            swipeOptions: SwipeOptions.only(
+              left: true,
+              right: primaryAction != null,
+              up: secondaryAction != null,
+            ),
             onSwipeEnd: (int current, int next, SwiperActivity activity) {
               _currentPage++;
               if (next >= _list.length - 2) _fetchData(_currentPage);
@@ -124,7 +132,12 @@ class _AccountListViewState extends State<AccountListView> {
                       Matcher.addToDisliked(_list[current]);
                       break;
                     case AxisDirection.right:
-                      Matcher.addToLiked(_list[current]);
+                      if (primaryAction == null) break;
+                      primaryAction.action(context, _list[current]);
+                      break;
+                    case AxisDirection.up:
+                      if (secondaryAction == null) break;
+                      secondaryAction.action(context, _list[current]);
                       break;
                     default:
                   }

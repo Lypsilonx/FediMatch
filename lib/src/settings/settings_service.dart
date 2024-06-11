@@ -69,6 +69,56 @@ class SettingsService {
     _preferences!.setBool(chatMentionSafetyKey, chatMentionSafety);
   }
 
+  // Primary Action
+  static const String primaryActionKey = "${_settingsPrefix}PrimaryAction";
+  static FediMatchAction? primaryActionDefault = FediMatchAction.Follow;
+  Future<FediMatchAction?> primaryAction() async {
+    if (_preferences!.containsKey(primaryActionKey)) {
+      if (_preferences!.getString(primaryActionKey)!.isEmpty) {
+        return null;
+      }
+
+      return FediMatchAction.fromString(
+          _preferences!.getString(primaryActionKey)!);
+    }
+
+    return primaryActionDefault;
+  }
+
+  Future<void> updatePrimaryAction(FediMatchAction? primaryAction) async {
+    if (primaryAction == null) {
+      _preferences!.setString(primaryActionKey, "");
+      return;
+    }
+
+    _preferences!.setString(primaryActionKey, primaryAction.name);
+  }
+
+  // Secondary Action
+  static const String secondaryActionKey = "${_settingsPrefix}SecondaryAction";
+  static FediMatchAction? secondaryActionDefault = null;
+  Future<FediMatchAction?> secondaryAction() async {
+    if (_preferences!.containsKey(secondaryActionKey)) {
+      if (_preferences!.getString(secondaryActionKey)!.isEmpty) {
+        return null;
+      }
+
+      return FediMatchAction.fromString(
+          _preferences!.getString(secondaryActionKey)!);
+    }
+
+    return secondaryActionDefault;
+  }
+
+  Future<void> updateSecondaryAction(FediMatchAction? secondaryAction) async {
+    if (secondaryAction == null) {
+      _preferences!.setString(secondaryActionKey, "");
+      return;
+    }
+
+    _preferences!.setString(secondaryActionKey, secondaryAction.name);
+  }
+
   // Show Non-Opt-In Accounts
   static const String showNonOptInAccountsKey =
       "${_settingsPrefix}ShowNonOptInAccounts";

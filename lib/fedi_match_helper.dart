@@ -1,8 +1,8 @@
 import 'package:fedi_match/mastodon.dart';
 import 'package:fedi_match/src/elements/matcher.dart';
 import 'package:fedi_match/src/settings/settings_controller.dart';
+import 'package:fedi_match/util.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:uuid/uuid.dart';
 
@@ -51,6 +51,92 @@ class FediMatchTagType {
     "No specific tag",
     Icons.tag,
     pureColor: (theme) => Colors.grey.withAlpha(100),
+  );
+}
+
+class FediMatchAction {
+  final String name;
+  final String description;
+  final IconData icon;
+  final Color color;
+  final Function(ThemeData theme)? pureColor;
+  final Function(BuildContext context, Account account) action;
+
+  FediMatchAction(this.name, this.description, this.icon, this.action,
+      {this.color = Colors.grey, this.pureColor = null});
+
+  getColor(ThemeData theme) {
+    if (pureColor != null) {
+      return pureColor!(theme);
+    }
+
+    return HSLColor.fromColor(theme.colorScheme.secondary)
+        .withHue(HSLColor.fromColor(color).hue)
+        .toColor()
+        .withAlpha(128);
+  }
+
+  static FediMatchAction fromString(String name) {
+    for (var action in all) {
+      if (action.name == name) {
+        return action;
+      }
+    }
+
+    return FediMatchAction(name, "", Icons.tag, (context, account) {});
+  }
+
+  static List<FediMatchAction> get all => [Like, Follow, LikeAndFollow];
+
+  static FediMatchAction Like = FediMatchAction(
+    "Like",
+    "Like this person",
+    Icons.favorite,
+    (context, account) {
+      Matcher.addToLiked(account);
+    },
+    pureColor: (_) => Colors.green,
+  );
+
+  static FediMatchAction Follow = FediMatchAction(
+    "Follow",
+    "Follow this person",
+    Icons.person_add,
+    (context, account) {
+      String followStatus = Mastodon.selfFollowing.contains(account.url)
+          ? "Following"
+          : Mastodon.selfRequested.contains(account.url)
+              ? "Requested"
+              : "Follow";
+      if (followStatus != "Follow") {
+        Util.executeWhenOK(
+          Mastodon.unfollow(account, SettingsController.instance.accessToken),
+          context,
+        );
+      }
+    },
+    pureColor: (_) => Colors.blue,
+  );
+
+  static FediMatchAction LikeAndFollow = FediMatchAction(
+    "LikeAndFollow",
+    "Like and follow this person",
+    Icons.star,
+    (context, account) {
+      Matcher.addToLiked(account);
+      String followStatus = Mastodon.selfFollowing.contains(account.url)
+          ? "Following"
+          : Mastodon.selfRequested.contains(account.url)
+              ? "Requested"
+              : "Follow";
+      if (followStatus != "Follow") {
+        Util.executeWhenOK(
+          Mastodon.unfollow(account, SettingsController.instance.accessToken),
+          context,
+        );
+      }
+    },
+    pureColor: (_) => Colors.purple,
   );
 }
 

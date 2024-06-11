@@ -250,6 +250,80 @@ class _SettingsViewState extends State<SettingsView> {
                   ),
                 ),
 
+                // Primary action
+                ListTile(
+                  leading: Icon(
+                    Icons.arrow_forward,
+                    color: SettingsController.instance.primaryAction == null
+                        ? Theme.of(context).colorScheme.onSurface
+                        : SettingsController.instance.primaryAction!.getColor(
+                            Theme.of(context),
+                          ),
+                  ),
+                  title: Text(
+                    'Primary action',
+                    style: Theme.of(context).textTheme.labelLarge,
+                  ),
+                  trailing: DropdownButton<FediMatchAction>(
+                    underline: Container(),
+                    value: SettingsController.instance.primaryAction,
+                    onChanged: (FediMatchAction? value) {
+                      SettingsController.instance.updatePrimaryAction(value);
+                      Update();
+                    },
+                    items: FediMatchAction.all
+                        .map((FediMatchAction action) => DropdownMenuItem(
+                              value: action,
+                              child: Text(action.name),
+                            ))
+                        .followedBy(
+                      [
+                        DropdownMenuItem(
+                          value: null,
+                          child: Text("None"),
+                        )
+                      ],
+                    ).toList(),
+                  ),
+                ),
+
+                // Secondary action
+                ListTile(
+                  leading: Icon(
+                    Icons.arrow_upward,
+                    color: SettingsController.instance.secondaryAction == null
+                        ? Theme.of(context).colorScheme.onSurface
+                        : SettingsController.instance.secondaryAction!.getColor(
+                            Theme.of(context),
+                          ),
+                  ),
+                  title: Text(
+                    'Secondary action',
+                    style: Theme.of(context).textTheme.labelLarge,
+                  ),
+                  trailing: DropdownButton<FediMatchAction>(
+                    underline: Container(),
+                    value: SettingsController.instance.secondaryAction,
+                    onChanged: (FediMatchAction? value) {
+                      SettingsController.instance.updateSecondaryAction(value);
+                      Update();
+                    },
+                    items: FediMatchAction.all
+                        .map((FediMatchAction action) => DropdownMenuItem(
+                              value: action,
+                              child: Text(action.name),
+                            ))
+                        .followedBy(
+                      [
+                        DropdownMenuItem(
+                          value: null,
+                          child: Text("None"),
+                        ),
+                      ],
+                    ).toList(),
+                  ),
+                ),
+
                 SizedBox(height: 20),
                 Text("Opt-in", style: Theme.of(context).textTheme.titleMedium),
                 // Opt-in
