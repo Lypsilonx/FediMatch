@@ -8,7 +8,7 @@ Meet interesting people on Mastodon & co. via an intuitive swiping interface in 
 - **iOS**: Apple does not allow more "dating apps" on the App Store. (See [App Review Guidelines 4.3](https://developer.apple.com/app-store/review/guidelines/#spam)) You can build the app yourself using the source code. or join the [TestFlight](https://testflight.apple.com/join/Xf4FTWiG).
 
 ## Functionality
-- **Swiping**: Swipe left to pass, swipe right to like, swipe up to superlike.
+- **Swiping**: Swipe left, right or up to like, dislike or follow users.
 - **"Unlimited" swipes, likes & unswipes**: You can swipe and unswipe as much as you want! We don't limit you.
 - **Follow**: You can follow users directly from the app.
 - **Opt-in**: You can opt-in to FediMatch by connecting your Mastodon account and opting in in the settings. Users who have not opted in will have a warning sign next to their profile.

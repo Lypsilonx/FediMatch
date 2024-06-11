@@ -24,6 +24,7 @@ class MatchButtons extends StatefulWidget {
 class _MatchButtonsState extends State<MatchButtons> {
   @override
   Widget build(BuildContext context) {
+    FediMatchAction dislikeAction = FediMatchAction.Dislike;
     FediMatchAction? primaryAction = SettingsController.instance.primaryAction;
     FediMatchAction? secondaryAction =
         SettingsController.instance.secondaryAction;
@@ -35,12 +36,12 @@ class _MatchButtonsState extends State<MatchButtons> {
         children: <Widget>[
           ActionButton(
             Icon(
-              Icons.close,
-              color: Theme.of(context).colorScheme.onError,
+              dislikeAction.icon,
+              color: Theme.of(context).colorScheme.onSecondary,
             ),
-            Theme.of(context).colorScheme.error,
+            dislikeAction.getColor(Theme.of(context)),
             () {
-              widget.controller.swipeLeft();
+              widget.controller.swipeUp();
               if (widget.postSwipe != null) {
                 widget.postSwipe!();
               }

@@ -61,8 +61,10 @@ class FediMatchAction {
   final Color color;
   final Function(ThemeData theme)? pureColor;
   final Function(BuildContext context, Account account) action;
+  final Function(BuildContext context, Account account) undo;
 
-  FediMatchAction(this.name, this.description, this.icon, this.action,
+  FediMatchAction(
+      this.name, this.description, this.icon, this.action, this.undo,
       {this.color = Colors.grey, this.pureColor = null});
 
   getColor(ThemeData theme) {
@@ -83,7 +85,8 @@ class FediMatchAction {
       }
     }
 
-    return FediMatchAction(name, "", Icons.tag, (context, account) {});
+    return FediMatchAction(
+        name, "", Icons.tag, (context, account) {}, (context, account) {});
   }
 
   static List<FediMatchAction> get all => [Like, Follow, LikeAndFollow];
@@ -95,13 +98,42 @@ class FediMatchAction {
     (context, account) {
       Matcher.addToLiked(account);
     },
+    (context, account) {
+      Matcher.unswipe(account);
+    },
     pureColor: (_) => Colors.green,
+  );
+
+  static FediMatchAction Dislike = FediMatchAction(
+    "Dislike",
+    "Dislike this person",
+    Icons.close,
+    (context, account) {
+      Matcher.addToLiked(account);
+    },
+    (context, account) {
+      Matcher.unswipe(account);
+    },
+    pureColor: (_) => Colors.red,
   );
 
   static FediMatchAction Follow = FediMatchAction(
     "Follow",
     "Follow this person",
     Icons.person_add,
+    (context, account) {
+      String followStatus = Mastodon.selfFollowing.contains(account.url)
+          ? "Following"
+          : Mastodon.selfRequested.contains(account.url)
+              ? "Requested"
+              : "Follow";
+      if (followStatus == "Follow") {
+        Util.executeWhenOK(
+          Mastodon.follow(account, SettingsController.instance.accessToken),
+          context,
+        );
+      }
+    },
     (context, account) {
       String followStatus = Mastodon.selfFollowing.contains(account.url)
           ? "Following"
@@ -124,6 +156,20 @@ class FediMatchAction {
     Icons.star,
     (context, account) {
       Matcher.addToLiked(account);
+      String followStatus = Mastodon.selfFollowing.contains(account.url)
+          ? "Following"
+          : Mastodon.selfRequested.contains(account.url)
+              ? "Requested"
+              : "Follow";
+      if (followStatus == "Follow") {
+        Util.executeWhenOK(
+          Mastodon.follow(account, SettingsController.instance.accessToken),
+          context,
+        );
+      }
+    },
+    (context, account) {
+      Matcher.unswipe(account);
       String followStatus = Mastodon.selfFollowing.contains(account.url)
           ? "Following"
           : Mastodon.selfRequested.contains(account.url)

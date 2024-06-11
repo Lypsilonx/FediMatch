@@ -28,9 +28,12 @@ class _AccountListViewState extends State<AccountListView> {
   AppinioSwiperController controller = AppinioSwiperController();
   String loadingMessage = "";
 
+  List<(Account account, FediMatchAction action)> history = [];
+
   Future<void> _fetchData(int pageKey) async {
     List<Account> accounts = [];
-    //accounts.insert(0, await Mastodon.getAccount("kolektiva.social", "lypsilonx"));
+    accounts.insert(
+        0, await Mastodon.getAccount("kolektiva.social", "lypsilonx"));
     try {
       do {
         int pageSize = 50;
@@ -90,6 +93,7 @@ class _AccountListViewState extends State<AccountListView> {
 
   @override
   Widget build(BuildContext context) {
+    FediMatchAction dislikeAction = FediMatchAction.Dislike;
     FediMatchAction? primaryAction = SettingsController.instance.primaryAction;
     FediMatchAction? secondaryAction =
         SettingsController.instance.secondaryAction;
@@ -129,21 +133,31 @@ class _AccountListViewState extends State<AccountListView> {
                 case Swipe:
                   switch (activity.direction) {
                     case AxisDirection.left:
-                      Matcher.addToDisliked(_list[current]);
+                      dislikeAction.action(context, _list[current]);
+                      setState(() {
+                        history.add((_list[current], dislikeAction));
+                      });
                       break;
                     case AxisDirection.right:
                       if (primaryAction == null) break;
                       primaryAction.action(context, _list[current]);
+                      setState(() {
+                        history.add((_list[current], primaryAction));
+                      });
                       break;
                     case AxisDirection.up:
                       if (secondaryAction == null) break;
                       secondaryAction.action(context, _list[current]);
+                      setState(() {
+                        history.add((_list[current], secondaryAction));
+                      });
                       break;
                     default:
                   }
                   break;
                 case Unswipe:
-                  Matcher.unswipe(_list[next]);
+                  var last = history.removeLast();
+                  last.$2.undo(context, last.$1);
                   break;
                 default:
                   break;
