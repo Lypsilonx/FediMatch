@@ -14,6 +14,7 @@ class SettingsController with ChangeNotifier {
   static SettingsController get instance => _instance;
 
   Future<void> loadSettings() async {
+    _searchMode = await _settingsService.searchMode();
     _themeColor = await _settingsService.themeColor();
     updateThemeColor(_themeColor);
     _themeMode = await _settingsService.themeMode();
@@ -34,6 +35,19 @@ class SettingsController with ChangeNotifier {
     _instance = this;
 
     notifyListeners();
+  }
+
+  late FediMatchSearchMode _searchMode;
+  FediMatchSearchMode get searchMode => _searchMode;
+
+  Future<void> updateSearchMode(FediMatchSearchMode? newSearchMode) async {
+    if (newSearchMode == null) return;
+    if (newSearchMode == _searchMode) return;
+
+    _searchMode = newSearchMode;
+
+    notifyListeners();
+    await _settingsService.updateSearchMode(newSearchMode);
   }
 
   late ThemeData _darkTheme;

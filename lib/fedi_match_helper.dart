@@ -6,14 +6,14 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:uuid/uuid.dart';
 
-class FediMatchTagType {
-  final String name;
-  final String description;
-  final IconData icon;
-  final Color color;
+class FediMatchListItem {
+  final name;
+  final description;
+  final icon;
+  final color;
   final Function(ThemeData theme)? pureColor;
 
-  FediMatchTagType(this.name, this.description, this.icon,
+  const FediMatchListItem(this.name, this.description, this.icon,
       {this.color = Colors.grey, this.pureColor = null});
 
   getColor(ThemeData theme) {
@@ -26,6 +26,18 @@ class FediMatchTagType {
         .toColor()
         .withAlpha(128);
   }
+}
+
+class FediMatchTagType extends FediMatchListItem {
+  const FediMatchTagType(
+    super.name,
+    super.description,
+    super.icon, {
+    super.color = Colors.grey,
+    super.pureColor = null,
+  });
+
+  static List<FediMatchTagType> get all => [Interest, None];
 
   static FediMatchTagType fromString(String name) {
     for (var type in all) {
@@ -37,46 +49,40 @@ class FediMatchTagType {
     return FediMatchTagType(name, "", Icons.tag);
   }
 
-  static List<FediMatchTagType> get all => [Interest, None];
-
-  static FediMatchTagType Interest = FediMatchTagType(
+  static const FediMatchTagType Interest = FediMatchTagType(
     "Interest",
     "Interests you have",
     Icons.star,
     color: Colors.blue,
   );
 
-  static FediMatchTagType None = FediMatchTagType(
+  static NoneColor(ThemeData theme) {
+    return Colors.grey.withAlpha(100);
+  }
+
+  static const FediMatchTagType None = FediMatchTagType(
     "None",
     "No specific tag",
     Icons.tag,
-    pureColor: (theme) => Colors.grey.withAlpha(100),
+    pureColor: NoneColor,
   );
 }
 
-class FediMatchAction {
-  final String name;
-  final String description;
-  final IconData icon;
-  final Color color;
-  final Function(ThemeData theme)? pureColor;
+class FediMatchAction extends FediMatchListItem {
   final Function(BuildContext context, Account account) action;
   final Function(BuildContext context, Account account) undo;
 
-  FediMatchAction(
-      this.name, this.description, this.icon, this.action, this.undo,
-      {this.color = Colors.grey, this.pureColor = null});
+  const FediMatchAction(
+    super.name,
+    super.description,
+    super.icon,
+    this.action,
+    this.undo, {
+    super.color = Colors.grey,
+    super.pureColor = null,
+  });
 
-  getColor(ThemeData theme) {
-    if (pureColor != null) {
-      return pureColor!(theme);
-    }
-
-    return HSLColor.fromColor(theme.colorScheme.secondary)
-        .withHue(HSLColor.fromColor(color).hue)
-        .toColor()
-        .withAlpha(128);
-  }
+  static List<FediMatchAction> get all => [Like, Follow, LikeAndFollow];
 
   static FediMatchAction fromString(String name) {
     for (var action in all) {
@@ -89,96 +95,146 @@ class FediMatchAction {
         name, "", Icons.tag, (context, account) {}, (context, account) {});
   }
 
-  static List<FediMatchAction> get all => [Like, Follow, LikeAndFollow];
+  static LikeAction(BuildContext context, Account account) {
+    Matcher.addToLiked(account);
+  }
 
-  static FediMatchAction Like = FediMatchAction(
+  static LikeUndo(BuildContext context, Account account) {
+    Matcher.unswipe(account);
+  }
+
+  static LikeColor(ThemeData theme) {
+    return Colors.green;
+  }
+
+  static const FediMatchAction Like = FediMatchAction(
     "Like",
     "Like this person",
     Icons.favorite,
-    (context, account) {
-      Matcher.addToLiked(account);
-    },
-    (context, account) {
-      Matcher.unswipe(account);
-    },
-    pureColor: (_) => Colors.green,
+    LikeAction,
+    LikeUndo,
+    pureColor: LikeColor,
   );
 
-  static FediMatchAction Dislike = FediMatchAction(
+  static DislikeAction(BuildContext context, Account account) {
+    Matcher.addToDisliked(account);
+  }
+
+  static DislikeUndo(BuildContext context, Account account) {
+    Matcher.unswipe(account);
+  }
+
+  static DislikeColor(ThemeData theme) {
+    return Colors.red;
+  }
+
+  static const FediMatchAction Dislike = FediMatchAction(
     "Dislike",
     "Dislike this person",
     Icons.close,
-    (context, account) {},
-    (context, account) {},
-    pureColor: (_) => Colors.red,
+    DislikeAction,
+    DislikeUndo,
+    pureColor: DislikeColor,
   );
 
-  static FediMatchAction Follow = FediMatchAction(
+  static FollowAction(BuildContext context, Account account) {
+    String followStatus = Mastodon.selfFollowing.contains(account.url)
+        ? "Following"
+        : Mastodon.selfRequested.contains(account.url)
+            ? "Requested"
+            : "Follow";
+    if (followStatus == "Follow") {
+      Util.executeWhenOK(
+        Mastodon.follow(account, SettingsController.instance.accessToken),
+        context,
+      );
+    }
+  }
+
+  static FollowUndo(BuildContext context, Account account) {
+    String followStatus = Mastodon.selfFollowing.contains(account.url)
+        ? "Following"
+        : Mastodon.selfRequested.contains(account.url)
+            ? "Requested"
+            : "Follow";
+    if (followStatus != "Follow") {
+      Util.executeWhenOK(
+        Mastodon.unfollow(account, SettingsController.instance.accessToken),
+        context,
+      );
+    }
+  }
+
+  static FollowColor(ThemeData theme) {
+    return Colors.blue;
+  }
+
+  static const FediMatchAction Follow = FediMatchAction(
     "Follow",
     "Follow this person",
     Icons.person_add,
-    (context, account) {
-      String followStatus = Mastodon.selfFollowing.contains(account.url)
-          ? "Following"
-          : Mastodon.selfRequested.contains(account.url)
-              ? "Requested"
-              : "Follow";
-      if (followStatus == "Follow") {
-        Util.executeWhenOK(
-          Mastodon.follow(account, SettingsController.instance.accessToken),
-          context,
-        );
-      }
-    },
-    (context, account) {
-      String followStatus = Mastodon.selfFollowing.contains(account.url)
-          ? "Following"
-          : Mastodon.selfRequested.contains(account.url)
-              ? "Requested"
-              : "Follow";
-      if (followStatus != "Follow") {
-        Util.executeWhenOK(
-          Mastodon.unfollow(account, SettingsController.instance.accessToken),
-          context,
-        );
-      }
-    },
-    pureColor: (_) => Colors.blue,
+    FollowAction,
+    FollowUndo,
+    pureColor: FollowColor,
   );
 
-  static FediMatchAction LikeAndFollow = FediMatchAction(
+  static LikeAndFollowAction(BuildContext context, Account account) {
+    LikeAction(context, account);
+    FollowAction(context, account);
+  }
+
+  static LikeAndFollowUndo(BuildContext context, Account account) {
+    LikeUndo(context, account);
+    FollowUndo(context, account);
+  }
+
+  static LikeAndFollowColor(ThemeData theme) {
+    return Colors.purple;
+  }
+
+  static const FediMatchAction LikeAndFollow = FediMatchAction(
     "Like & Follow",
     "Like and follow this person",
     Icons.star,
-    (context, account) {
-      Matcher.addToLiked(account);
-      String followStatus = Mastodon.selfFollowing.contains(account.url)
-          ? "Following"
-          : Mastodon.selfRequested.contains(account.url)
-              ? "Requested"
-              : "Follow";
-      if (followStatus == "Follow") {
-        Util.executeWhenOK(
-          Mastodon.follow(account, SettingsController.instance.accessToken),
-          context,
-        );
+    LikeAndFollowAction,
+    LikeAndFollowUndo,
+    pureColor: LikeAndFollowColor,
+  );
+}
+
+class FediMatchSearchMode extends FediMatchListItem {
+  const FediMatchSearchMode(
+    super.name,
+    super.description,
+    super.icon, {
+    super.color = Colors.grey,
+    super.pureColor = null,
+  });
+
+  static List<FediMatchSearchMode> get all => [Random, Followers];
+
+  static FediMatchSearchMode fromString(String name) {
+    for (var mode in all) {
+      if (mode.name == name) {
+        return mode;
       }
-    },
-    (context, account) {
-      Matcher.unswipe(account);
-      String followStatus = Mastodon.selfFollowing.contains(account.url)
-          ? "Following"
-          : Mastodon.selfRequested.contains(account.url)
-              ? "Requested"
-              : "Follow";
-      if (followStatus != "Follow") {
-        Util.executeWhenOK(
-          Mastodon.unfollow(account, SettingsController.instance.accessToken),
-          context,
-        );
-      }
-    },
-    pureColor: (_) => Colors.purple,
+    }
+
+    return FediMatchSearchMode(name, "", Icons.search);
+  }
+
+  static const FediMatchSearchMode Random = FediMatchSearchMode(
+    "Random",
+    "Random accounts",
+    Icons.shuffle,
+    color: Colors.orange,
+  );
+
+  static const FediMatchSearchMode Followers = FediMatchSearchMode(
+    "Followers",
+    "Followers of your followers",
+    Icons.people,
+    color: Colors.blue,
   );
 }
 
@@ -198,26 +254,16 @@ class FediMatchTag {
   }
 }
 
-class FediMatchFilterMode {
-  final String name;
-  final String description;
-  final IconData icon;
-  final Color color;
-  final Function(ThemeData theme)? pureColor;
+class FediMatchFilterMode extends FediMatchListItem {
+  const FediMatchFilterMode(
+    super.name,
+    super.description,
+    super.icon, {
+    super.color = Colors.grey,
+    super.pureColor = null,
+  });
 
-  FediMatchFilterMode(this.name, this.description, this.icon,
-      {this.color = Colors.grey, this.pureColor = null});
-
-  getColor(ThemeData theme) {
-    if (pureColor != null) {
-      return pureColor!(theme);
-    }
-
-    return HSLColor.fromColor(theme.colorScheme.secondary)
-        .withHue(HSLColor.fromColor(color).hue)
-        .toColor()
-        .withAlpha(128);
-  }
+  static List<FediMatchFilterMode> get all => [Must, Preference, Cant];
 
   static FediMatchFilterMode fromString(String name) {
     for (var mode in all) {
@@ -229,23 +275,21 @@ class FediMatchFilterMode {
     return FediMatchFilterMode(name, "", Icons.filter);
   }
 
-  static List<FediMatchFilterMode> get all => [Must, Preference, Cant];
-
-  static FediMatchFilterMode Must = FediMatchFilterMode(
+  static const FediMatchFilterMode Must = FediMatchFilterMode(
     "Must",
     "Must match",
     Icons.check,
     color: Colors.green,
   );
 
-  static FediMatchFilterMode Preference = FediMatchFilterMode(
+  static const FediMatchFilterMode Preference = FediMatchFilterMode(
     "Should",
     "Should match",
     Icons.arrow_upward,
     color: Colors.blue,
   );
 
-  static FediMatchFilterMode Cant = FediMatchFilterMode(
+  static const FediMatchFilterMode Cant = FediMatchFilterMode(
     "Can't",
     "Must not match",
     Icons.close,

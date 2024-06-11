@@ -260,13 +260,19 @@ class Account {
     return displayNameWithoutEmojis;
   }
 
-  Future<List<Account>> getFollowing() async {
+  Future<List<Account>> getFollowing(String accessToken) async {
     List<Account> following = [];
 
     // for each 40 in followingCount
     String sinceId = "";
     for (var i = 0; i < followingCount; i += 40) {
-      var result = await Mastodon.getFollowing(limit: 40, since_id: sinceId);
+      var result = await Mastodon.getFollowing(id, accessToken,
+          limit: 40, since_id: sinceId);
+
+      if (result.isEmpty) {
+        break;
+      }
+
       following.addAll(result);
       sinceId = result.last.id;
     }
@@ -945,13 +951,17 @@ class Mastodon {
 
   Mastodon(this.self) {
     _instance = this;
-    self
-        .getFollowing()
-        .then((value) => selfFollowing = value.map((e) => e.url).toList());
   }
 
   static String clientId = "";
   static String clientSecret = "";
+
+  static Future<String> loadFollowing(String accessToken) async {
+    selfFollowing = (await instance.self.getFollowing(accessToken))
+        .map((e) => e.url)
+        .toList();
+    return "OK";
+  }
 
   static Future<(String clientId, String clientSecret)> registerClient(
       String instanceName) async {
@@ -1055,6 +1065,7 @@ class Mastodon {
         Account.fromJson(jsonDecode(result.body) as Map<String, dynamic>);
 
     Mastodon(account);
+    await Mastodon.loadFollowing(accessToken);
     return "OK";
   }
 
@@ -1296,14 +1307,16 @@ class Mastodon {
     return "Failed to unfollow user (${response.body})";
   }
 
-  static Future<List<Account>> getFollowing({
+  static Future<List<Account>> getFollowing(
+    String accountId,
+    String accessToken, {
     int limit = 40,
     String since_id = "",
   }) async {
-    var response = await getFromInstance(
-      Mastodon.instance.self.instance,
-      "accounts/${Mastodon.instance.self.id}/following?limit=$limit" +
+    var response = await getFromInstanceAccess(
+      "accounts/${accountId}/following?limit=$limit" +
           (since_id != "" ? "&since_id=$since_id" : ""),
+      accessToken,
     );
 
     if (response.statusCode == 200) {

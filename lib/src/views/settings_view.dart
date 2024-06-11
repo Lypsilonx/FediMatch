@@ -121,6 +121,33 @@ class _SettingsViewState extends State<SettingsView> {
                   "General",
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
+
+                // Search mode
+                ListTile(
+                  leading: Icon(Icons.search,
+                      color: Theme.of(context).colorScheme.primary),
+                  title: Text(
+                    'Search mode',
+                    style: Theme.of(context).textTheme.labelLarge,
+                  ),
+                  trailing: DropdownButton<FediMatchSearchMode>(
+                    underline: Container(),
+                    value: SettingsController.instance.searchMode,
+                    onChanged: SettingsController.instance.updateSearchMode,
+                    items: [
+                      DropdownMenuItem(
+                        value: FediMatchSearchMode.Random,
+                        child: Text('Random'),
+                      ),
+                      DropdownMenuItem(
+                        value: FediMatchSearchMode.Followers,
+                        child: Text('Followers'),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Theme
                 ListTile(
                   leading: Icon(Icons.color_lens,
                       color: Theme.of(context).colorScheme.primary),
@@ -184,7 +211,8 @@ class _SettingsViewState extends State<SettingsView> {
                     }).toList(),
                   ),
                 ),
-                // Theme
+
+                // Theme mode
                 ListTile(
                   leading: switch (SettingsController.instance.themeMode) {
                     ThemeMode.system => Icon(Icons.brightness_4,
@@ -903,50 +931,106 @@ class _SettingsViewState extends State<SettingsView> {
                 ),
                 SizedBox(height: 10),
 
-                // Clear Matcher data
-                TextButton(
-                  child: Padding(
-                    padding: const EdgeInsets.only(
-                        left: 10, right: 10, top: 5, bottom: 5),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Clear Matcher data',
-                          style: Theme.of(context)
-                              .textTheme
-                              .labelLarge!
-                              .copyWith(
-                                  color: Theme.of(context).colorScheme.onError),
+                // Reset checked
+                ...(SettingsController.instance.searchMode ==
+                        FediMatchSearchMode.Followers
+                    ? [
+                        TextButton(
+                          child: Padding(
+                            padding: const EdgeInsets.only(
+                                left: 10, right: 10, top: 5, bottom: 5),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Reset Recommendations',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelLarge!
+                                      .copyWith(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onError),
+                                ),
+                                Icon(
+                                  Icons.delete,
+                                  color: Theme.of(context).colorScheme.onError,
+                                ),
+                              ],
+                            ),
+                          ),
+                          style: TextButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            backgroundColor:
+                                Theme.of(context).colorScheme.error,
+                          ),
+                          onPressed: () {
+                            Util.popUpDialog(
+                              context,
+                              "Reset your recommendations",
+                              "Are you sure you want to reset your recommendations?"
+                                  "\n You might experience a long loading time in the Explore tab after this.",
+                              "Reset",
+                              () {
+                                Matcher.resetChecked();
+                                Update();
+                              },
+                            );
+                          },
                         ),
-                        Icon(
-                          Icons.delete,
-                          color: Theme.of(context).colorScheme.onError,
+                        SizedBox(height: 10),
+
+                        // Clear Matcher data
+                        TextButton(
+                          child: Padding(
+                            padding: const EdgeInsets.only(
+                                left: 10, right: 10, top: 5, bottom: 5),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Clear Matcher data',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelLarge!
+                                      .copyWith(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onError),
+                                ),
+                                Icon(
+                                  Icons.delete,
+                                  color: Theme.of(context).colorScheme.onError,
+                                ),
+                              ],
+                            ),
+                          ),
+                          style: TextButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            backgroundColor:
+                                Theme.of(context).colorScheme.error,
+                          ),
+                          onPressed: () {
+                            Util.popUpDialog(
+                              context,
+                              "Delete Matcher Data",
+                              "Are you sure you want to delete all Matcher data?"
+                                  "\nYou will loose ${Matcher.liked.length} liked accounts and ${Matcher.disliked.length} disliked accounts, as well as ${Matcher.matches.length} matches.",
+                              "Delete",
+                              () {
+                                Matcher.clear();
+                                Update();
+                              },
+                            );
+                          },
                         ),
-                      ],
-                    ),
-                  ),
-                  style: TextButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    backgroundColor: Theme.of(context).colorScheme.error,
-                  ),
-                  onPressed: () {
-                    Util.popUpDialog(
-                      context,
-                      "Delete Matcher Data",
-                      "Are you sure you want to delete all Matcher data?"
-                          "\nYou will loose ${Matcher.liked.length} liked accounts and ${Matcher.disliked.length} disliked accounts, as well as ${Matcher.matches.length} matches.",
-                      "Delete",
-                      () {
-                        Matcher.clear();
-                        Update();
-                      },
-                    );
-                  },
-                ),
-                SizedBox(height: 10),
+                        SizedBox(height: 10),
+                      ]
+                    : []),
 
                 // Logout
                 TextButton(

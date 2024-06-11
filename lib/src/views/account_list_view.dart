@@ -24,58 +24,97 @@ class AccountListView extends StatefulWidget {
 
 class _AccountListViewState extends State<AccountListView> {
   final _list = <Account>[];
-  int _currentPage = 0;
+  int _currentRandomIndex = 0;
+  int _currentFollowIndex = 0;
   AppinioSwiperController controller = AppinioSwiperController();
   String loadingMessage = "";
 
   List<(Account account, FediMatchAction action)> history = [];
 
-  Future<void> _fetchData(int pageKey) async {
+  List<String> get relevantAccounts => Mastodon.selfFollowing + Matcher.liked;
+
+  Future<void> _fetchAccounts() async {
+    int goalSize = 5;
+    int searchSize = 10;
     List<Account> accounts = [];
-    // accounts.insert(
-    //     0, await Mastodon.getAccount("kolektiva.social", "lypsilonx"));
     try {
       do {
-        int pageSize = 50;
-        List<Account> new_accounts = await Mastodon.getDirectory(
-            limit: pageSize, offset: pageKey * pageSize);
+        List<Account> new_accounts = [];
 
-        setState(() {
-          loadingMessage =
-              "Searching for accounts... (${accounts.length}/${pageKey * pageSize})";
+        switch (SettingsController.instance.searchMode) {
+          case FediMatchSearchMode.Random:
+            new_accounts =
+                await _fetchRandomAccounts(searchSize, _currentRandomIndex);
+            _currentRandomIndex += new_accounts.length;
+            break;
+          case FediMatchSearchMode.Followers:
+            if (_currentFollowIndex >= relevantAccounts.length) {
+              new_accounts =
+                  await _fetchRandomAccounts(searchSize, _currentRandomIndex);
+            } else {
+              while (relevantAccounts.length > _currentFollowIndex &&
+                  Matcher.checked
+                      .contains(relevantAccounts[_currentFollowIndex])) {
+                _currentFollowIndex++;
+              }
+              try {
+                new_accounts =
+                    await _fetchFollowerAccounts(_currentFollowIndex);
+              } catch (e) {
+                print(e);
+              }
+              _currentFollowIndex++;
+            }
+
+            break;
+        }
+        ;
+
+        var urls = [];
+        new_accounts.retainWhere((element) {
+          if (urls.contains(element.url)) {
+            return false;
+          }
+          urls.add(element.url);
+          return true;
         });
 
         // filter accounts
-        accounts.addAll(new_accounts.where((element) {
-          bool filtered = false;
+        accounts.addAll(
+          new_accounts.where((element) {
+            bool filtered = false;
 
-          // filter out self
-          if (element.url == Mastodon.instance.self.url) {
-            filtered = true;
-          }
+            // filter out self
+            if (element.url == Mastodon.instance.self.url) {
+              filtered = true;
+            }
 
-          // filter out disliked, liked and superliked accounts
-          if (Matcher.any().any((accountUrl) => accountUrl == element.url)) {
-            filtered = true;
-          }
+            //filter stuff already in list or accounts
+            if (_list.any((account) => account.url == element.url) ||
+                accounts.any((account) => account.url == element.url)) {
+              filtered = true;
+            }
 
-          if (!SettingsController.instance.showNonOptInAccounts &&
-              !element.hasFediMatchField) {
-            filtered = true;
-          }
+            // filter out disliked, liked and superliked accounts
+            if (Matcher.any().any((accountUrl) => accountUrl == element.url)) {
+              filtered = true;
+            }
 
-          if (!element
-              .rateWithFilters(SettingsController.instance.filters)
-              .$1) {
-            filtered = true;
-          }
+            if (!SettingsController.instance.showNonOptInAccounts &&
+                !element.hasFediMatchField) {
+              filtered = true;
+            }
 
-          return !filtered;
-        }).toList());
+            if (!element
+                .rateWithFilters(SettingsController.instance.filters)
+                .$1) {
+              filtered = true;
+            }
 
-        pageKey++;
-        _currentPage = pageKey;
-      } while (accounts.length < 5);
+            return !filtered;
+          }).toList(),
+        );
+      } while (accounts.length < goalSize);
     } catch (e) {
       Util.showErrorScaffold(context, e.toString());
     }
@@ -84,11 +123,65 @@ class _AccountListViewState extends State<AccountListView> {
     });
   }
 
+  Future<List<Account>> _fetchRandomAccounts(int limit, int offset) async {
+    setState(() {
+      loadingMessage = "Searching for accounts... (${_currentRandomIndex})";
+    });
+    return await Mastodon.getDirectory(
+      limit: limit,
+      offset: offset,
+    );
+  }
+
+  Future<List<Account>> _fetchFollowerAccounts(int index) async {
+    setState(() {
+      loadingMessage =
+          "Searching for relevant accounts... (${_currentFollowIndex})";
+    });
+    if (index >= relevantAccounts.length) {
+      return [];
+    }
+
+    String url = relevantAccounts[index];
+    Matcher.checked.add(url);
+    var instanceUsername = FediMatchHelper.instanceUsernameFromUrl(url);
+    var leader = await Mastodon.getAccount(
+      instanceUsername.$1,
+      instanceUsername.$2,
+    );
+
+    var statuses = await Mastodon.getAccountStatuses(
+      leader,
+      SettingsController.instance.accessToken,
+    );
+
+    List<Account> new_accounts = [];
+    for (Status status in statuses) {
+      if (status.reblog != null) {
+        var account = status.reblog!.account;
+        new_accounts.add(account);
+      }
+
+      for (StatusMention mention in status.mentions) {
+        var instanceUsername =
+            FediMatchHelper.instanceUsernameFromUrl(mention.url);
+        var account = await Mastodon.getAccount(
+          instanceUsername.$1,
+          instanceUsername.$2,
+        );
+
+        new_accounts.add(account);
+      }
+    }
+
+    return new_accounts;
+  }
+
   @override
   void initState() {
     super.initState();
     Matcher.loadFromPrefs();
-    _fetchData(_currentPage);
+    _fetchAccounts();
   }
 
   @override
@@ -126,8 +219,8 @@ class _AccountListViewState extends State<AccountListView> {
               up: secondaryAction != null,
             ),
             onSwipeEnd: (int current, int next, SwiperActivity activity) {
-              _currentPage++;
-              if (next >= _list.length - 2) _fetchData(_currentPage);
+              _currentRandomIndex++;
+              if (next >= _list.length - 2) _fetchAccounts();
 
               switch (activity.runtimeType) {
                 case Swipe:

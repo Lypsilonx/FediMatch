@@ -21,6 +21,22 @@ class SettingsService {
 
   static const String _settingsPrefix = "FediMatch";
 
+  // Search Mode
+  static const String searchModeKey = "${_settingsPrefix}SearchMode";
+  static FediMatchSearchMode searchModeDefault = FediMatchSearchMode.Random;
+  Future<FediMatchSearchMode> searchMode() async {
+    if (_preferences!.containsKey(searchModeKey)) {
+      return FediMatchSearchMode.fromString(
+          _preferences!.getString(searchModeKey)!);
+    }
+
+    return searchModeDefault;
+  }
+
+  Future<void> updateSearchMode(FediMatchSearchMode searchMode) async {
+    _preferences!.setString(searchModeKey, searchMode.name);
+  }
+
   // Theme Color
   static const String themeColorKey = "${_settingsPrefix}ThemeColor";
   static const FlexScheme themeColorDefault = FlexScheme.red;
@@ -208,13 +224,15 @@ class SettingsService {
   static const String matchedDataKeyMatches = "${matchedDataKey}Matches";
   static const String matchedDataKeyUploaded = "${matchedDataKey}Uploaded";
   static const String matchedDataKeyChats = "${matchedDataKey}Chats";
+  static const String matchedDataKeyChecked = "${matchedDataKey}Checked";
   Future<MatchedData> matchedData() async {
     return MatchedData(
         _preferences!.getStringList(matchedDataKeyLiked) ?? [],
         _preferences!.getStringList(matchedDataKeyDisliked) ?? [],
         _preferences!.getStringList(matchedDataKeyMatches) ?? [],
         _preferences!.getStringList(matchedDataKeyUploaded) ?? [],
-        _preferences!.getStringList(matchedDataKeyChats) ?? []);
+        _preferences!.getStringList(matchedDataKeyChats) ?? [],
+        _preferences!.getStringList(matchedDataKeyChecked) ?? []);
   }
 
   Future<void> updateMatchedData(MatchedData matchedData) async {
@@ -223,6 +241,7 @@ class SettingsService {
     _preferences!.setStringList(matchedDataKeyMatches, matchedData.matches);
     _preferences!.setStringList(matchedDataKeyUploaded, matchedData.uploaded);
     _preferences!.setStringList(matchedDataKeyChats, matchedData.chats);
+    _preferences!.setStringList(matchedDataKeyChecked, matchedData.checked);
   }
 
   // Private Match Key

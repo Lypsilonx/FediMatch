@@ -13,6 +13,7 @@ class Matcher {
 
   static List<String> uploaded = [];
   static List<String> chats = [];
+  static List<String> checked = [];
   static List<Account> newMatches = [];
 
   static int numToUpload() {
@@ -193,19 +194,25 @@ class Matcher {
 
   static void clear() {
     SettingsController.instance
-        .updateMatchedData(MatchedData([], [], [], [], []));
+        .updateMatchedData(MatchedData([], [], [], [], [], []));
     loadFromPrefs();
   }
 
   static void resetDislikes() {
-    SettingsController.instance
-        .updateMatchedData(MatchedData(liked, [], matches, uploaded, chats));
+    SettingsController.instance.updateMatchedData(
+        MatchedData(liked, [], matches, uploaded, chats, checked));
+    loadFromPrefs();
+  }
+
+  static void resetChecked() {
+    SettingsController.instance.updateMatchedData(
+        MatchedData(liked, disliked, matches, uploaded, chats, []));
     loadFromPrefs();
   }
 
   static void saveToPrefs() {
     SettingsController.instance.updateMatchedData(
-        MatchedData(liked, disliked, matches, uploaded, chats));
+        MatchedData(liked, disliked, matches, uploaded, chats, checked));
   }
 
   static void loadFromPrefs() {
@@ -215,6 +222,7 @@ class Matcher {
     matches = matchedData.matches;
     uploaded = matchedData.uploaded;
     chats = matchedData.chats;
+    checked = matchedData.checked;
   }
 
   static Future<String> generateKeyValuePair(String password) async {
