@@ -37,6 +37,9 @@ class _SettingsViewState extends State<SettingsView> {
   String addPreferenceSearch = "tags";
   FediMatchTagType addPreferenceTagType = FediMatchTagType.None;
 
+  bool tagListControllerIsExpanded = false;
+  bool filterListControllerIsExpanded = false;
+
   void addTag(FediMatchTagType type, String value) {
     if (value.isEmpty) {
       Util.showErrorScaffold(context, "Tag can't be empty");
@@ -448,8 +451,13 @@ class _SettingsViewState extends State<SettingsView> {
                                   );
                                 },
                               ).toList(),
+                              onStateChanged: (expanded) {
+                                setState(() {
+                                  tagListControllerIsExpanded = expanded;
+                                });
+                              },
                               icon: Icons.tag,
-                              initiallyExpanded: true,
+                              initiallyExpanded: tagListControllerIsExpanded,
                               borderRadius: BorderRadius.only(
                                 topLeft: Radius.circular(10),
                                 topRight: Radius.circular(10),
@@ -478,77 +486,86 @@ class _SettingsViewState extends State<SettingsView> {
                                 );
                               },
                             ),
-                            Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.only(
-                                  bottomLeft: Radius.circular(10),
-                                  bottomRight: Radius.circular(10),
-                                ),
-                                color: Theme.of(context).colorScheme.surface,
-                              ),
-                              padding: EdgeInsets.only(left: 20, right: 20),
-                              child: Wrap(
-                                alignment: WrapAlignment.start,
-                                crossAxisAlignment: WrapCrossAlignment.center,
-                                direction: Axis.horizontal,
-                                children: [
-                                  DropdownButton<FediMatchTagType>(
-                                    underline: Container(),
-                                    value: tagAddType,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        tagAddType = value!;
-                                      });
-                                    },
-                                    items: FediMatchTagType.all
-                                        .map((e) => DropdownMenuItem(
-                                              value: e,
-                                              child: Text(e.name),
-                                            ))
-                                        .toList(),
-                                  ),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: TextFormField(
-                                          controller: addFilterTagController,
-                                          decoration: InputDecoration(
-                                            labelText: "Add tag (" +
-                                                FediMatchHelper
-                                                    .getFediMatchTagLength(
-                                                  Mastodon.instance.self
-                                                      .fediMatchTags
-                                                      .followedBy(
-                                                    [
-                                                      FediMatchTag(
-                                                          tagAddType,
-                                                          addFilterTagController
-                                                              .text)
-                                                    ],
-                                                  ).toList(),
-                                                ).toString() +
-                                                "/255" +
-                                                ")",
-                                            border: InputBorder.none,
-                                          ),
-                                          onFieldSubmitted: (value) {
-                                            addTag(tagAddType, value);
+                            tagListControllerIsExpanded
+                                ? Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.only(
+                                        bottomLeft: Radius.circular(10),
+                                        bottomRight: Radius.circular(10),
+                                      ),
+                                      color:
+                                          Theme.of(context).colorScheme.surface,
+                                    ),
+                                    padding:
+                                        EdgeInsets.only(left: 20, right: 20),
+                                    child: Wrap(
+                                      alignment: WrapAlignment.start,
+                                      crossAxisAlignment:
+                                          WrapCrossAlignment.center,
+                                      direction: Axis.horizontal,
+                                      children: [
+                                        DropdownButton<FediMatchTagType>(
+                                          underline: Container(),
+                                          value: tagAddType,
+                                          onChanged: (value) {
+                                            setState(() {
+                                              tagAddType = value!;
+                                            });
                                           },
-                                          onChanged: (value) => setState(() {}),
+                                          items: FediMatchTagType.all
+                                              .map((e) => DropdownMenuItem(
+                                                    value: e,
+                                                    child: Text(e.name),
+                                                  ))
+                                              .toList(),
                                         ),
-                                      ),
-                                      IconButton(
-                                        icon: const Icon(Icons.add),
-                                        onPressed: () {
-                                          addTag(tagAddType,
-                                              addFilterTagController.text);
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: TextFormField(
+                                                controller:
+                                                    addFilterTagController,
+                                                decoration: InputDecoration(
+                                                  labelText: "Add tag (" +
+                                                      FediMatchHelper
+                                                          .getFediMatchTagLength(
+                                                        Mastodon.instance.self
+                                                            .fediMatchTags
+                                                            .followedBy(
+                                                          [
+                                                            FediMatchTag(
+                                                                tagAddType,
+                                                                addFilterTagController
+                                                                    .text)
+                                                          ],
+                                                        ).toList(),
+                                                      ).toString() +
+                                                      "/255" +
+                                                      ")",
+                                                  border: InputBorder.none,
+                                                ),
+                                                onFieldSubmitted: (value) {
+                                                  addTag(tagAddType, value);
+                                                },
+                                                onChanged: (value) =>
+                                                    setState(() {}),
+                                              ),
+                                            ),
+                                            IconButton(
+                                              icon: const Icon(Icons.add),
+                                              onPressed: () {
+                                                addTag(
+                                                    tagAddType,
+                                                    addFilterTagController
+                                                        .text);
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                : Container(),
                           ],
                         ),
                       )
@@ -623,8 +640,13 @@ class _SettingsViewState extends State<SettingsView> {
                             );
                           },
                         ).toList(),
+                        onStateChanged: (expanded) {
+                          setState(() {
+                            filterListControllerIsExpanded = expanded;
+                          });
+                        },
                         icon: Icons.lightbulb,
-                        initiallyExpanded: true,
+                        initiallyExpanded: filterListControllerIsExpanded,
                         borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(10),
                           topRight: Radius.circular(10),
@@ -644,142 +666,156 @@ class _SettingsViewState extends State<SettingsView> {
                           );
                         },
                       ),
-                      Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.only(
-                            bottomLeft: Radius.circular(10),
-                            bottomRight: Radius.circular(10),
-                          ),
-                          color: Theme.of(context).colorScheme.surface,
-                        ),
-                        padding: EdgeInsets.only(left: 20, right: 20),
-                        child: Wrap(
-                          alignment: WrapAlignment.start,
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          direction: Axis.horizontal,
-                          children: [
-                            ...(addPreferenceMode ==
-                                    FediMatchFilterMode.Preference
-                                ? [
-                                    TextFormField(
-                                      controller: addPreferenceValueController,
-                                      keyboardType: TextInputType.number,
-                                      inputFormatters: <TextInputFormatter>[
-                                        FilteringTextInputFormatter.allow(
-                                          RegExp(r'[0-9]'),
-                                        ),
-                                        FilteringTextInputFormatter.digitsOnly
-                                      ],
-                                      onFieldSubmitted: (value) {
-                                        addTag(tagAddType, value);
-                                      },
-                                      decoration: InputDecoration(
-                                        labelText: "Value",
-                                        hintText: "I'd like it *this* much",
-                                      ),
-                                    ),
-                                  ]
-                                : []),
-                            DropdownButton<String>(
-                              underline: Container(),
-                              value: addPreferenceSearch,
-                              onChanged: (value) {
-                                setState(() {
-                                  addPreferenceSearch = value!;
-                                });
-                              },
-                              items: [
-                                DropdownMenuItem(
-                                  value: "tags",
-                                  child: Text("Tags"),
+                      filterListControllerIsExpanded
+                          ? Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.only(
+                                  bottomLeft: Radius.circular(10),
+                                  bottomRight: Radius.circular(10),
                                 ),
-                                DropdownMenuItem(
-                                  value: "note",
-                                  child: Text("Note"),
-                                ),
-                              ],
-                            ),
-                            SizedBox(width: 10),
-                            DropdownButton<FediMatchFilterMode>(
-                              underline: Container(),
-                              value: addPreferenceMode,
-                              onChanged: (value) {
-                                setState(() {
-                                  addPreferenceMode = value!;
-                                });
-                              },
-                              items: FediMatchFilterMode.all
-                                  .map((e) => DropdownMenuItem(
-                                        value: e,
-                                        child: Text(e.name),
-                                      ))
-                                  .toList(),
-                            ),
-                            Text("contain",
-                                style: Theme.of(context).textTheme.bodyLarge),
-                            Row(
-                              children: [
-                                ...(addPreferenceSearch == "tags"
-                                    ? [
-                                        DropdownButton<FediMatchTagType>(
-                                          underline: Container(),
-                                          value: addPreferenceTagType,
-                                          onChanged: (value) {
-                                            setState(() {
-                                              addPreferenceTagType = value!;
-                                            });
-                                          },
-                                          items: FediMatchTagType.all
-                                              .map((e) => DropdownMenuItem(
-                                                    value: e,
-                                                    child: Text(e.name),
-                                                  ))
-                                              .toList(),
-                                        ),
-                                      ]
-                                    : []),
-                                Expanded(
-                                  child: TextFormField(
-                                    controller: addPreferenceController,
-                                    decoration: InputDecoration(
-                                      labelText: "Add preference",
-                                      border: InputBorder.none,
-                                    ),
-                                    onFieldSubmitted: (text) {
-                                      addFilter(
-                                        addPreferenceMode,
-                                        addPreferenceSearch,
-                                        (addPreferenceSearch == "tags"
-                                                ? addPreferenceTagType.name +
-                                                    ":"
-                                                : "") +
-                                            text,
-                                        value: int.tryParse(
-                                            addPreferenceValueController.text),
-                                      );
+                                color: Theme.of(context).colorScheme.surface,
+                              ),
+                              padding: EdgeInsets.only(left: 20, right: 20),
+                              child: Wrap(
+                                alignment: WrapAlignment.start,
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                direction: Axis.horizontal,
+                                children: [
+                                  ...(addPreferenceMode ==
+                                          FediMatchFilterMode.Preference
+                                      ? [
+                                          TextFormField(
+                                            controller:
+                                                addPreferenceValueController,
+                                            keyboardType: TextInputType.number,
+                                            inputFormatters: <TextInputFormatter>[
+                                              FilteringTextInputFormatter.allow(
+                                                RegExp(r'[0-9]'),
+                                              ),
+                                              FilteringTextInputFormatter
+                                                  .digitsOnly
+                                            ],
+                                            onFieldSubmitted: (value) {
+                                              addTag(tagAddType, value);
+                                            },
+                                            decoration: InputDecoration(
+                                              labelText: "Value",
+                                              hintText:
+                                                  "I'd like it *this* much",
+                                            ),
+                                          ),
+                                        ]
+                                      : []),
+                                  DropdownButton<String>(
+                                    underline: Container(),
+                                    value: addPreferenceSearch,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        addPreferenceSearch = value!;
+                                      });
                                     },
+                                    items: [
+                                      DropdownMenuItem(
+                                        value: "tags",
+                                        child: Text("Tags"),
+                                      ),
+                                      DropdownMenuItem(
+                                        value: "note",
+                                        child: Text("Note"),
+                                      ),
+                                    ],
                                   ),
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.add),
-                                  onPressed: () {
-                                    addFilter(
-                                      addPreferenceMode,
-                                      addPreferenceSearch,
-                                      (addPreferenceSearch == "tags"
-                                              ? addPreferenceTagType.name + ":"
-                                              : "") +
-                                          addPreferenceController.text,
-                                      value: int.tryParse(
-                                          addPreferenceValueController.text),
-                                    );
-                                  },
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
+                                  SizedBox(width: 10),
+                                  DropdownButton<FediMatchFilterMode>(
+                                    underline: Container(),
+                                    value: addPreferenceMode,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        addPreferenceMode = value!;
+                                      });
+                                    },
+                                    items: FediMatchFilterMode.all
+                                        .map((e) => DropdownMenuItem(
+                                              value: e,
+                                              child: Text(e.name),
+                                            ))
+                                        .toList(),
+                                  ),
+                                  Text("contain",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge),
+                                  Row(
+                                    children: [
+                                      ...(addPreferenceSearch == "tags"
+                                          ? [
+                                              DropdownButton<FediMatchTagType>(
+                                                underline: Container(),
+                                                value: addPreferenceTagType,
+                                                onChanged: (value) {
+                                                  setState(() {
+                                                    addPreferenceTagType =
+                                                        value!;
+                                                  });
+                                                },
+                                                items: FediMatchTagType.all
+                                                    .map((e) =>
+                                                        DropdownMenuItem(
+                                                          value: e,
+                                                          child: Text(e.name),
+                                                        ))
+                                                    .toList(),
+                                              ),
+                                            ]
+                                          : []),
+                                      Expanded(
+                                        child: TextFormField(
+                                          controller: addPreferenceController,
+                                          decoration: InputDecoration(
+                                            labelText: "Add preference",
+                                            border: InputBorder.none,
+                                          ),
+                                          onFieldSubmitted: (text) {
+                                            addFilter(
+                                              addPreferenceMode,
+                                              addPreferenceSearch,
+                                              (addPreferenceSearch == "tags"
+                                                      ? addPreferenceTagType
+                                                              .name +
+                                                          ":"
+                                                      : "") +
+                                                  text,
+                                              value: int.tryParse(
+                                                  addPreferenceValueController
+                                                      .text),
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.add),
+                                        onPressed: () {
+                                          addFilter(
+                                            addPreferenceMode,
+                                            addPreferenceSearch,
+                                            (addPreferenceSearch == "tags"
+                                                    ? addPreferenceTagType
+                                                            .name +
+                                                        ":"
+                                                    : "") +
+                                                addPreferenceController.text,
+                                            value: int.tryParse(
+                                                addPreferenceValueController
+                                                    .text),
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            )
+                          : Container(),
                     ],
                   ),
                 ),

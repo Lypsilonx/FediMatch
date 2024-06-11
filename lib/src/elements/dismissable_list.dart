@@ -8,7 +8,7 @@ class DismissableList extends StatefulWidget {
   final String? emptyMessage;
   final bool initiallyExpanded;
   final BorderRadius borderRadius;
-  final void Function()? onStateChanged;
+  final void Function(bool expanded)? onStateChanged;
   final void Function(int index)? onDismissed;
 
   const DismissableList(this.title, this.items,
@@ -30,7 +30,7 @@ class _DismissableListState extends State<DismissableList> {
     return ExpansionTile(
       onExpansionChanged: (expanded) {
         if (widget.onStateChanged != null) {
-          widget.onStateChanged!();
+          widget.onStateChanged!(expanded);
         }
       },
       initiallyExpanded: widget.initiallyExpanded,
