@@ -60,21 +60,30 @@ class _MatchButtonsState extends State<MatchButtons> {
                     }
                   },
                 )
-              : Container(),
-          if (primaryAction != null)
-            ActionButton(
-              Icon(
-                primaryAction.icon,
-                color: Theme.of(context).colorScheme.onPrimary,
-              ),
-              primaryAction.getColor(Theme.of(context)),
-              () {
-                widget.controller.swipeRight();
-                if (widget.postSwipe != null) {
-                  widget.postSwipe!();
-                }
-              },
-            ),
+              : ActionButton(
+                  Icon(Icons.star, color: Colors.transparent),
+                  Colors.transparent,
+                  () {},
+                ),
+          primaryAction != null
+              ? ActionButton(
+                  Icon(
+                    primaryAction.icon,
+                    color: Theme.of(context).colorScheme.onPrimary,
+                  ),
+                  primaryAction.getColor(Theme.of(context)),
+                  () {
+                    widget.controller.swipeRight();
+                    if (widget.postSwipe != null) {
+                      widget.postSwipe!();
+                    }
+                  },
+                )
+              : ActionButton(
+                  Icon(Icons.star, color: Colors.transparent),
+                  Colors.transparent,
+                  () {},
+                ),
         ],
       ),
     );
