@@ -42,7 +42,7 @@ class _AccountListViewState extends State<AccountListView> {
 
         setState(() {
           loadingMessage =
-              "Seacedhing for accounts... (${accounts.length}/${pageKey * pageSize})";
+              "Searching for accounts... (${accounts.length}/${pageKey * pageSize})";
         });
 
         // filter accounts
