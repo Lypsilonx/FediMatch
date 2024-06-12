@@ -1,7 +1,7 @@
 # FediMatch
 Explore the Fediverse.
 
-Meet interesting people on Mastodon & co. via an intuitive swiping interface in this new Fediverse client. Filter, match, chat and express yourself!
+Meet interesting people on Mastodon & co. via an intuitive swiping interface in this new Fediverse client. Filter, follow, match, chat and express yourself!
 
 ## Get it now!
 - **Android**: [Ko-Fi](https://ko-fi.com/s/125ba584c4)
