@@ -59,6 +59,7 @@ class _DismissableListState extends State<DismissableList> {
             ]
           : [
               ListView.builder(
+                physics: NeverScrollableScrollPhysics(),
                 shrinkWrap: true,
                 itemCount: widget.items.length,
                 itemBuilder: (context, index) {
