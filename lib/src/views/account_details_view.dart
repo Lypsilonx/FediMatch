@@ -93,14 +93,22 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
                 width: constraints.maxWidth,
                 height: constraints.maxWidth,
                 child: imageUrls.length == 1
-                    ? Image(
-                        image: NetworkImage(
-                          imageUrls[0],
+                    // ? Image(
+                    //     image: NetworkImage(
+                    //       imageUrls[0],
+                    //     ),
+                    //     fit: BoxFit.cover,
+                    //     width: constraints.maxWidth,
+                    //     height: constraints.maxWidth,
+                    //     errorBuilder: Util.ImageErrorBuilder,
+                    //   )
+                    ? Container(
+                        width: constraints.maxWidth - 10,
+                        height: constraints.maxWidth - 10,
+                        color: Colors.grey[200],
+                        child: Center(
+                          child: Icon(Icons.person, size: constraints.maxWidth),
                         ),
-                        fit: BoxFit.cover,
-                        width: constraints.maxWidth,
-                        height: constraints.maxWidth,
-                        errorBuilder: Util.ImageErrorBuilder,
                       )
                     : Stack(
                         children: [
@@ -165,7 +173,11 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
                         padding: EdgeInsets.only(
                           bottom: 20,
                         ),
-                        child: actualAccount.getNote(),
+                        // child: actualAccount.getNote(),
+                        child: Text(
+                          "Bio",
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
                       ),
                       Container(
                         width: constraints.maxWidth - 40,

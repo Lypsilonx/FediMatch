@@ -948,6 +948,7 @@ class Mastodon {
   late Account self;
   static List<String> selfFollowing = [];
   static List<String> selfRequested = [];
+  bool safetyMode = true;
 
   Mastodon(this.self) {
     _instance = this;
@@ -1236,6 +1237,10 @@ class Mastodon {
 
   static Future<http.Response> postToInstance(String instance, String path,
       {Map<String, String>? body}) async {
+    if (Mastodon._instance!.safetyMode) {
+      return http.Response("{}", 200);
+    }
+
     return http.post(
       Uri.parse('https://$instance/api/v1/$path'),
       body: body,
@@ -1245,6 +1250,10 @@ class Mastodon {
   static Future<http.Response> postToInstanceAccess(
       String path, String accessToken,
       {Map<String, String>? body}) async {
+    if (Mastodon._instance!.safetyMode) {
+      return http.Response("{}", 200);
+    }
+
     return http.post(
       Uri.parse('https://${Mastodon.instance.self.instance}/api/v1/$path'),
       headers: <String, String>{

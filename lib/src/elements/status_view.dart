@@ -57,7 +57,8 @@ class StatusView extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
                                   Text(
-                                    status.spoilerText,
+                                    //status.spoilerText,
+                                    "Spoiler",
                                     style:
                                         Theme.of(context).textTheme.titleSmall,
                                   ),
@@ -65,14 +66,25 @@ class StatusView extends StatelessWidget {
                                 ],
                               )
                             : Container(),
-                        status.getContent(
-                            style: onlyContent
-                                ? TextStyle(
-                                    color:
-                                        Theme.of(context).colorScheme.onPrimary,
-                                    fontSize: 16)
-                                : null,
-                            removeFirstLink: onlyContent),
+                        // status.getContent(
+                        //   style: onlyContent
+                        //       ? TextStyle(
+                        //           color:
+                        //               Theme.of(context).colorScheme.onPrimary,
+                        //           fontSize: 16)
+                        //       : null,
+                        //   removeFirstLink: onlyContent,
+                        // ),
+                        Text(
+                          //status.content,
+                          "Content",
+                          style: onlyContent
+                              ? TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.onPrimary,
+                                  fontSize: 16)
+                              : null,
+                        ),
                         SizedBox(
                             height: status.mediaAttachments.length > 0
                                 ? 20
@@ -82,17 +94,18 @@ class StatusView extends StatelessWidget {
                                 (e) {
                                   switch (e.type) {
                                     case "image":
-                                      return Image.network(
-                                        e.url,
-                                        loadingBuilder:
-                                            (context, child, loadingProgress) =>
-                                                loadingProgress == null
-                                                    ? child
-                                                    : BlurHash(
-                                                        hash: e.blurhash,
-                                                        imageFit: BoxFit.cover,
-                                                      ),
-                                      );
+                                      // return Image.network(
+                                      //   e.url,
+                                      //   loadingBuilder:
+                                      //       (context, child, loadingProgress) =>
+                                      //           loadingProgress == null
+                                      //               ? child
+                                      //               : BlurHash(
+                                      //                   hash: e.blurhash,
+                                      //                   imageFit: BoxFit.cover,
+                                      //                 ),
+                                      // );
+                                      return Container();
                                     case "video":
                                       return Container();
                                     case "gifv":

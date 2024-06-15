@@ -48,12 +48,21 @@ class SwipeCard extends StatelessWidget {
                       children: <Widget>[
                         Column(
                           children: [
-                            Image(
-                              image: NetworkImage(account.avatar),
-                              fit: BoxFit.cover,
+                            // Image(
+                            //   image: NetworkImage(account.avatar),
+                            //   fit: BoxFit.cover,
+                            //   width: constraints.maxWidth - 10,
+                            //   height: constraints.maxWidth - 10,
+                            //   errorBuilder: Util.ImageErrorBuilder,
+                            // ),
+                            Container(
                               width: constraints.maxWidth - 10,
                               height: constraints.maxWidth - 10,
-                              errorBuilder: Util.ImageErrorBuilder,
+                              color: Colors.grey[200],
+                              child: Center(
+                                child: Icon(Icons.person,
+                                    size: constraints.maxWidth),
+                              ),
                             ),
                             Container(
                               width: constraints.maxWidth - 10,

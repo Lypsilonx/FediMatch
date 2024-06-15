@@ -24,16 +24,18 @@ class _AccountViewState extends State<AccountView> {
     return ListTile(
         contentPadding: EdgeInsets.all(widget.edgeInset),
         leading: widget.showIcon
-            ? CircleAvatar(
-                backgroundImage: NetworkImage(widget.account.avatar),
-              )
+            // ? CircleAvatar(
+            //     backgroundImage: NetworkImage(widget.account.avatar),
+            //   )
+            ? Icon(Icons.account_circle, size: 50)
             : null,
         title: widget.showIcon
             ? Text(
                 style: Theme.of(context).textTheme.titleMedium,
-                widget.account.getDisplayName() == ""
-                    ? widget.account.username
-                    : widget.account.getDisplayName(),
+                // widget.account.getDisplayName() == ""
+                //     ? widget.account.username
+                //     : widget.account.getDisplayName(),
+                "User",
                 overflow: TextOverflow.ellipsis,
               )
             : Column(
@@ -41,7 +43,8 @@ class _AccountViewState extends State<AccountView> {
                 children: [
                   Text(
                     style: Theme.of(context).textTheme.titleLarge,
-                    widget.account.getDisplayName(),
+                    // widget.account.getDisplayName(),
+                    "User",
                     overflow: TextOverflow.ellipsis,
                   ),
                   SizedBox(height: 5),
@@ -49,7 +52,8 @@ class _AccountViewState extends State<AccountView> {
               ),
         subtitle: Text(
           style: Theme.of(context).textTheme.bodyMedium,
-          "@" + widget.account.username + "@" + widget.account.instance,
+          // "@" + widget.account.username + "@" + widget.account.instance,
+          "@User@Instance",
           overflow: TextOverflow.ellipsis,
         ),
         trailing: !widget.account.hasFediMatchField ? DidNotOptInIcon() : null,
