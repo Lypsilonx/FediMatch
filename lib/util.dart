@@ -1,6 +1,8 @@
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:fedi_match/mastodon.dart';
+import 'package:fedi_match/src/settings/settings_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import "package:pointycastle/export.dart";
@@ -97,6 +99,81 @@ class Util {
               },
             ),
           ],
+        );
+      },
+    );
+  }
+
+  static void showReportDialog(
+      BuildContext context, Account account, void Function() onReport,
+      {Status? status}) {
+    String reason = "other";
+    InputTextFieldController commentController = new InputTextFieldController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text("Report " +
+                  account.getDisplayName() +
+                  (status != null ? " for a status" : "")),
+              content: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text("Why do you want to report this user?"),
+                  DropdownButton(
+                      value: reason,
+                      items: [
+                        DropdownMenuItem(child: Text("Spam"), value: "spam"),
+                        DropdownMenuItem(
+                            child: Text("Illegal content"), value: "legal"),
+                        DropdownMenuItem(child: Text("Other"), value: "other"),
+                      ],
+                      onChanged: (value) {
+                        setState(() {
+                          reason = value.toString();
+                        });
+                      }),
+                  Text("Comment (optional)"),
+                  TextField(
+                    controller: commentController,
+                    keyboardType: TextInputType.multiline,
+                    minLines: 5,
+                    maxLines: null,
+                    maxLength: 1000,
+                  ),
+                ],
+              ),
+              actions: <Widget>[
+                TextButton(
+                  child: Text('Cancel'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+                TextButton(
+                  child: Text("Report " + account.getDisplayName()),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    Util.executeWhenOK(
+                      Mastodon.report(
+                        account,
+                        SettingsController.instance.accessToken,
+                        statusIds: status != null ? [status.id] : null,
+                        category: reason,
+                        comment: commentController.text,
+                      ),
+                      context,
+                      onOK: onReport,
+                    );
+                  },
+                ),
+              ],
+            );
+          },
         );
       },
     );

@@ -1255,6 +1255,67 @@ class Mastodon {
     );
   }
 
+  static Future<String> block(Account account, String accessToken) async {
+    account = await getAccount(account.instance, account.username);
+
+    var response = await postToInstanceAccess(
+      "accounts/${account.id}/block",
+      accessToken,
+    );
+
+    if (response.statusCode == 200) {
+      Relationship relationship =
+          Relationship.fromJson(jsonDecode(response.body));
+      if (relationship.blocking) {
+        return "OK";
+      }
+    }
+
+    return "Failed to block user (${response.body})";
+  }
+
+  static Future<String> unblock(Account account, String accessToken) async {
+    account = await getAccount(account.instance, account.username);
+
+    var response = await postToInstanceAccess(
+      "accounts/${account.id}/unblock",
+      accessToken,
+    );
+
+    if (response.statusCode == 200) {
+      Relationship relationship =
+          Relationship.fromJson(jsonDecode(response.body));
+      if (!relationship.blocking) {
+        return "OK";
+      }
+    }
+
+    return "Failed to unblock user (${response.body})";
+  }
+
+  static Future<String> report(Account account, String accessToken,
+      {List<String>? statusIds, String? category, String? comment}) async {
+    account = await getAccount(account.instance, account.username);
+
+    var response = await postToInstanceAccess(
+      "reports",
+      accessToken,
+      body: <String, String>{
+        'account_id': account.id,
+        'status_ids[]': statusIds?.join("&status_ids[]=") ?? "",
+        'comment': comment ?? "",
+        'foreward': 'true',
+        'category': category ?? "other",
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return "OK";
+    }
+
+    return "Failed to report user (${response.body})";
+  }
+
   static Future<String> follow(Account account, String accessToken) async {
     account = await getAccount(account.instance, account.username);
 

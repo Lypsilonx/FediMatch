@@ -114,6 +114,8 @@ class _AccountListViewState extends State<AccountListView> {
             return !filtered;
           }).toList(),
         );
+
+        //accounts.insert(0, Mastodon.instance.self);
       } while (accounts.length < goalSize);
     } catch (e) {
       Util.showErrorScaffold(context, e.toString());

@@ -86,6 +86,19 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
       builder: (BuildContext context, BoxConstraints constraints) {
         return Scaffold(
           appBar: AppBar(),
+          persistentFooterButtons: widget.controller == null
+              ? []
+              : [
+                  MatchButtons(
+                    controller: widget.controller!,
+                    account: actualAccount,
+                    postSwipe: () {
+                      Navigator.pop(
+                        context,
+                      );
+                    },
+                  ),
+                ],
           body: ListView(
             controller: ScrollController(),
             children: [
@@ -179,6 +192,76 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
                         ),
                       ),
                       Padding(
+                          padding: EdgeInsets.only(top: 20),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              ElevatedButton(
+                                style: ButtonStyle(
+                                  backgroundColor: WidgetStateProperty.all(
+                                    Theme.of(context)
+                                        .colorScheme
+                                        .errorContainer,
+                                  ),
+                                  textStyle: WidgetStateProperty.all(
+                                    TextStyle(
+                                      color:
+                                          Theme.of(context).colorScheme.onError,
+                                    ),
+                                  ),
+                                ),
+                                child: Text("Report"),
+                                onPressed: () {
+                                  Util.showReportDialog(
+                                    context,
+                                    actualAccount,
+                                    () {
+                                      if (widget.controller != null) {
+                                        widget.controller!.swipeLeft();
+                                      }
+                                      Navigator.pop(
+                                        context,
+                                      );
+                                    },
+                                  );
+                                },
+                              ),
+                              ElevatedButton(
+                                style: ButtonStyle(
+                                  backgroundColor: WidgetStateProperty.all(
+                                    Theme.of(context)
+                                        .colorScheme
+                                        .errorContainer,
+                                  ),
+                                  textStyle: WidgetStateProperty.all(
+                                    TextStyle(
+                                      color:
+                                          Theme.of(context).colorScheme.onError,
+                                    ),
+                                  ),
+                                ),
+                                child: Text("Block"),
+                                onPressed: () {
+                                  Util.executeWhenOK(
+                                    Mastodon.block(
+                                      actualAccount,
+                                      SettingsController.instance.accessToken,
+                                    ),
+                                    context,
+                                    onOK: () {
+                                      if (widget.controller != null) {
+                                        widget.controller!.swipeLeft();
+                                      }
+                                      Navigator.pop(
+                                        context,
+                                      );
+                                    },
+                                  );
+                                },
+                              ),
+                            ],
+                          )),
+                      Padding(
                         padding: EdgeInsets.only(top: 20),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -187,7 +270,10 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
                               ? accountStatuses
                                   .where((element) =>
                                       element.visibility == "public")
-                                  .map((e) => StatusView(e))
+                                  .map((e) => StatusView(
+                                        e,
+                                        controller: widget.controller,
+                                      ))
                                   .toList()
                               : [
                                   CircularProgressIndicator(),
@@ -198,17 +284,6 @@ class _AccountDetailsViewState extends State<AccountDetailsView> {
                   ),
                 ),
               ),
-              widget.controller == null
-                  ? Container()
-                  : MatchButtons(
-                      controller: widget.controller!,
-                      account: actualAccount,
-                      postSwipe: () {
-                        Navigator.pop(
-                          context,
-                        );
-                      },
-                    ),
             ],
           ),
         );
