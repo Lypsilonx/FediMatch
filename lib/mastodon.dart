@@ -971,7 +971,7 @@ class Mastodon {
       body: <String, String>{
         'client_name': 'FediMatch',
         'redirect_uris': 'urn:ietf:wg:oauth:2.0:oob',
-        'scopes': 'read write push',
+        'scopes': 'read write',
       },
     );
 
@@ -1007,7 +1007,7 @@ class Mastodon {
 
     try {
       final Uri url = Uri.parse(
-          'https://$instanceName/oauth/authorize?client_id=$clientId&scope=read+write+push&redirect_uri=urn:ietf:wg:oauth:2.0:oob&response_type=code');
+          'https://$instanceName/oauth/authorize?client_id=$clientId&scope=read+write&redirect_uri=urn:ietf:wg:oauth:2.0:oob&response_type=code');
       launchUrl(url);
     } catch (e) {
       return "Failed to open external login ($e)";
@@ -1030,7 +1030,7 @@ class Mastodon {
         'redirect_uri': 'urn:ietf:wg:oauth:2.0:oob',
         'grant_type': 'authorization_code',
         'code': authCode,
-        'scope': 'read write push',
+        'scope': 'read write',
       },
     );
 
