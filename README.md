@@ -5,7 +5,7 @@ Meet interesting people on Mastodon & co. via an intuitive swiping interface in 
 
 ## Get it now!
 - **Android**: [Ko-Fi](https://ko-fi.com/s/125ba584c4)
-- **iOS**: Apple does not allow more "dating apps" on the App Store. (See [App Review Guidelines 4.3](https://developer.apple.com/app-store/review/guidelines/#spam)) You can build the app yourself using the source code. or join the [TestFlight](https://testflight.apple.com/join/Xf4FTWiG).
+- **iOS**: [App Store](https://apps.apple.com/de/app/fedimatch/id6503460577?l=en-GB), [TestFlight](https://testflight.apple.com/join/Xf4FTWiG)
 
 ## Functionality
 - **Swiping**: Swipe left, right or up to like, dislike or follow users.
