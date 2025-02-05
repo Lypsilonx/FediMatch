@@ -5,7 +5,7 @@ Meet interesting people on Mastodon & co. via an intuitive swiping interface in 
 
 ## Get it now!
 - **Android**: [Ko-Fi](https://ko-fi.com/s/125ba584c4)
-- **iOS**: [App Store](https://apps.apple.com/de/app/fedimatch/id6503460577?l=en-GB), [TestFlight](https://testflight.apple.com/join/Xf4FTWiG)
+- **iOS**: [App Store](https://apps.apple.com/de/app/fedimatch/id6503460577?l=en-GB)
 
 ## Functionality
 - **Swiping**: Swipe left, right or up to like, dislike or follow users.
