@@ -1,3 +1,5 @@
+Moved to [Forgejo](https://git.lypsilonx.de/lypsilonx/FediMatch)
+
 # FediMatch
 Explore the Fediverse.
 
